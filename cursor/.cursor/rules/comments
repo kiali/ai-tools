@@ -1,0 +1,8 @@
+---
+description: Comments for generated code
+globs:
+alwaysApply: true
+---
+
+- Generated code should have comments that explain the "why" of the code and not just repeating in natural language what the code does.
+- Comments on abstractions that describe how that abstraction should be used are more useful than comments that describe what the code does.
