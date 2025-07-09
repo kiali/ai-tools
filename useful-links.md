@@ -87,3 +87,18 @@ Task Master AI is an AI-powered task management system designed to be integrated
 - Uses AI to expand high-level tasks into detailed subtasks with implementation steps.
 - Allows for task management through chat commands directly in the editor.
 - Has a companion VS Code extension for a rich visual interface.
+
+## Editor Enhancements & Resources
+
+Resources and collections to enhance the development environment.
+
+### [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules)
+
+Awesome Cursor Rules is a curated list of custom rules (.cursorrules) for the Cursor IDE. These rules help tailor the AI's behavior for specific tasks, repositories, or workflows, improving its accuracy and relevance.
+
+**Core Function:** Provides a community-driven collection of configurations to customize the Cursor AI's behavior.
+
+**Key Features:**
+- Contains rules for various popular frameworks and libraries.
+- Offers examples for ignoring files, defining context, and setting up specific AI prompts.
+- Helps users get more out of the Cursor IDE by providing pre-made configurations.
