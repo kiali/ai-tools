@@ -1,0 +1,8 @@
+---
+description: Prefer any instead of empty interface.
+globs: *.go
+alwaysApply: true
+---
+
+- Always use `any` instead of `interface{}`
+
