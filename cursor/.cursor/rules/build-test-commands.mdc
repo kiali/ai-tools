@@ -1,0 +1,16 @@
+---
+description: Standard build and test commands for the Kiali project
+globs: 
+alwaysApply: true
+---
+
+# Build and Test Commands
+
+## Development Build Commands
+
+- If and only if told to build and push dev images, run: `make HELM_CHARTS_REPO_PULL=false CLUSTER_TYPE=minikube MINIKUBE_PROFILE=ci build-ui build test cluster-push` in the kiali server git repo.
+
+## Testing Commands
+
+- A molecule test name is the same as its directory name (under kiali-operator/molecule). To run one or more molecule tests, first ensure minikube is running with profile "ci" (see the other rule to know how to start a minikube cluster that is suitable for running molecule tests). When a minikube is confirmed to be running with profile "ci", then run the molecule testing with this command from the kiali git repo: `./hack/run-molecule-tests.sh --client-exe "$(which kubectl)" --cluster-type minikube --minikube-profile ci -udi true -hcrp false -at <molecule test name>` where "<molecule test name>" is the name of the molecule test, i.e. the name of the directory under kiali-operator/molecule. If you need to run multiple molecule tests, set the -at value with space-separated names of the tests wrapped in quotes. e.g. -at "config-values-test token-test". If I do not tell you what tests to run, do not pass the "-at" option which will run all tests.
+- When you are told to ensure a minikube cluster that is suitable for running molecule tests is running, first ensure minikube is not already running with profile "ci". If one is already running, make sure Kiali is not yet deployed by making sure there are no deployments that have the kubernetes label "app.kubernetes.io/name" whose value is either "kiali" or "kiali-operator". If there is already Kiali server or operator running, purge everything using the kiali git repo hack script command `./hack/purge-kiali-from-cluster.sh -c kubectl`, then wait for the Kiali CRDs to be completely removed by polling `kubectl get crd | grep kiali` until it returns no results (with a reasonable timeout of ~60 seconds) to ensure the cluster is in a clean state for molecule tests. If a minikube with profile "ci" is not already running, start minikube with this command executed from the kiali git repo directory: `./hack/k8s-minikube.sh --dex-enabled true -mp ci start && ./hack/k8s-minikube.sh -mp ci istio`
