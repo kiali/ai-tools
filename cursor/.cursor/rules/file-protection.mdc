@@ -1,0 +1,19 @@
+---
+description: Rules about files and directories that should not be modified
+globs: 
+alwaysApply: true
+---
+
+# File Protection Rules
+
+## Files That Should Not Be Changed
+
+- Never change a versioned role in the operator (e.g. do not modify anything under roles/v1.73, roles/v2.4, and other roles like that).
+- Never change a version of the kiali-operator manifest CSV files UNLESS it is the last version. For example, if the last version of the CSV is 2.13.0, you can change that. Change no others.
+- The CRD Schema golden copies found in kiali-operator/crd-docs/crd are the source of truth, so they can be modified. Those golden copies are synced to other CRD files in other locations via the "sync-crds" make target found in the kiali-operator makefile, so never change a CRD file that is a copy of a golden file CRD Schema.
+
+## Generated Files That Are Absolutely Forbidden To Be Changed - DO NOT MODIFY
+
+- Never change content/en/docs/Configuration/kialis.kiali.io.md
+- Never change content/en/docs/Configuration/ossmconsoles.kiali.io.md
+- Always ignore _output directories and their subdirectories. Never change anything in those locations.

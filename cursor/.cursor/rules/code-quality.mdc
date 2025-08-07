@@ -1,0 +1,12 @@
+---
+description: Code quality standards and formatting rules for the Kiali workspace
+globs: 
+alwaysApply: true
+---
+
+# Code Quality Standards
+
+## Formatting and Structure Rules
+
+- If you add or modify Go code or YAML, always sort names in Go structs and YAML schemas or YAML files. But only do this to code you touch explicitly.
+- When adding or modifying any line in any file, make sure there are no end-of-line spaces.
