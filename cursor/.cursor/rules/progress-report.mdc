@@ -1,0 +1,46 @@
+---
+description: Generate a report of the current progress that has been made with the current task
+globs: 
+alwaysApply: true
+---
+
+# Progress Report Command
+
+- When the user says "/progressreport", "/progress", "generate progress report", or similar trigger phrases, create a comprehensive progress report called "PROGRESS.md" following the template structure below. The report should cover our conversation since the timeframe specified by the user (session start/last major milestone/when we began working on a specific feature) or since the session start if not specified.
+
+## Template Structure
+
+The progress report should be structured with these sections:
+
+### Approach
+* Document the primary approach we've agreed to pursue
+* If no clear agreement exists yet, list the main approaches discussed and their trade-offs
+
+### Progress Completed
+* List specific steps/tasks we've finished
+* Include key files modified or created
+* Note successful tests, builds, or validations
+
+### Current Issue
+* Describe the specific problem, failure, or sticking point we're addressing
+* Include relevant error messages, failed commands, or unexpected behavior
+* Note which approaches we've tried that didn't work
+
+### Technical Context
+* File paths of code we've examined or modified
+* Commands we've run and their outcomes
+* Dependencies, frameworks, or tools involved
+
+### Important Code Snippets
+* Include key code changes we've made (with file paths and line numbers)
+* Show problematic code that's causing issues
+* Highlight working solutions or patterns we've discovered
+* Add brief explanations of what each snippet does or why it's significant
+
+### Next Steps
+* Immediate actions needed to resolve current blocker
+* Follow-up tasks once current issue is resolved
+
+## Formatting
+* Use proper Markdown formatting with appropriate headers, code blocks, and lists.
+* Never put end of line spaces in any files or lines you add or modify - remove any that you mistakenly add.
