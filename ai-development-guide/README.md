@@ -1,6 +1,6 @@
 The initial version of the AI development guide was a result of me asking "grok-code-fast-1" model the following:
 ```
-I want you to develop a plan that I can use  in order to guide  my conversations with
+I want you to develop a plan that I can use in order to guide my conversations with
 you - this plan should enable me to properly tell you to implement a new software
 component, feature, or framework. I do not know the best way you want to be guided
 to do this. But I want something to tell me how I can guide you across multiple
@@ -10,7 +10,7 @@ of intermediate documenation should I ask you to generate? What kinds of questio
 and commands should I give you to get you to generate the proper tasks/commands/rules?
 ```
 
-I then spend time conversing with Cursor to refine the dev guide and build it out.
+I then spent time conversing with Cursor to refine the dev guide and build it out.
 
 Once I refined it, here's a conversation I had with Cursor to see how useful it is.
 
@@ -23,7 +23,7 @@ Once I refined it, here's a conversation I had with Cursor to see how useful it 
 ## Session Overview
 This document captures a comprehensive role-playing exercise testing the effectiveness of the AI Development Guide for managing a complex software development task: replacing Kiali's integration test infrastructure while preserving existing Cypress tests.
 
-This was me having a conversation with Cursor (model grok-code-fast-1). I submitted 8 prompts in this conversation. To see my prompts more easily, look for the three horizontal lines - they preceed each prompt. You can ignore promts 5 and 6, I took a detour to get Cursor to explicitly add some testing/validation steps to the dev guide.
+This was me having a conversation with Cursor (model grok-code-fast-1). I submitted 8 prompts in this conversation. To see my prompts more easily, look for the three horizontal lines - they preceed each prompt. You can ignore prompts 5 and 6, I took a detour to get Cursor to explicitly add some testing/validation steps to the dev guide.
 
 ---
 ---
