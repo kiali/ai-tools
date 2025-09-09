@@ -48,6 +48,12 @@ The AI will automatically:
 
 That's it! The AI handles everything else and guides you through the structured development process described in this guide.
 
+**What Happens After You Start:**
+1. AI begins with Phase 1 (Discovery & Research) automatically
+2. You'll work through the 5-phase process using the SHORT commands described in each phase section
+3. AI manages all documentation, todo lists, and session transitions
+4. You simply follow the AI's guidance and provide input when asked
+
 ## How to Use This Guide: User-AI Collaboration Model
 
 ### Your Role vs AI's Role
@@ -176,7 +182,7 @@ AI automatically handles:
 
 ### Phase-Specific SHORT Commands
 
-**Phase 1 - Discovery/Research:**
+**Phase 1 - Discovery & Research:**
 ```
 "Analyze [problem/feature]"          # → Creates PROBLEM_ANALYSIS.md
 "Explore codebase [area]"            # → Creates CODEBASE_EXPLORATION.md
@@ -246,7 +252,7 @@ project-root/
 ├── ai-dev-context/
 │   ├── SESSION_STATUS.md             # Current session status (PROCESS MANAGEMENT)
 │   ├── PROGRESS.md                   # Overall project progress (PROCESS MANAGEMENT)
-│   ├── DOCUMENTATION_INDEX.md        # All documents reference (PROCESS MANAGEMENT)
+│   ├── DOCUMENTATION_INDEX.md        # Master index of all documentation files (PROCESS MANAGEMENT)
 │   ├── DECISIONS.md                  # Key decisions log (PROCESS MANAGEMENT)
 │   ├── ISSUES.md                     # Open questions/blockers (PROCESS MANAGEMENT)
 │   ├── PROBLEM_ANALYSIS.md           # Problem statement and analysis (PROJECT CONTENT)
@@ -292,10 +298,36 @@ Track **how** the AI-assisted development is progressing:
 #### **Project Content Files** (About the Product)
 Document **what** is being built and how it should work:
 - **Discovery Phase**: `PROBLEM_ANALYSIS.md`, `CODEBASE_EXPLORATION.md`, `CONSTRAINTS.md`
-- **Requirements Phase**: `REQUIREMENTS.md`, `ACCEPTANCE_CRITERIA.md`, `USER_STORIES.md`
-- **Architecture Phase**: `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `SEQUENCE_DIAGRAMS.md`
-- **Implementation Phase**: `CODE_CHANGES.md`, `API_DOCUMENTATION.md`, `IMPLEMENTATION_NOTES.md`
-- **Validation Phase**: `TEST_RESULTS.md`, `BUG_REPORT.md`, `PERFORMANCE_REPORT.md`
+- **Requirements Phase**: `REQUIREMENTS.md`, `ACCEPTANCE_CRITERIA.md`, `USER_STORIES.md`, `TECHNICAL_SPEC.md`
+- **Architecture Phase**: `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `SEQUENCE_DIAGRAMS.md`, `TEST_STRATEGY.md`
+- **Implementation Phase**: `CODE_CHANGES.md`, `API_DOCUMENTATION.md`, `IMPLEMENTATION_NOTES.md`, `DEPLOYMENT_GUIDE.md`
+- **Validation Phase**: `TEST_RESULTS.md`, `BUG_REPORT.md`, `PERFORMANCE_REPORT.md`, `RELEASE_NOTES.md`
+
+#### **Documentation Index Structure**
+`DOCUMENTATION_INDEX.md` contains a master reference to all files:
+```markdown
+# Documentation Index
+
+## Process Management Files
+- SESSION_STATUS.md - Current development state
+- PROGRESS.md - Overall project progress
+- DECISIONS.md - Key architectural decisions
+- ISSUES.md - Open questions and blockers
+
+## Project Content Files by Phase
+### Phase 1: Discovery & Research
+- PROBLEM_ANALYSIS.md - Problem statement and analysis
+- CODEBASE_EXPLORATION.md - Existing code analysis
+- CONSTRAINTS.md - Technical and business constraints
+
+### Phase 2: Requirements Definition
+- REQUIREMENTS.md - Functional requirements
+- ACCEPTANCE_CRITERIA.md - Success criteria
+- USER_STORIES.md - User-focused requirements
+- TECHNICAL_SPEC.md - Technical specifications
+
+[... continues for all phases ...]
+```
 
 ### 🔄 Key Differences Between File Categories
 
@@ -450,7 +482,7 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 "Analyze [problem/feature]"          # → Creates PROBLEM_ANALYSIS.md
 "Explore codebase [area]"            # → Creates CODEBASE_EXPLORATION.md
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
-"Start research session"             # → Begins research phase
+"Start discovery session"            # → Begins discovery phase
 "End session"                        # → Ends current session
 ```
 
@@ -489,7 +521,7 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 
 **Session End Protocol:**
 ```
-"End research session:
+"End discovery session:
 1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with final research status
 2. **Deliverable Validation**: Ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, and ai-dev-context/CONSTRAINTS.md are complete and meet quality standards
 3. **Todo Management**: Update ai-dev-context/todo/current_todo_list.md with completed research tasks and new discoveries
@@ -640,6 +672,7 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 ### Key Documentation to Generate
 - **ai-dev-context/CODE_CHANGES.md** - Summary of implemented features and changes
 - **ai-dev-context/API_DOCUMENTATION.md** - API docs, usage examples
+- **ai-dev-context/IMPLEMENTATION_NOTES.md** - Implementation details and patterns used
 - **ai-dev-context/DEPLOYMENT_GUIDE.md** - Deployment and configuration instructions
 
 ### ⚠️ **Critical: Quality Assurance Requirements**
@@ -983,9 +1016,11 @@ Before marking any implementation task as complete:
 □ Unit tests pass for new code
 □ Integration tests pass with existing components
 □ Existing test suite passes (no regressions detected)
-□ Acceptance criteria validated against ai-dev-context/REQUIREMENTS.md
+□ Acceptance criteria validated against ai-dev-context/ACCEPTANCE_CRITERIA.md
+□ Implementation meets technical specifications in ai-dev-context/TECHNICAL_SPEC.md
 □ Documentation updated in relevant files
 □ Code follows established patterns and standards
+□ Security requirements validated (if applicable)
 □ Manual testing confirms expected behavior
 ```
 
@@ -993,27 +1028,30 @@ Before marking any implementation task as complete:
 
 **Phase 1 → 2 (Discovery to Requirements):**
 - [ ] Problem clearly understood and documented in ai-dev-context/PROBLEM_ANALYSIS.md
-- [ ] Stakeholder needs identified and constraints documented
-- [ ] High-level feasibility assessed and codebase explored
+- [ ] Stakeholder needs identified and constraints documented in ai-dev-context/CONSTRAINTS.md
+- [ ] High-level feasibility assessed and codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
 - [ ] All research deliverables complete and validated
 
 **Phase 2 → 3 (Requirements to Architecture):**
 - [ ] Requirements are specific and testable in ai-dev-context/REQUIREMENTS.md
 - [ ] Acceptance criteria defined in ai-dev-context/ACCEPTANCE_CRITERIA.md
-- [ ] Technical constraints identified and documented
-- [ ] User stories complete and validated
+- [ ] Technical specifications documented in ai-dev-context/TECHNICAL_SPEC.md
+- [ ] User stories complete and validated in ai-dev-context/USER_STORIES.md
 
 **Phase 3 → 4 (Architecture to Implementation):**
 - [ ] Architecture decisions documented in ai-dev-context/ARCHITECTURE.md
-- [ ] Implementation plan created with detailed tasks
+- [ ] Implementation plan created with detailed tasks in ai-dev-context/IMPLEMENTATION_PLAN.md
 - [ ] Testing strategy defined in ai-dev-context/TEST_STRATEGY.md
+- [ ] Sequence diagrams completed in ai-dev-context/SEQUENCE_DIAGRAMS.md
 - [ ] All architecture deliverables complete and validated
 
 **Phase 4 → 5 (Implementation to Validation):**
 - [ ] Core functionality implemented and Implementation Quality Gates passed
 - [ ] Unit tests passing and integration working
 - [ ] All code changes documented in ai-dev-context/CODE_CHANGES.md
-- [ ] API documentation complete and current
+- [ ] API documentation complete and current in ai-dev-context/API_DOCUMENTATION.md
+- [ ] Implementation notes documented in ai-dev-context/IMPLEMENTATION_NOTES.md
+- [ ] Deployment guide completed in ai-dev-context/DEPLOYMENT_GUIDE.md
 
 **Phase 5 Completion (Validation Complete):**
 - [ ] All acceptance criteria met and validated
@@ -1034,7 +1072,7 @@ Before marking any implementation task as complete:
 
 **Session 1 (Discovery - 45 minutes):**
 ```
-You: "Start research session"
+You: "Start discovery session"
 
 AI: Explores codebase, asks clarifying questions, creates ai-dev-context/PROBLEM_ANALYSIS.md
 AI: "Completed analysis. Ready to end session or continue?"
@@ -1813,3 +1851,7 @@ For example:
 **For Prevention:**
 - `"Prevent issues"` → AI runs comprehensive validation across all development areas
 
+**For AI Performance Issues:**
+- `"Reset AI understanding"` → AI fixes persistent poor suggestions with fresh context
+- `"Handle implementation failure"` → AI recovers from partial implementation problems
+- `"Fix documentation corruption"` → AI resolves conflicting documentation states
