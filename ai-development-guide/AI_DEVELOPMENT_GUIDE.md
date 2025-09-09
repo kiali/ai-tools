@@ -72,14 +72,14 @@ You: "Start [phase] session"
 
 AI: Automatically reviews current status, shows priorities, begins work
 AI: Updates ai-dev-context/SESSION_STATUS.md with session start time and initial priorities
-AI: Loads and reviews .todo/current_todo_list.md for task status
+AI: Loads and reviews ai-dev-context/todo/current_todo_list.md for task status
 ```
 
 #### During Session Work
 ```
 AI: Implements features, updates documentation, tracks progress
 AI: Automatically updates ai-dev-context/SESSION_STATUS.md after each major task completion
-AI: Updates .todo/current_todo_list.md when tasks are completed or new tasks discovered
+AI: Updates ai-dev-context/todo/current_todo_list.md when tasks are completed or new tasks discovered
 AI: Proactively archives context when approaching limits
 AI: "Completed [task]. Ready for next task or session end?"
 
@@ -91,7 +91,7 @@ You: Continue with next task OR "End session"
 You: "End session"
 
 AI: Automatically updates ai-dev-context/SESSION_STATUS.md with final status
-AI: Updates .todo/current_todo_list.md with completed tasks and new discoveries
+AI: Updates ai-dev-context/todo/current_todo_list.md with completed tasks and new discoveries
 AI: Compresses conversation context and creates archive entry
 AI: Updates ai-dev-context/PROGRESS.md with session accomplishments
 AI: Prepares intelligent resumption instructions
@@ -113,7 +113,7 @@ AI automatically handles:
 ```
 "Create a comprehensive progress report covering:
 - Current development phase and completion status
-- Completed tasks from .todo/current_todo_list.md
+- Completed tasks from ai-dev-context/todo/current_todo_list.md
 - Open issues from ai-dev-context/ISSUES.md
 - Key decisions from ai-dev-context/DECISIONS.md
 - Next priority tasks and milestones
@@ -230,13 +230,13 @@ project-root/
 │   ├── BUG_REPORT.md                 # Identified issues (PROJECT CONTENT)
 │   ├── PERFORMANCE_REPORT.md         # Performance analysis (PROJECT CONTENT)
 │   ├── RELEASE_NOTES.md              # Release information (PROJECT CONTENT)
+│   ├── todo/
+│   │   ├── current_todo_list.md    # Active tasks for current development cycle
+│   │   └── completed_tasks.md      # Archive of completed tasks
 │   └── archives/
 │       ├── PROGRESS_ARCHIVE_2024-01-15.md
 │       ├── SESSION_STATUS_2024-01-15.md
 │       └── ...
-└── .todo/
-    ├── current_todo_list.md    # Active tasks for current development cycle
-    └── completed_tasks.md      # Archive of completed tasks
 ```
 
 ### 🎯 File Categories & Purposes
@@ -329,7 +329,7 @@ grep -r "search_term" ai-dev-context/
 2. Read ai-dev-context/SESSION_STATUS.md to understand current state
 3. Review any updates in ai-dev-context/PROGRESS.md
 4. Check ai-dev-context/ISSUES.md for blockers
-5. Load and review .todo/current_todo_list.md
+5. Load and review ai-dev-context/todo/current_todo_list.md
 6. Show me the top priority task from todo list"
 ```
 
@@ -349,11 +349,11 @@ Imagine building a user authentication system:
 
 ### ✅ Todo List Management
 
-The **`.todo/`** directory contains task tracking files that AI automatically manages throughout development:
+The **`todo/`** directory contains task tracking files that AI automatically manages throughout development:
 
 #### **📋 Todo File Structure**
-- **`.todo/current_todo_list.md`** - Active tasks for current development cycle
-- **`.todo/completed_tasks.md`** - Archive of completed tasks with timestamps
+- **`ai-dev-context/todo/current_todo_list.md`** - Active tasks for current development cycle
+- **`ai-dev-context/todo/completed_tasks.md`** - Archive of completed tasks with timestamps
 
 #### **🤖 AI Todo Management Instructions**
 
@@ -908,8 +908,8 @@ See [main todo list file] for complete task tracking
 **Todo-Based Progress Tracking:**
 ```
 "Update our todo list and session status after completing [task]:
-- Mark [task] as completed in .todo/current_todo_list.md
-- Move completed task to .todo/completed_tasks.md with timestamp
+- Mark [task] as completed in ai-dev-context/todo/current_todo_list.md
+- Move completed task to ai-dev-context/todo/completed_tasks.md with timestamp
 - Update ai-dev-context/SESSION_STATUS.md with completion details
 - Identify and prioritize next task from todo list
 - Generate brief progress note"
@@ -923,7 +923,7 @@ See [main todo list file] for complete task tracking
 1. Read ai-dev-context/SESSION_STATUS.md for current state
 2. Review ai-dev-context/PROGRESS.md for overall project status
 3. Check ai-dev-context/DOCUMENTATION_INDEX.md for key documents
-4. Load and review .todo/current_todo_list.md for active tasks
+4. Load and review ai-dev-context/todo/current_todo_list.md for active tasks
 5. Show me the next priority task from todo list and current blockers"
 ```
 
@@ -976,8 +976,8 @@ See [main todo list file] for complete task tracking
 - [ ] ai-dev-context/SESSION_STATUS.md is up to date
 - [ ] ai-dev-context/PROGRESS.md reflects current achievements
 - [ ] ai-dev-context/DOCUMENTATION_INDEX.md includes all documents
-- [ ] .todo/current_todo_list.md is current and prioritized
-- [ ] .todo/completed_tasks.md contains recent completions
+- [ ] ai-dev-context/todo/current_todo_list.md is current and prioritized
+- [ ] ai-dev-context/todo/completed_tasks.md contains recent completions
 - [ ] Key decisions are documented in ai-dev-context/DECISIONS.md
 - [ ] Open questions/blockers are noted in ai-dev-context/ISSUES.md
 - [ ] Next session priorities are clear from todo list
@@ -986,8 +986,8 @@ See [main todo list file] for complete task tracking
 ```
 "End session with full context preservation:
 1. Update ai-dev-context/SESSION_STATUS.md with final status
-2. Update .todo/current_todo_list.md with completed tasks and new discoveries
-3. Move completed tasks to .todo/completed_tasks.md with timestamps
+2. Update ai-dev-context/todo/current_todo_list.md with completed tasks and new discoveries
+3. Move completed tasks to ai-dev-context/todo/completed_tasks.md with timestamps
 4. Generate session progress archive in ai-dev-context/archives/
 5. Update master ai-dev-context/PROGRESS.md
 6. Ensure todo list reflects current state
@@ -1127,7 +1127,7 @@ You: "Analyze test failures" then "End session"
 1. **Always reference previous work** - Start each session by reviewing relevant documents
 2. **Use specific commands** - Tell me exactly what to generate and why
 3. **Break complex tasks** - Use todo lists for multi-step implementations
-4. **Maintain todo discipline** - Update .todo/current_todo_list.md after every task completion
+4. **Maintain todo discipline** - Update ai-dev-context/todo/current_todo_list.md after every task completion
 5. **Prioritize systematically** - Use todo list priority levels for task management
 6. **Document decisions** - Keep rationale for architectural choices
 7. **Regular progress reports** - Use "Generate progress report" to track advancement
@@ -1154,7 +1154,7 @@ You: "Analyze test failures" then "End session"
 22. **Rigorous Testing Protocol** - Never implement without comprehensive testing (unit, integration, regression)
 23. **Quality Gates Compliance** - Complete all checklist items before marking tasks as done
 24. **Context Preservation Discipline** - Never end a session without updating ai-dev-context/SESSION_STATUS.md
-25. **Todo List Management** - Keep .todo/current_todo_list.md synchronized with development progress
+25. **Todo List Management** - Keep ai-dev-context/todo/current_todo_list.md synchronized with development progress
 26. **Decision Documentation** - Record your decisions in ai-dev-context/DECISIONS.md for future reference
 
 ## Troubleshooting and Recovery Guide
@@ -1189,7 +1189,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 1. Read ai-dev-context/SESSION_STATUS.md for current state
 2. Review ai-dev-context/PROGRESS.md for recent achievements
 3. Check ai-dev-context/ISSUES.md for outstanding problems
-4. Examine .todo/current_todo_list.md for active tasks
+4. Examine ai-dev-context/todo/current_todo_list.md for active tasks
 5. Verify codebase changes match documentation"
 ```
 
@@ -1227,7 +1227,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 2. Update ai-dev-context/PROGRESS.md with session summary
 3. Document lessons learned in ai-dev-context/ISSUES.md
 4. Create fresh ai-dev-context/SESSION_STATUS.md
-5. Load .todo/current_todo_list.md for priority tasks"
+5. Load ai-dev-context/todo/current_todo_list.md for priority tasks"
 ```
 
 ### 3. Handling AI Hallucinations and Incorrect Implementations
@@ -1314,7 +1314,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 1. Read ai-dev-context/SESSION_STATUS.md for current state
 2. Review ai-dev-context/PROGRESS.md for recent achievements
 3. Check ai-dev-context/ISSUES.md for outstanding problems
-4. Examine .todo/current_todo_list.md for active tasks
+4. Examine ai-dev-context/todo/current_todo_list.md for active tasks
 5. Verify codebase changes match documentation
 6. Provide resumption instructions with next priority task"
 ```
