@@ -103,7 +103,7 @@ The development process is divided into 5 key phases:
 - You've reached a decision point requiring your strategic input
 - Quality checkpoint needed before proceeding to next phase
 
-**⚠️ Troubleshooting Reference:** If experiencing persistent context loss or session issues, see the "Troubleshooting and Recovery Guide" section.
+**⚠️ Troubleshooting Reference:** If experiencing persistent context loss or session issues, see the [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide) section.
 
 ### Session Management Workflow
 
@@ -592,7 +592,7 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 - ✅ **Regression Tests**: Run existing test suite to prevent breaking changes
 - ✅ **Acceptance Criteria Validation**: Verify implementation meets requirements from `ai-dev-context/ACCEPTANCE_CRITERIA.md`
 
-**📋 See the "Unified Quality Assurance System" section for the complete Implementation Quality Gates checklist that must be completed before marking any implementation task as done.**
+**📋 See the [Unified Quality Assurance System](#unified-quality-assurance-system) section for the complete Implementation Quality Gates checklist that must be completed before marking any implementation task as done.**
 
 #### **Testing Commands**
 ```
@@ -1243,7 +1243,7 @@ AI assists with:
 - Quality assurance and testing guidance
 ```
 
-**🔧 Detailed Recovery Procedures:** For comprehensive recovery protocols and troubleshooting scenarios, see the "Troubleshooting and Recovery Guide" section.
+**🔧 Detailed Recovery Procedures:** For comprehensive recovery protocols and troubleshooting scenarios, see the [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide) section.
 
 ### Quality Assurance for Context Management
 
@@ -1319,7 +1319,7 @@ Before marking any implementation task as complete:
 - **⚠️ Minor Gaps**: Document gaps in ai-dev-context/ISSUES.md, proceed with caution, address gaps early in next phase
 - **❌ Major Gaps**: Must complete missing deliverables before proceeding to next phase
 
-**🚨 Need Help?** If experiencing issues during any phase, refer to the "Troubleshooting and Recovery Guide" section for specific problem resolution strategies.
+**🚨 Need Help?** If experiencing issues during any phase, refer to the [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide) section for specific problem resolution strategies.
 
 ## Best Practices
 
