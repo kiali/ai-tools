@@ -8,12 +8,12 @@ This guide provides a structured approach to working with AI coding assistants a
 - [🚀 Quick Start](#-quick-start)
 - [How to Use This Guide: User-AI Collaboration Model](#how-to-use-this-guide-user-ai-collaboration-model)
 - [Primary Commands to Use](#primary-commands-to-use)
-- [Central Documentation Hub](#central-documentation-hub)
 - [Phase 1: Discovery & Research](#phase-1-discovery--research)
 - [Phase 2: Requirements Definition](#phase-2-requirements-definition)
 - [Phase 3: Architecture & Planning](#phase-3-architecture--planning)
 - [Phase 4: Implementation](#phase-4-implementation)
 - [Phase 5: Validation & Refinement](#phase-5-validation--refinement)
+- [Central Documentation Hub](#central-documentation-hub)
 - [Context Management Across Sessions](#context-management-across-sessions)
 - [Unified Quality Assurance System](#unified-quality-assurance-system)
 - [Best Practices](#best-practices)
@@ -180,7 +180,7 @@ AI can help with:
 
 ## Primary Commands to Use
 
-**🎯 KEY: Use these SHORT (Swift Helpful Operational Request Templates) commands. AI automatically interprets them as the detailed instructions shown in each phase section.**
+**🎯 Use these SHORT (Swift Helpful Operational Request Templates) commands. AI automatically interprets them as the detailed instructions shown in each phase section.**
 
 **SHORT commands are designed to be:**
 - **Swift**: Quick to type and remember
@@ -270,235 +270,6 @@ AI can help with:
 "Critical failure protocol"             # → Execute emergency response procedures
 "Prevent issues"                        # → Run prevention checklist and validation
 ```
-
-## Central Documentation Hub
-
-The **`ai-dev-context/`** directory serves as the single source of truth for all AI-assisted development documentation, ensuring consistent context preservation across sessions.
-
-### 📁 Directory Structure & Organization
-
-Set up your project with this structure to support effective context preservation:
-
-```
-project-root/
-├── ai-dev-context/
-│   ├── SESSION_STATUS.md             # Current session status (PROCESS MANAGEMENT)
-│   ├── PROGRESS.md                   # Overall project progress (PROCESS MANAGEMENT)
-│   ├── DOCUMENTATION_INDEX.md        # Master index of all documentation files (PROCESS MANAGEMENT)
-│   ├── DECISIONS.md                  # Key decisions log (PROCESS MANAGEMENT)
-│   ├── ISSUES.md                     # Open questions/blockers (PROCESS MANAGEMENT)
-│   ├── PROBLEM_ANALYSIS.md           # Problem statement and analysis (PROJECT CONTENT)
-│   ├── CODEBASE_EXPLORATION.md       # Existing code analysis (PROJECT CONTENT)
-│   ├── CONSTRAINTS.md                # Technical and business constraints (PROJECT CONTENT)
-│   ├── SOLUTION_OPTIONS.md           # Solution comparison for decision-making (PROJECT CONTENT)
-│   ├── REQUIREMENTS.md               # Functional requirements (PROJECT CONTENT)
-│   ├── ACCEPTANCE_CRITERIA.md        # Success criteria (PROJECT CONTENT)
-│   ├── USER_STORIES.md               # User-focused requirements (PROJECT CONTENT)
-│   ├── TECHNICAL_SPEC.md             # Technical specifications (PROJECT CONTENT)
-│   ├── ARCHITECTURE.md               # System architecture (PROJECT CONTENT)
-│   ├── IMPLEMENTATION_PLAN.md        # Development roadmap (PROJECT CONTENT)
-│   ├── SEQUENCE_DIAGRAMS.md          # System interactions (PROJECT CONTENT)
-│   ├── TEST_STRATEGY.md              # Testing approach (PROJECT CONTENT)
-│   ├── CODE_CHANGES.md               # Implementation summary (PROJECT CONTENT)
-│   ├── API_DOCUMENTATION.md          # API documentation (PROJECT CONTENT)
-│   ├── IMPLEMENTATION_NOTES.md       # Implementation details (PROJECT CONTENT)
-│   ├── DEPLOYMENT_GUIDE.md           # Deployment instructions (PROJECT CONTENT)
-│   ├── TEST_RESULTS.md               # Test execution results (PROJECT CONTENT)
-│   ├── BUG_REPORT.md                 # Identified issues (PROJECT CONTENT)
-│   ├── PERFORMANCE_REPORT.md         # Performance analysis (PROJECT CONTENT)
-│   ├── RELEASE_NOTES.md              # Release information (PROJECT CONTENT)
-│   ├── todo/
-│   │   ├── current_todo_list.md    # Active tasks for current development cycle
-│   │   └── completed_tasks.md      # Archive of completed tasks
-│   └── archives/
-│       ├── PROGRESS_ARCHIVE_2024-01-15.md
-│       ├── SESSION_STATUS_2024-01-15.md
-│       └── ...
-```
-
-### 🎯 File Categories & Purposes
-
-The `ai-dev-context/` directory contains two distinct categories of files:
-
-#### **Process Management Files** (About Development Progress)
-Track **how** the AI-assisted development is progressing:
-- **`SESSION_STATUS.md`** - Current development session state, priorities, blockers
-- **`PROGRESS.md`** - Overall project advancement across all phases
-- **`DOCUMENTATION_INDEX.md`** - Reference guide to all project documents
-- **`DECISIONS.md`** - Log of key architectural and implementation decisions
-- **`ISSUES.md`** - Open questions, blockers, and unresolved items
-
-#### **Project Content Files** (About the Product)
-Document **what** is being built and how it should work:
-- **Discovery Phase**: `PROBLEM_ANALYSIS.md`, `CODEBASE_EXPLORATION.md`, `CONSTRAINTS.md`, `SOLUTION_OPTIONS.md`
-- **Requirements Phase**: `REQUIREMENTS.md`, `ACCEPTANCE_CRITERIA.md`, `USER_STORIES.md`, `TECHNICAL_SPEC.md`
-- **Architecture Phase**: `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `SEQUENCE_DIAGRAMS.md`, `TEST_STRATEGY.md`
-- **Implementation Phase**: `CODE_CHANGES.md`, `API_DOCUMENTATION.md`, `IMPLEMENTATION_NOTES.md`, `DEPLOYMENT_GUIDE.md`
-- **Validation Phase**: `TEST_RESULTS.md`, `BUG_REPORT.md`, `PERFORMANCE_REPORT.md`, `RELEASE_NOTES.md`
-
-#### **Documentation Index Structure**
-`DOCUMENTATION_INDEX.md` contains a master reference to all files:
-```markdown
-# Documentation Index
-
-## Process Management Files
-- SESSION_STATUS.md - Current development state
-- PROGRESS.md - Overall project progress
-- DECISIONS.md - Key architectural decisions
-- ISSUES.md - Open questions and blockers
-
-## Project Content Files by Phase
-### Phase 1: Discovery & Research
-- PROBLEM_ANALYSIS.md - Problem statement and analysis
-- CODEBASE_EXPLORATION.md - Existing code analysis
-- CONSTRAINTS.md - Technical and business constraints
-- SOLUTION_OPTIONS.md - Solution comparison for decision-making
-
-### Phase 2: Requirements Definition
-- REQUIREMENTS.md - Functional requirements
-- ACCEPTANCE_CRITERIA.md - Success criteria
-- USER_STORIES.md - User-focused requirements
-- TECHNICAL_SPEC.md - Technical specifications
-
-[... continues for all phases ...]
-```
-
-### 🔄 Key Differences Between File Categories
-
-| Aspect | Process Management Files | Project Content Files |
-|--------|------------------------|----------------------|
-| **Focus** | How development is progressing | What product is being built |
-| **Audience** | AI assistant + developers | End users + stakeholders |
-| **Updates** | After each session/task | When requirements/design change |
-| **Lifespan** | Current development cycle | Product lifetime |
-| **Examples** | "Session paused at 3:45 PM" | "User must authenticate" |
-
-### 🧭 Navigation & Usage
-
-#### Directory Access
-```bash
-# Navigate to documentation directory
-cd ai-dev-context/
-
-# List all context files
-ls -la ai-dev-context/
-
-# Find specific files
-find ai-dev-context/ -name "*STATUS*" -o -name "*PROGRESS*"
-```
-
-#### Quick File Searches
-```bash
-# Find all process management files
-ls ai-dev-context/ | grep -E "(STATUS|PROGRESS|DECISIONS|ISSUES)"
-
-# Find all requirement-related files
-ls ai-dev-context/ | grep -E "(REQUIREMENTS|USER_STORIES|ACCEPTANCE)"
-
-# Search content across all files
-grep -r "search_term" ai-dev-context/
-```
-
-#### File Access Commands
-**For Process Management:**
-```
-"Read the current session status from ai-dev-context/SESSION_STATUS.md"
-"Check the latest progress updates in ai-dev-context/PROGRESS.md"
-"Review key decisions in ai-dev-context/DECISIONS.md"
-```
-
-**For Project Content:**
-```
-"Locate and read ai-dev-context/REQUIREMENTS.md for functional specifications"
-"Review user stories in ai-dev-context/USER_STORIES.md"
-"Read the architecture design from ai-dev-context/ARCHITECTURE.md"
-```
-
-### ✅ Todo List Management
-
-The **`todo/`** directory contains task tracking files that AI automatically manages throughout development:
-
-#### **📋 Todo File Structure**
-- **`ai-dev-context/todo/current_todo_list.md`** - Active tasks for current development cycle
-- **`ai-dev-context/todo/completed_tasks.md`** - Archive of completed tasks with timestamps
-
-#### **🤖 AI Todo Management Instructions**
-
-**AI must automatically update todo lists when:**
-- Starting a new development phase
-- Breaking down complex tasks into smaller steps
-- Completing individual tasks
-- Identifying new requirements or issues
-- Ending development sessions
-
-**Todo List Format:**
-```markdown
-# Current Development Tasks
-
-## Phase 1: Discovery & Research
-- [x] Analyze user authentication requirements
-- [ ] Explore existing authentication codebase
-- [ ] Identify security constraints
-- [ ] Document findings in PROBLEM_ANALYSIS.md
-
-## Phase 2: Requirements Definition
-- [ ] Create REQUIREMENTS.md
-- [ ] Define acceptance criteria
-- [ ] Write user stories
-
-## Completed Tasks
-- [x] Set up ai-dev-context/ directory structure (2024-01-15)
-- [x] Initialize SESSION_STATUS.md (2024-01-15)
-```
-
-#### **🔄 Todo Update Commands**
-
-**AI should automatically execute these todo operations:**
-
-**When Starting Tasks:**
-```
-"Add new task to todo list: [task description]"
-"Break down [complex task] into subtasks in todo list"
-```
-
-**When Completing Tasks:**
-```
-"Mark [task] as completed in todo list"
-"Update todo list with task completion: [task name]"
-```
-
-**When Adding New Tasks:**
-```
-"Add blocking issue to todo list: [issue description]"
-"Add new requirement to todo list: [requirement]"
-```
-
-#### **📊 Todo Integration with Development**
-
-**AI must reference todo lists in:**
-- **Session Status Updates**: "Working on task 3 of 5 from todo list"
-- **Progress Reports**: "Completed 2/5 tasks from current todo list"
-- **Planning**: "Next priority task from todo list is [task]"
-- **Session End**: "Updated todo list with completed tasks before ending session"
-
-**Todo List Priority Levels:**
-- 🔴 **High Priority**: Blocking issues, critical bugs
-- 🟡 **Medium Priority**: Feature implementation, documentation
-- 🟢 **Low Priority**: Code cleanup, optimization, minor improvements
-
-#### **🔗 Todo List Synchronization**
-
-**AI must ensure todo lists stay synchronized with:**
-- **SESSION_STATUS.md**: Current task status
-- **PROGRESS.md**: Overall project completion
-- **ISSUES.md**: Blocking items and open questions
-
-**Daily Todo Workflow:**
-1. **Session Start**: Load and review current todo list
-2. **Task Execution**: Update todo status as tasks are completed
-3. **New Tasks**: Add discovered requirements/issues to todo list
-4. **Session End**: Ensure todo list reflects current progress
-5. **Planning**: Use todo list to prioritize next session work
 
 ## Phase 1: Discovery & Research
 
@@ -1032,6 +803,209 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 5. **Context Preservation**: Archive session progress in ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with final validation status
 6. **Next Phase Preparation**: Prepare for production deployment or next iteration cycle based on validation results"
 ```
+
+## Central Documentation Hub
+
+The **`ai-dev-context/`** directory serves as the single source of truth for all AI-assisted development documentation, ensuring consistent context preservation across sessions.
+
+### 📁 Directory Structure & Organization
+
+Set up your project with this structure to support effective context preservation:
+
+```
+project-root/
+├── ai-dev-context/
+│   ├── SESSION_STATUS.md             # Current session status (PROCESS MANAGEMENT)
+│   ├── PROGRESS.md                   # Overall project progress (PROCESS MANAGEMENT)
+│   ├── DOCUMENTATION_INDEX.md        # Master index of all documentation files (PROCESS MANAGEMENT)
+│   ├── DECISIONS.md                  # Key decisions log (PROCESS MANAGEMENT)
+│   ├── ISSUES.md                     # Open questions/blockers (PROCESS MANAGEMENT)
+│   ├── PROBLEM_ANALYSIS.md           # Problem statement and analysis (PROJECT CONTENT)
+│   ├── CODEBASE_EXPLORATION.md       # Existing code analysis (PROJECT CONTENT)
+│   ├── CONSTRAINTS.md                # Technical and business constraints (PROJECT CONTENT)
+│   ├── SOLUTION_OPTIONS.md           # Solution comparison for decision-making (PROJECT CONTENT)
+│   ├── REQUIREMENTS.md               # Functional requirements (PROJECT CONTENT)
+│   ├── ACCEPTANCE_CRITERIA.md        # Success criteria (PROJECT CONTENT)
+│   ├── USER_STORIES.md               # User-focused requirements (PROJECT CONTENT)
+│   ├── TECHNICAL_SPEC.md             # Technical specifications (PROJECT CONTENT)
+│   ├── ARCHITECTURE.md               # System architecture (PROJECT CONTENT)
+│   ├── IMPLEMENTATION_PLAN.md        # Development roadmap (PROJECT CONTENT)
+│   ├── SEQUENCE_DIAGRAMS.md          # System interactions (PROJECT CONTENT)
+│   ├── TEST_STRATEGY.md              # Testing approach (PROJECT CONTENT)
+│   ├── CODE_CHANGES.md               # Implementation summary (PROJECT CONTENT)
+│   ├── API_DOCUMENTATION.md          # API documentation (PROJECT CONTENT)
+│   ├── IMPLEMENTATION_NOTES.md       # Implementation details (PROJECT CONTENT)
+│   ├── DEPLOYMENT_GUIDE.md           # Deployment instructions (PROJECT CONTENT)
+│   ├── TEST_RESULTS.md               # Test execution results (PROJECT CONTENT)
+│   ├── BUG_REPORT.md                 # Identified issues (PROJECT CONTENT)
+│   ├── PERFORMANCE_REPORT.md         # Performance analysis (PROJECT CONTENT)
+│   ├── RELEASE_NOTES.md              # Release information (PROJECT CONTENT)
+│   ├── todo/
+│   │   ├── current_todo_list.md    # Active tasks for current development cycle
+│   │   └── completed_tasks.md      # Archive of completed tasks
+│   └── archives/
+│       ├── PROGRESS_ARCHIVE_2024-01-15.md
+│       ├── SESSION_STATUS_2024-01-15.md
+│       └── ...
+```
+
+### 🎯 File Categories & Purposes
+
+The `ai-dev-context/` directory contains two distinct categories of files:
+
+#### **Process Management Files** (About Development Progress)
+Track **how** the AI-assisted development is progressing:
+- **`SESSION_STATUS.md`** - Current development session state, priorities, blockers
+- **`PROGRESS.md`** - Overall project advancement across all phases
+- **`DOCUMENTATION_INDEX.md`** - Reference guide to all project documents
+- **`DECISIONS.md`** - Log of key architectural and implementation decisions
+- **`ISSUES.md`** - Open questions, blockers, and unresolved items
+
+#### **Project Content Files** (About the Product)
+Document **what** is being built and how it should work:
+- **Discovery Phase**: `PROBLEM_ANALYSIS.md`, `CODEBASE_EXPLORATION.md`, `CONSTRAINTS.md`, `SOLUTION_OPTIONS.md`
+- **Requirements Phase**: `REQUIREMENTS.md`, `ACCEPTANCE_CRITERIA.md`, `USER_STORIES.md`, `TECHNICAL_SPEC.md`
+- **Architecture Phase**: `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `SEQUENCE_DIAGRAMS.md`, `TEST_STRATEGY.md`
+- **Implementation Phase**: `CODE_CHANGES.md`, `API_DOCUMENTATION.md`, `IMPLEMENTATION_NOTES.md`, `DEPLOYMENT_GUIDE.md`
+- **Validation Phase**: `TEST_RESULTS.md`, `BUG_REPORT.md`, `PERFORMANCE_REPORT.md`, `RELEASE_NOTES.md`
+
+#### **Documentation Index Structure**
+`DOCUMENTATION_INDEX.md` contains a master reference to all files:
+```markdown
+# Documentation Index
+
+## Process Management Files
+- SESSION_STATUS.md - Current development state
+- PROGRESS.md - Overall project progress
+- DECISIONS.md - Key architectural decisions
+- ISSUES.md - Open questions and blockers
+
+## Project Content Files by Phase
+### Phase 1: Discovery & Research
+- PROBLEM_ANALYSIS.md - Problem statement and analysis
+- CODEBASE_EXPLORATION.md - Existing code analysis
+- CONSTRAINTS.md - Technical and business constraints
+- SOLUTION_OPTIONS.md - Solution comparison for decision-making
+
+### Phase 2: Requirements Definition
+- REQUIREMENTS.md - Functional requirements
+- ACCEPTANCE_CRITERIA.md - Success criteria
+- USER_STORIES.md - User-focused requirements
+- TECHNICAL_SPEC.md - Technical specifications
+
+[... continues for all phases ...]
+```
+
+### 🔄 Key Differences Between File Categories
+
+| Aspect | Process Management Files | Project Content Files |
+|--------|------------------------|----------------------|
+| **Focus** | How development is progressing | What product is being built |
+| **Audience** | AI assistant + developers | End users + stakeholders |
+| **Updates** | After each session/task | When requirements/design change |
+| **Lifespan** | Current development cycle | Product lifetime |
+| **Examples** | "Session paused at 3:45 PM" | "User must authenticate" |
+
+### 🧭 File Access Commands
+**For Process Management:**
+```
+"Read the current session status from ai-dev-context/SESSION_STATUS.md"
+"Check the latest progress updates in ai-dev-context/PROGRESS.md"
+"Review key decisions in ai-dev-context/DECISIONS.md"
+```
+
+**For Project Content:**
+```
+"Locate and read ai-dev-context/REQUIREMENTS.md for functional specifications"
+"Review user stories in ai-dev-context/USER_STORIES.md"
+"Read the architecture design from ai-dev-context/ARCHITECTURE.md"
+```
+
+### ✅ Todo List Management
+
+The **`todo/`** directory contains task tracking files that AI automatically manages throughout development:
+
+#### **📋 Todo File Structure**
+- **`ai-dev-context/todo/current_todo_list.md`** - Active tasks for current development cycle
+- **`ai-dev-context/todo/completed_tasks.md`** - Archive of completed tasks with timestamps
+
+#### **🤖 AI Todo Management Instructions**
+
+**AI must automatically update todo lists when:**
+- Starting a new development phase
+- Breaking down complex tasks into smaller steps
+- Completing individual tasks
+- Identifying new requirements or issues
+- Ending development sessions
+
+**Todo List Format:**
+```markdown
+# Current Development Tasks
+
+## Phase 1: Discovery & Research
+- [x] Analyze user authentication requirements
+- [ ] Explore existing authentication codebase
+- [ ] Identify security constraints
+- [ ] Document findings in PROBLEM_ANALYSIS.md
+
+## Phase 2: Requirements Definition
+- [ ] Create REQUIREMENTS.md
+- [ ] Define acceptance criteria
+- [ ] Write user stories
+
+## Completed Tasks
+- [x] Set up ai-dev-context/ directory structure (2024-01-15)
+- [x] Initialize SESSION_STATUS.md (2024-01-15)
+```
+
+#### **🔄 Todo Update Commands**
+
+**AI should automatically execute these todo operations:**
+
+**When Starting Tasks:**
+```
+"Add new task to todo list: [task description]"
+"Break down [complex task] into subtasks in todo list"
+```
+
+**When Completing Tasks:**
+```
+"Mark [task] as completed in todo list"
+"Update todo list with task completion: [task name]"
+```
+
+**When Adding New Tasks:**
+```
+"Add blocking issue to todo list: [issue description]"
+"Add new requirement to todo list: [requirement]"
+```
+
+#### **📊 Todo Integration with Development**
+
+**AI must reference todo lists in:**
+- **Session Status Updates**: "Working on task 3 of 5 from todo list"
+- **Progress Reports**: "Completed 2/5 tasks from current todo list"
+- **Planning**: "Next priority task from todo list is [task]"
+- **Session End**: "Updated todo list with completed tasks before ending session"
+
+**Todo List Priority Levels:**
+- 🔴 **High Priority**: Blocking issues, critical bugs
+- 🟡 **Medium Priority**: Feature implementation, documentation
+- 🟢 **Low Priority**: Code cleanup, optimization, minor improvements
+
+#### **🔗 Todo List Synchronization**
+
+**AI must ensure todo lists stay synchronized with:**
+- **SESSION_STATUS.md**: Current task status
+- **PROGRESS.md**: Overall project completion
+- **ISSUES.md**: Blocking items and open questions
+
+**Daily Todo Workflow:**
+1. **Session Start**: Load and review current todo list
+2. **Task Execution**: Update todo status as tasks are completed
+3. **New Tasks**: Add discovered requirements/issues to todo list
+4. **Session End**: Ensure todo list reflects current progress
+5. **Planning**: Use todo list to prioritize next session work
 
 ## Context Management Across Sessions
 
