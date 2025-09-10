@@ -2,6 +2,24 @@
 
 This guide provides a structured approach to working with AI coding assistants across multiple sessions and context windows. It ensures comprehensive coverage from research through implementation and testing. This guide ensures systematic progress while maintaining context across sessions and providing clear documentation at each stage. The consolidated `ai-dev-context/` directory approach makes AI-assisted development more efficient, reliable, and manageable.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [🚀 Quick Start](#-quick-start)
+- [How to Use This Guide: User-AI Collaboration Model](#how-to-use-this-guide-user-ai-collaboration-model)
+- [Primary Commands to Use](#primary-commands-to-use)
+- [Central Documentation Hub](#central-documentation-hub)
+- [Phase 1: Discovery & Research](#phase-1-discovery--research)
+- [Phase 2: Requirements Definition](#phase-2-requirements-definition)
+- [Phase 3: Architecture & Planning](#phase-3-architecture--planning)
+- [Phase 4: Implementation](#phase-4-implementation)
+- [Phase 5: Validation & Refinement](#phase-5-validation--refinement)
+- [Context Management Across Sessions](#context-management-across-sessions)
+- [Unified Quality Assurance System](#unified-quality-assurance-system)
+- [Practical Example: User Authentication System](#practical-example-user-authentication-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide)
+- [Common Commands Reference](#common-commands-reference)
 
 ## Overview
 
@@ -91,15 +109,15 @@ That's it! The AI handles everything else and guides you through the structured 
 - **Time Management**: Approaching your time limit or need a break
 - **Task Completion**: Major component or feature is functionally complete
 - **Decision Required**: You've reached a point needing your strategic input
-- **Context Pressure**: AI indicates context window is approaching limits
+- **Context Pressure**: Conversation becomes lengthy and may benefit from summarization
 - **Quality Review**: Work needs validation before proceeding
 - **Phase Boundary**: Ready to transition between development phases
 
 **Session End Indicators:**
-- AI proactively suggests session end at logical breakpoints
+- You may want to end sessions at logical breakpoints
 - You've completed 2-3 major tasks or components
 - Session duration reaches 60-90 minutes of focused work
-- Context window usage approaches 80% capacity (critical archiving trigger)
+- Conversation becomes lengthy (AI can suggest summarizing, but user decides when)
 - You've reached a decision point requiring your strategic input
 - Quality checkpoint needed before proceeding to next phase
 
@@ -111,17 +129,17 @@ That's it! The AI handles everything else and guides you through the structured 
 ```
 You: "Start [phase] session"
 
-AI: Automatically reviews current status, shows priorities, begins work
-AI: Updates ai-dev-context/SESSION_STATUS.md with session start time and initial priorities
-AI: Loads and reviews ai-dev-context/todo/current_todo_list.md for task status
+AI: AI will read and review current status files, show priorities, and begin work
+AI: AI will update ai-dev-context/SESSION_STATUS.md with session start time and initial priorities using file tools
+AI: AI will load and review ai-dev-context/todo/current_todo_list.md for task status
 ```
 
 #### During Session Work
 ```
-AI: Implements features, updates documentation, tracks progress
-AI: Automatically updates ai-dev-context/SESSION_STATUS.md after each major task completion
-AI: Updates ai-dev-context/todo/current_todo_list.md when tasks are completed or new tasks discovered
-AI: Proactively archives context when approaching limits
+AI: AI implements features, updates documentation, and tracks progress using available tools
+AI: AI will update ai-dev-context/SESSION_STATUS.md after each major task completion when requested
+AI: AI will update ai-dev-context/todo/current_todo_list.md when tasks are completed or new tasks discovered
+AI: AI will suggest archiving context when conversations become lengthy, but user controls when this happens
 AI: "Completed [task]. Ready for next task or session end?"
 
 You: Continue with next task OR "End session"
@@ -131,23 +149,23 @@ You: Continue with next task OR "End session"
 ```
 You: "End session"
 
-AI: Automatically updates ai-dev-context/SESSION_STATUS.md with final status
-AI: Updates ai-dev-context/todo/current_todo_list.md with completed tasks and new discoveries
-AI: Compresses conversation context and creates archive entry
-AI: Updates ai-dev-context/PROGRESS.md with session accomplishments
-AI: Prepares intelligent resumption instructions
-AI: "Session archived. Next session resume with: [specific command]"
+AI: AI will update ai-dev-context/SESSION_STATUS.md with final status using file tools
+AI: AI will update ai-dev-context/todo/current_todo_list.md with completed tasks and new discoveries
+AI: AI will help create a conversation summary and archive entry if requested
+AI: AI will update ai-dev-context/PROGRESS.md with session accomplishments
+AI: AI will provide resumption instructions for next session
+AI: "Session documented. Next session resume with: [specific command]"
 ```
 
-#### AI's Autonomous Session Management
+#### AI's Session Management Capabilities
 ```
-AI automatically handles:
-- Context preservation during session
-- Progress tracking and documentation updates
-- Todo list management and task tracking
-- Session boundary detection and archiving
-- Context compression when needed
-- Recovery preparation for next session
+AI can help with:
+- Context preservation during session (when user requests file updates)
+- Progress tracking and documentation updates (using file tools user can see)
+- Todo list management and task tracking (with user direction)
+- Session boundary suggestions (user decides when to start/end)
+- Context summarization when needed (at user request)
+- Recovery preparation for next session (by updating status files)
 ```
 
 **"Generate progress report"** means:
@@ -388,7 +406,7 @@ grep -r "search_term" ai-dev-context/
 ```
 "Read the current session status from ai-dev-context/SESSION_STATUS.md"
 "Check the latest progress updates in ai-dev-context/PROGRESS.md"
-"Review our key decisions in ai-dev-context/DECISIONS.md"
+"Review key decisions in ai-dev-context/DECISIONS.md"
 ```
 
 **For Project Content:**
@@ -580,12 +598,12 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 **Session End Protocol:**
 ```
 "End discovery session:
-1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with final research status
-2. **Deliverable Validation**: Ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, ai-dev-context/CONSTRAINTS.md, and ai-dev-context/SOLUTION_OPTIONS.md (if created) are complete with comprehensive solution research
-3. **Todo Management**: Update ai-dev-context/todo/current_todo_list.md with completed research tasks and new discoveries
-4. **Decision Documentation**: Document any unresolved questions in ai-dev-context/ISSUES.md and key research decisions in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: Archive current session files in ai-dev-context/archives/
-6. **Next Phase Preparation**: Summarize key findings in ai-dev-context/PROGRESS.md and prepare for requirements definition phase with researched solution options"
+1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with final research status using file tools
+2. **Deliverable Validation**: AI will ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, ai-dev-context/CONSTRAINTS.md, and ai-dev-context/SOLUTION_OPTIONS.md (if created) are complete with comprehensive solution research
+3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed research tasks and new discoveries
+4. **Decision Documentation**: AI will document any unresolved questions in ai-dev-context/ISSUES.md and key research decisions in ai-dev-context/DECISIONS.md
+5. **Context Preservation**: AI will help create session summaries for ai-dev-context/archives/ if requested
+6. **Next Phase Preparation**: AI will summarize key findings in ai-dev-context/PROGRESS.md and prepare for requirements definition phase with researched solution options"
 ```
 
 ## Phase 2: Requirements Definition
@@ -620,7 +638,7 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Define requirements"** means:
 ```
-"Based on our selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md including:
+"Based on selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md including:
 - Functional requirements specific to chosen solution
 - Non-functional requirements (performance, security, scalability)
 - Integration requirements aligned with selected approach
@@ -708,12 +726,12 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 **Session End Protocol:**
 ```
 "End requirements session:
-1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with requirements completion status and solution selection
-2. **Deliverable Validation**: Ensure ai-dev-context/REQUIREMENTS.md, ai-dev-context/USER_STORIES.md, ai-dev-context/ACCEPTANCE_CRITERIA.md, and ai-dev-context/TECHNICAL_SPEC.md are complete and meet quality standards, and solution has been selected and documented in ai-dev-context/DECISIONS.md
-3. **Todo Management**: Update ai-dev-context/todo/current_todo_list.md with completed requirements tasks and solution selection
-4. **Decision Documentation**: Document solution selection rationale and key requirement decisions in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: Archive session progress in ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with requirements achievements
-6. **Next Phase Preparation**: Prepare for architecture phase with validated requirements baseline and chosen solution approach"
+1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with requirements completion status and solution selection using file tools
+2. **Deliverable Validation**: AI will ensure ai-dev-context/REQUIREMENTS.md, ai-dev-context/USER_STORIES.md, ai-dev-context/ACCEPTANCE_CRITERIA.md, and ai-dev-context/TECHNICAL_SPEC.md are complete and meet quality standards, and solution has been selected and documented in ai-dev-context/DECISIONS.md
+3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed requirements tasks and solution selection
+4. **Decision Documentation**: AI will document solution selection rationale and key requirement decisions in ai-dev-context/DECISIONS.md
+5. **Context Preservation**: AI will create session summaries for ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with requirements achievements
+6. **Next Phase Preparation**: AI will prepare for architecture phase with validated requirements baseline and chosen solution approach"
 ```
 
 ## Phase 3: Architecture & Planning
@@ -851,7 +869,7 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Implement [component/feature]"** means:
 ```
-"Implement the [specific task/component] according to our ai-dev-context/IMPLEMENTATION_PLAN.md.
+"Implement the [specific task/component] according to ai-dev-context/IMPLEMENTATION_PLAN.md.
 - Follow the architecture defined in ai-dev-context/ARCHITECTURE.md
 - Meet the requirements in ai-dev-context/REQUIREMENTS.md
 - Use the patterns from ai-dev-context/CODEBASE_EXPLORATION.md
@@ -889,7 +907,7 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Review implementation [component]"** means:
 ```
-"Review the implemented [component/feature] against our quality requirements:
+"Review the implemented [component/feature] against quality requirements:
 - Verify all testing protocols have been followed
 - Check functional requirements compliance
 - Verify non-functional requirements (performance, security, etc.)
@@ -928,12 +946,12 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 **Session End Protocol:**
 ```
 "End implementation session:
-1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with implementation progress
-2. **Deliverable Validation**: Verify all Implementation Quality Gates are complete for implemented components, ensure ai-dev-context/CODE_CHANGES.md, ai-dev-context/API_DOCUMENTATION.md, and ai-dev-context/IMPLEMENTATION_NOTES.md are updated
-3. **Todo Management**: Update ai-dev-context/todo/current_todo_list.md with completed implementation tasks and new discoveries
-4. **Decision Documentation**: Document implementation decisions, patterns used, and any new issues in ai-dev-context/DECISIONS.md and ai-dev-context/ISSUES.md
-5. **Context Preservation**: Archive session progress in ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with achievements
-6. **Next Phase Preparation**: Run final regression tests to ensure system stability and prepare for next implementation session or validation phase"
+1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with implementation progress using file tools
+2. **Deliverable Validation**: AI will verify all Implementation Quality Gates are complete for implemented components, ensure ai-dev-context/CODE_CHANGES.md, ai-dev-context/API_DOCUMENTATION.md, and ai-dev-context/IMPLEMENTATION_NOTES.md are updated
+3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed implementation tasks and new discoveries
+4. **Decision Documentation**: AI will document implementation decisions, patterns used, and any new issues in ai-dev-context/DECISIONS.md and ai-dev-context/ISSUES.md
+5. **Context Preservation**: AI will create session summaries for ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with achievements
+6. **Next Phase Preparation**: AI will help run final regression tests to ensure system stability and prepare for next implementation session or validation phase"
 ```
 
 ## Phase 5: Validation & Refinement
@@ -1019,24 +1037,7 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 ## Context Management Across Sessions
 
-**See the comprehensive "AI Autonomous Context Management" section later in this guide for detailed guidance on:**
-- Session start/end commands
-- Documentation index maintenance
-- Context preservation protocols
-- Recovery mechanisms
-
-## Enhanced Context Preservation System
-
-### Automatic Progress Recording
-
-**After Every Major Action:**
-```
-"Document this change in our progress files:
-- Update ai-dev-context/PROGRESS.md with the completed task
-- Add any new decisions to ai-dev-context/DECISIONS.md
-- Note any open questions or blockers in ai-dev-context/ISSUES.md
-- Update the current status in ai-dev-context/SESSION_STATUS.md"
-```
+This comprehensive section covers all aspects of maintaining context across AI-assisted development sessions, from basic preservation to advanced recovery strategies.
 
 ### Session Status File (SESSION_STATUS.md)
 
@@ -1064,7 +1065,7 @@ Create and maintain a `ai-dev-context/SESSION_STATUS.md` file with this structur
 - [Question/Blocker 2] - [Status: unresolved/resolved]
 
 ## Key Context for Next Session
-**Current Focus:** [What we were working on when session ended]
+**Current Focus:** [What was being worked on when session ended]
 **Important Files:** [Files that contain critical context]
 **Dependencies:** [Any prerequisites for next session]
 **Testing Status:** [Current state of tests/validation]
@@ -1077,39 +1078,35 @@ Create and maintain a `ai-dev-context/SESSION_STATUS.md` file with this structur
 See ai-dev-context/todo/current_todo_list.md for complete task tracking
 ```
 
-### Context Window Recovery Commands
+### Context Preservation and Recovery Commands
 
-**When Context is Lost:**
+**Emergency Context Recovery:**
 ```
-"Emergency context recovery: Read our ai-dev-context/SESSION_STATUS.md, ai-dev-context/PROGRESS.md, and ai-dev-context/DOCUMENTATION_INDEX.md to understand where we left off and what the current priorities are."
+"Emergency context recovery: Read ai-dev-context/SESSION_STATUS.md, ai-dev-context/PROGRESS.md, and ai-dev-context/DOCUMENTATION_INDEX.md to understand where work left off and what the current priorities are."
 ```
 
 **Mid-Session Context Check:**
 ```
-"Quick status check: Show me our current phase, last completed task, and next priority from ai-dev-context/SESSION_STATUS.md"
+"Quick status check: Show current phase, last completed task, and next priority from ai-dev-context/SESSION_STATUS.md"
 ```
 
-### Progress Archive System
-
-**Create Progress Archives:**
+**Context Loss Recovery:**
 ```
-"Create a progress archive for this session:
-- Generate ai-dev-context/archives/PROGRESS_ARCHIVE_[date].md with complete session summary
-- Archive current ai-dev-context/SESSION_STATUS.md as ai-dev-context/archives/SESSION_STATUS_[date].md
-- Update master ai-dev-context/PROGRESS.md with session highlights
-- Reset ai-dev-context/SESSION_STATUS.md for next session"
+"Context lost - recovery protocol:
+1. Read most recent ai-dev-context/SESSION_STATUS.md
+2. Check ai-dev-context/PROGRESS.md for project timeline
+3. Review ai-dev-context/DOCUMENTATION_INDEX.md for key files
+4. Examine code changes since last session
+5. Reconstruct current state and priorities"
 ```
 
-### Integration with Todo System
-
-**Todo-Based Progress Tracking:**
+**Session Interruption Recovery:**
 ```
-"Update our todo list and session status after completing [task]:
-- Mark [task] as completed in ai-dev-context/todo/current_todo_list.md
-- Move completed task to ai-dev-context/todo/completed_tasks.md with timestamp
-- Update ai-dev-context/SESSION_STATUS.md with completion details
-- Identify and prioritize next task from todo list
-- Generate brief progress note"
+"Resume after interruption:
+- Check what was being worked on in ai-dev-context/SESSION_STATUS.md
+- Review any partial changes in the codebase
+- Identify what needs to be completed or rolled back
+- Update status and continue from logical breakpoint"
 ```
 
 ### Session Resumption Protocol
@@ -1124,7 +1121,26 @@ See ai-dev-context/todo/current_todo_list.md for complete task tracking
 5. Show me the next priority task from todo list and current blockers"
 ```
 
-### Automated Context Preservation
+### Progress Tracking and Documentation
+
+**Collaborative Progress Recording:**
+```
+"AI will help document this change in progress files when requested:
+- Update ai-dev-context/PROGRESS.md with the completed task using file tools
+- Add any new decisions to ai-dev-context/DECISIONS.md
+- Note any open questions or blockers in ai-dev-context/ISSUES.md
+- Update the current status in ai-dev-context/SESSION_STATUS.md"
+```
+
+**Todo-Based Progress Tracking:**
+```
+"Update todo list and session status after completing [task]:
+- Mark [task] as completed in ai-dev-context/todo/current_todo_list.md
+- Move completed task to ai-dev-context/todo/completed_tasks.md with timestamp
+- Update ai-dev-context/SESSION_STATUS.md with completion details
+- Identify and prioritize next task from todo list
+- Generate brief progress note"
+```
 
 **After Each Implementation Step:**
 ```
@@ -1144,25 +1160,131 @@ See ai-dev-context/todo/current_todo_list.md for complete task tracking
 - Note any decisions documented"
 ```
 
-### Recovery Mechanisms
+### Progress Archive System
 
-**Context Loss Recovery:**
+**Create Progress Archives:**
 ```
-"Context lost - recovery protocol:
-1. Read most recent ai-dev-context/SESSION_STATUS.md
-2. Check ai-dev-context/PROGRESS.md for project timeline
-3. Review ai-dev-context/DOCUMENTATION_INDEX.md for key files
-4. Examine code changes since last session
-5. Reconstruct current state and priorities"
+"Create a progress archive for this session:
+- Generate ai-dev-context/archives/PROGRESS_ARCHIVE_[date].md with complete session summary
+- Archive current ai-dev-context/SESSION_STATUS.md as ai-dev-context/archives/SESSION_STATUS_[date].md
+- Update master ai-dev-context/PROGRESS.md with session highlights
+- Reset ai-dev-context/SESSION_STATUS.md for next session"
 ```
 
-**Session Interruption Recovery:**
+### Context Window Management
+
+**Context Management Triggers (User-Initiated):**
+- **🔴 High Priority**: Very long conversations (you may want to request summarization)
+- **🟠 Medium Priority**: Session duration >90 minutes (consider ending session)
+- **🟡 Low Priority**: Major phase transition or key architectural decision point
+- **🟢 Maintenance**: Logical task completion or quality checkpoint
+
+**Context Management Decision Guide:**
 ```
-"Resume after interruption:
-- Check what was being worked on in ai-dev-context/SESSION_STATUS.md
-- Review any partial changes in the codebase
-- Identify what needs to be completed or rolled back
-- Update status and continue from logical breakpoint"
+You should consider context management when:
+1. Conversations become very lengthy (AI can suggest summarization)
+2. Session duration exceeds 90 minutes (consider ending session)
+3. Major phase transitions or key decisions occur
+4. Logical completion points or quality checkpoints are reached
+```
+
+**Context Summarization Support:**
+```
+AI can help compress context by:
+1. Extracting key decisions and rationale from conversations
+2. Summarizing implementation approaches and patterns used
+3. Documenting file references and change summaries
+4. Recording dependency relationships and constraints
+5. Capturing lessons learned and best practices discovered
+```
+
+**Create Context Snapshots:**
+```
+"Create context snapshot for [current state]:
+- Document current phase and progress
+- List active tasks and priorities
+- Note critical dependencies
+- Archive non-essential details"
+```
+
+**When Context Window is Full:**
+```
+"Emergency context reset:
+1. Immediately archive current ai-dev-context/SESSION_STATUS.md
+2. Create ai-dev-context/PROGRESS_SUMMARY.md with key achievements
+3. Archive conversation highlights
+4. Start fresh with recovery command"
+```
+
+### AI's Context Support Capabilities
+
+**What AI Can Help With:**
+```
+AI can help by:
+1. Tracking conversation flow and decision points within the current session
+2. Reading and understanding current development phase from status files
+3. Referencing technical constraints and requirements from documentation files
+4. Understanding file relationships and dependencies when provided
+5. Learning implementation patterns and best practices during the work
+6. Providing session continuity through structured documentation
+7. Suggesting context summarization when conversations become lengthy
+8. Creating session summaries when requested
+9. Updating progress files when asked
+10. Reading project state from documentation files
+11. Documenting critical technical decisions in files when requested
+12. Tracking outstanding issues and dependencies in documentation
+```
+
+**AI's Session Resumption Support:**
+```
+When resuming, AI can help by:
+- Reading current ai-dev-context/SESSION_STATUS.md when asked
+- Reviewing recent progress updates from documentation files
+- Identifying next logical tasks from todo lists and status files
+- Understanding previous decisions from documentation
+- Reading technical context and constraints from files
+- Continuing from the last documented state
+```
+
+### User Support for AI Context Management
+
+**What You Should Do to Help AI:**
+
+1. **Clear Session Boundaries:**
+   - Always use "Start session" and "End session" commands
+   - Provide clear task descriptions when beginning work
+   - End sessions at logical completion points
+
+2. **Consistent Documentation References:**
+   - Reference specific files in ai-dev-context/ when giving tasks
+   - Use consistent terminology for components and features
+   - Update requirements when they change
+
+3. **Context Preservation Commands:**
+   - Use "Update progress" commands after major changes
+   - Request "Context summary" when uncertain
+   - Ask for "Session status" before ending work
+
+4. **Quality Session Handoffs:**
+   - Ensure ai-dev-context/SESSION_STATUS.md is current before ending
+   - Document any unresolved questions in ai-dev-context/ISSUES.md
+   - Archive important decisions in ai-dev-context/DECISIONS.md
+
+**Collaborative Approach:**
+```
+You control:
+- Starting/ending sessions explicitly
+- Providing initial project requirements
+- Making key architectural decisions
+- Reviewing completed work at phase boundaries
+- Requesting file updates and documentation changes
+
+AI assists with:
+- Context preservation through documentation (when you request it)
+- Progress tracking and documentation (using visible file tools)
+- Session continuity through structured files
+- Technical implementation details
+- Quality assurance and testing guidance
 ```
 
 **🔧 Detailed Recovery Procedures:** For comprehensive recovery protocols and troubleshooting scenarios, see the "Troubleshooting and Recovery Guide" section.
@@ -1264,7 +1386,7 @@ You: "Start requirements session"
 
 AI: Reviews previous work, shows current status
 AI: Creates ai-dev-context/REQUIREMENTS.md, ai-dev-context/USER_STORIES.md, ai-dev-context/ACCEPTANCE_CRITERIA.md
-AI: "Requirements documented. Should we end session here?"
+AI: "Requirements documented. Ready to end session here?"
 
 You: "End session"
 AI: Archives session, updates status for next phase
@@ -1325,7 +1447,54 @@ You: "Analyze test failures" then "End session"
 
 **See the "Unified Quality Assurance System" section for detailed quality gates and validation criteria.**
 
-## Troubleshooting AI-Assisted Development
+
+## Best Practices
+
+### Development Process Best Practices
+
+1. **Always reference previous work** - Start each session by reviewing relevant documents
+2. **Use specific commands** - Tell me exactly what to generate and why
+3. **Break complex tasks** - Use todo lists for multi-step implementations
+4. **Incremental delivery** - Aim for working functionality in each session
+5. **Progressive validation** - Test and validate work incrementally rather than at the end
+6. **Regular progress reports** - Use "Generate progress report" to track advancement
+
+### Quality Assurance Best Practices
+
+7. **Quality gate compliance** - Complete all Implementation Quality Gates before marking tasks as done
+8. **Rigorous testing protocol** - Never implement without comprehensive testing (unit, integration, regression)
+9. **Quality gate reviews** - Always review AI work against your requirements before proceeding
+10. **Validate against acceptance criteria** - Ensure all work meets documented requirements
+
+### Task and Documentation Management
+
+11. **Todo list management** - Keep ai-dev-context/todo/current_todo_list.md synchronized with development progress and update after every task completion
+12. **Prioritize systematically** - Use todo list priority levels for task management
+13. **Decision documentation** - Record your decisions in ai-dev-context/DECISIONS.md with rationale for architectural choices
+14. **Documentation discipline** - Never complete a task without updating relevant tracking files
+15. **Cross-reference everything** - Link related documents and decisions for easy navigation
+
+### Session Management Best Practices
+
+16. **Clear session boundaries** - Start and end sessions at logical breakpoints with clear goals
+17. **Time-boxed sessions** - Plan for 30-90 minute focused sessions with clear objectives
+18. **Strategic decision making** - Make architectural and business decisions yourself, let AI handle implementation
+19. **Session hygiene** - Follow the complete session end protocol to ensure clean handoffs
+
+### Context Preservation Best Practices
+
+20. **Systematic status updates** - Update ai-dev-context/SESSION_STATUS.md after every major action and never end a session without updating it
+21. **Context window awareness** - Monitor conversation length and proactively archive context
+22. **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
+23. **Archive regularly** - Create progress archives at logical completion points
+
+## Troubleshooting and Recovery Guide
+
+### Overview
+
+Working with AI assistants introduces unique challenges that require specific troubleshooting approaches. This section provides systematic solutions for common issues encountered during AI-assisted software development.
+
+**🚀 QUICK START:** For immediate troubleshooting, use the SHORT commands like `"Emergency recovery"` or `"Check hallucinations"` - AI will execute the full protocols automatically. See the "Primary Commands to Use" section for the complete list.
 
 ### Quick Reference Guide
 
@@ -1359,52 +1528,7 @@ You: "Analyze test failures" then "End session"
 **For Prevention:**
 - `"Prevent issues"` → AI runs comprehensive validation across all development areas
 
-**See the comprehensive "Troubleshooting and Recovery" section below for detailed guidance.**
-
-## Best Practices
-
-1. **Always reference previous work** - Start each session by reviewing relevant documents
-2. **Use specific commands** - Tell me exactly what to generate and why
-3. **Break complex tasks** - Use todo lists for multi-step implementations
-4. **Maintain todo discipline** - Update ai-dev-context/todo/current_todo_list.md after every task completion
-5. **Prioritize systematically** - Use todo list priority levels for task management
-6. **Document decisions** - Keep rationale for architectural choices
-7. **Regular progress reports** - Use "Generate progress report" to track advancement
-8. **Quality checkpoints** - Validate work against acceptance criteria
-9. **Incremental delivery** - Aim for working functionality in each session
-
-### Context Preservation Best Practices
-
-10. **Systematic Status Updates** - Update ai-dev-context/SESSION_STATUS.md after every major action
-11. **Context Window Awareness** - Monitor conversation length and proactively archive context
-12. **Recovery-First Mindset** - Always assume sessions will be interrupted and prepare accordingly
-13. **Documentation Discipline** - Never complete a task without updating relevant tracking files
-14. **Session Hygiene** - Follow the complete session end protocol to ensure clean handoffs
-15. **Archive Regularly** - Create progress archives at logical completion points
-16. **Cross-Reference Everything** - Link related documents and decisions for easy navigation
-
-### User-AI Collaboration Best Practices
-
-17. **Clear Session Boundaries** - Start and end sessions at logical breakpoints with clear goals
-18. **Quality Gate Reviews** - Always review AI work against your requirements before proceeding
-19. **Strategic Decision Making** - Make architectural and business decisions yourself, let AI handle implementation
-20. **Time-Boxed Sessions** - Plan for 30-90 minute focused sessions with clear objectives
-21. **Progressive Validation** - Test and validate work incrementally rather than at the end
-22. **Rigorous Testing Protocol** - Never implement without comprehensive testing (unit, integration, regression)
-23. **Quality Gates Compliance** - Complete all Implementation Quality Gates before marking tasks as done
-24. **Context Preservation Discipline** - Never end a session without updating ai-dev-context/SESSION_STATUS.md
-25. **Todo List Management** - Keep ai-dev-context/todo/current_todo_list.md synchronized with development progress
-26. **Decision Documentation** - Record your decisions in ai-dev-context/DECISIONS.md for future reference
-
-## Troubleshooting and Recovery Guide
-
-### Overview
-
-Working with AI assistants introduces unique challenges that require specific troubleshooting approaches. This section provides systematic solutions for common issues encountered during AI-assisted software development.
-
-**🚀 QUICK START:** For immediate troubleshooting, use the SHORT commands like `"Emergency recovery"` or `"Check hallucinations"` - AI will execute the full protocols automatically. See the "Primary Commands to Use" section for the complete list.
-
-### 1. AI Context Loss Scenarios and Recovery
+### AI Context Loss Scenarios and Recovery
 
 #### Common Context Loss Scenarios
 
@@ -1437,7 +1561,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 2. **Validate Documentation** - Cross-reference ai-dev-context/ files for consistency
 3. **Resume with Context Summary** - Provide summary of completed work and next steps
 
-### 2. When to Restart vs Continue Sessions
+### When to Restart vs Continue Sessions
 
 #### Decision Framework
 
@@ -1469,7 +1593,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 5. Load ai-dev-context/todo/current_todo_list.md for priority tasks"
 ```
 
-### 3. Handling AI Hallucinations and Incorrect Implementations
+### Handling AI Hallucinations and Incorrect Implementations
 
 #### Types of AI Issues
 
@@ -1502,7 +1626,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 **Context Grounding:** Always start tasks with explicit file references and use consistent terminology
 **Progressive Validation:** Implement and test in small increments with frequent validation checkpoints
 
-### 4. Dealing with Conflicting AI Suggestions
+### Dealing with Conflicting AI Suggestions
 
 #### Types of Conflicts
 
@@ -1530,7 +1654,7 @@ Working with AI assistants introduces unique challenges that require specific tr
 5. Update ai-dev-context/DECISIONS.md with chosen approach"
 ```
 
-### 5. AI Performance and Quality Recovery
+### AI Performance and Quality Recovery
 
 #### **Persistent Poor Suggestions Recovery**
 **Symptoms:** AI repeatedly provides wrong approaches, misunderstands requirements, or suggests low-quality solutions
@@ -1733,197 +1857,3 @@ Working with AI assistants introduces unique challenges that require specific tr
 - "Validate [implementation] for [requirements]"
 - "Execute [test type] and report results"
 
-## AI Autonomous Context Management
-
-### How AI Maintains Context Across Sessions
-
-**AI's Internal Context Preservation:**
-```
-AI automatically:
-1. Tracks conversation flow and decision points
-2. Maintains awareness of current development phase
-3. Remembers technical constraints and requirements
-4. Preserves file relationships and dependencies
-5. Tracks implementation patterns and best practices
-6. Maintains session continuity indicators
-```
-
-**AI's Proactive Context Management:**
-```
-AI will automatically:
-- Archive context when approaching token limits
-- Create session summaries at logical breakpoints
-- Update progress files after major actions
-- Maintain awareness of project state
-- Preserve critical technical decisions
-- Track outstanding issues and dependencies
-```
-
-**AI's Session Resumption Intelligence:**
-```
-When resuming, AI automatically:
-- Reads current ai-dev-context/SESSION_STATUS.md
-- Reviews recent progress updates
-- Identifies next logical tasks
-- Maintains awareness of previous decisions
-- Preserves technical context and constraints
-- Continues from last logical breakpoint
-```
-
-### User Support for AI Context Management
-
-**What You Should Do to Help AI:**
-
-1. **Clear Session Boundaries:**
-   - Always use "Start session" and "End session" commands
-   - Provide clear task descriptions when beginning work
-   - End sessions at logical completion points
-
-2. **Consistent Documentation References:**
-   - Reference specific files in ai-dev-context/ when giving tasks
-   - Use consistent terminology for components and features
-   - Update requirements when they change
-
-3. **Context Preservation Commands:**
-   - Use "Update progress" commands after major changes
-   - Request "Context summary" when uncertain
-   - Ask for "Session status" before ending work
-
-4. **Quality Session Handoffs:**
-   - Ensure ai-dev-context/SESSION_STATUS.md is current before ending
-   - Document any unresolved questions in ai-dev-context/ISSUES.md
-   - Archive important decisions in ai-dev-context/DECISIONS.md
-
-**Minimal User Input Required:**
-```
-You only need to:
-- Start/end sessions explicitly
-- Provide initial project requirements
-- Make key architectural decisions
-- Review completed work at phase boundaries
-
-AI handles:
-- Context preservation and compression
-- Progress tracking and documentation
-- Session continuity and recovery
-- Technical implementation details
-```
-
-## Context Window Management Strategies
-
-### Proactive Context Archiving Triggers
-
-**Context Archiving Priority Hierarchy (Execute First Applicable):**
-- **🔴 Critical**: Context window >80% capacity (immediate archiving required)
-- **🟠 High**: Session duration >90 minutes (archive at next logical breakpoint)
-- **🟡 Medium**: Major phase transition or key architectural decision point
-- **🟢 Low**: 50+ messages, logical task completion, or quality checkpoint
-
-**Archiving Decision Logic:**
-```
-AI evaluates archiving triggers in priority order:
-1. Check context window capacity (>80% = immediate archive)
-2. Check session duration (>90 minutes = archive at next breakpoint)
-3. Check for phase transitions or major decisions
-4. Check for logical completion points or quality checkpoints
-```
-
-**Context Window Health Check:**
-```
-"Monitor context window usage:
-- Estimate current conversation length in tokens
-- Identify information that can be safely archived
-- Create summary of completed work for archive
-- Preserve only essential active context"
-```
-
-### Context Compression Techniques
-
-**Automated Context Compression:**
-```
-AI automatically compresses context by:
-1. Extracting key decisions and rationale from conversations
-2. Summarizing implementation approaches and patterns used
-3. Preserving file references and change summaries
-4. Maintaining dependency relationships and constraints
-5. Recording lessons learned and best practices discovered
-```
-
-**Intelligent Context Summarization:**
-```
-AI proactively summarizes when:
-- Conversation reaches 50 messages
-- Major decisions are made
-- New patterns or approaches are established
-- Critical technical choices are documented
-- Phase transitions occur
-```
-
-**Create Context Snapshots:**
-```
-"Create context snapshot for [current state]:
-- Document current phase and progress
-- List active tasks and priorities
-- Note critical dependencies
-- Archive non-essential details"
-```
-
-### Emergency Context Recovery
-
-**When Context Window is Full:**
-```
-"Emergency context reset:
-1. Immediately archive current ai-dev-context/SESSION_STATUS.md
-2. Create ai-dev-context/PROGRESS_SUMMARY.md with key achievements
-3. Archive conversation highlights
-4. Start fresh with recovery command"
-```
-
-**Recovery Command:**
-```
-"Recover from context loss:
-- Read most recent ai-dev-context/archives/ files
-- Reconstruct current state from ai-dev-context/ documentation
-- Identify next priority tasks
-- Continue from logical breakpoint"
-
-### AI's Context Intelligence Features
-
-**Autonomous Context Awareness:**
-```
-AI maintains awareness of:
-- Current development phase and progress
-- Active requirements and constraints
-- Previous technical decisions and rationale
-- File relationships and dependencies
-- Outstanding issues and blockers
-- Next logical implementation steps
-```
-
-**Intelligent Session Continuity:**
-```
-AI automatically:
-- Detects logical session boundaries
-- Preserves critical context before archiving
-- Creates resumable session states
-- Maintains project momentum across interruptions
-- Tracks implementation patterns and preferences
-- Adapts to your working style and preferences
-```
-
-**Minimal User Intervention Required:**
-```
-You only need to provide:
-- Initial project requirements and goals
-- Key architectural decisions when prompted
-- Approval for major implementation approaches
-- Feedback on completed work at phase boundaries
-
-AI handles everything else autonomously:
-- Context preservation and compression
-- Progress tracking and documentation
-- Session management and archiving
-- Technical implementation details
-- Quality assurance and testing
-```
-```
