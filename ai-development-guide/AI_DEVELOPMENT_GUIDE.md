@@ -69,6 +69,8 @@ The development process is divided into 5 key phases:
 - **Context Management**: Maintaining session status, updating progress files, following established protocols
 - **Quality Following**: Adhering to requirements, implementing according to specifications
 - **Progress Tracking**: Updating documentation files after each major action
+- **Active Clarification**: Asking questions when requirements are unclear, ambiguous, or incomplete
+- **Guidance Seeking**: Requesting developer input for architectural decisions, trade-offs, and business logic
 
 ### ▶️ When to Start a New Session
 
@@ -148,7 +150,53 @@ AI can help with:
 - Session boundary suggestions (user decides when to start/end)
 - Context summarization when needed (at user request)
 - Recovery preparation for next session (by updating status files)
+- Asking clarifying questions when requirements or instructions are unclear
+- Seeking guidance on architectural decisions and business logic choices
+- Requesting additional context when needed to complete tasks effectively
 ```
+
+### 🤔 AI Questioning and Clarification Guidelines
+
+**AI Should Always Ask Questions When:**
+- Requirements are ambiguous or incomplete
+- Multiple valid implementation approaches exist without clear preference
+- Business logic or user experience decisions need to be made
+- Technical constraints or preferences are unclear
+- Trade-offs between different solutions need developer input
+- Security, performance, or architectural implications are significant
+- Integration details with existing systems are uncertain
+- Error handling strategies or edge case behavior is undefined
+- Architectural decisions would affect multiple components
+- Conflicting requirements or constraints are encountered
+- Features could impact existing user workflows
+- Assumptions about business logic or user behavior would be risky
+
+**Examples of Good AI Questions:**
+```
+"I see two ways to implement this authentication system: 
+1. Using JWT tokens with local storage
+2. Using session-based auth with secure cookies
+Which approach aligns better with your security requirements?"
+
+"The requirements mention 'fast response times' - do you have specific 
+performance targets in mind? (e.g., < 200ms for API calls)"
+
+"I found existing user management code in the auth/ directory. Should I 
+extend this existing system or create a new independent module?"
+
+"This feature could impact the existing payment flow. Should I implement 
+it as a separate service or integrate it into the current payment module?"
+
+"The user story mentions 'admin users can manage settings' - what specific 
+settings should they be able to modify, and are there any restrictions?"
+```
+
+**How AI Should Ask Questions:**
+- Be specific about what information is needed
+- Provide context about why the question matters
+- Offer multiple options when possible
+- Explain the implications of different choices
+- Ask one focused question at a time rather than overwhelming with multiple questions
 
 **"Generate progress report"** means:
 ```
@@ -287,7 +335,13 @@ AI can help with:
 
 **"Analyze [problem/feature]"** means:
 ```
-"Analyze this problem/request: [describe your feature/component]. Generate ai-dev-context/PROBLEM_ANALYSIS.md that includes:
+"Analyze this problem/request: [describe your feature/component]. Before proceeding, ask clarifying questions if:
+- The problem scope is unclear or too broad
+- Success criteria are not well-defined
+- Business context or user needs are missing
+- Technical constraints are not specified
+
+Then generate ai-dev-context/PROBLEM_ANALYSIS.md that includes:
 - Current state assessment
 - Problem statement
 - Success criteria
@@ -298,7 +352,8 @@ AI can help with:
 - Risks and assumptions for each solution
 - Alternative implementation patterns and architectural styles to consider
 - Hybrid approaches that combine elements from different solutions
-- Recommendation of preferred approach with rationale, noting why alternatives were considered but not selected"
+- Recommendation of preferred approach with rationale, noting why alternatives were considered but not selected
+- Any remaining questions that need developer input before moving to requirements phase"
 ```
 
 **"Explore codebase [area]"** means:
@@ -402,7 +457,15 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Define requirements"** means:
 ```
-"Based on selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md including:
+"Based on selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md. Before finalizing requirements, ask clarifying questions about:
+- Specific performance expectations or SLA requirements
+- Security and compliance requirements that may not be obvious
+- User experience expectations and workflow preferences
+- Integration requirements with existing systems
+- Data handling, storage, and privacy requirements
+- Error handling and edge case behavior expectations
+
+Then include in the requirements document:
 - Functional requirements specific to chosen solution
 - Non-functional requirements (performance, security, scalability)
 - Integration requirements aligned with selected approach
@@ -525,7 +588,15 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Design architecture [feature]"** means:
 ```
-"Design the architecture for [feature]. Create ai-dev-context/ARCHITECTURE.md including:
+"Design the architecture for [feature]. Before finalizing the design, ask clarifying questions about:
+- Scalability expectations and anticipated load patterns
+- Deployment environment preferences (cloud, on-premise, hybrid)
+- Technology stack constraints or organizational preferences
+- Integration requirements with existing services or databases
+- Security architecture requirements and compliance needs
+- Monitoring, logging, and observability expectations
+
+Then create ai-dev-context/ARCHITECTURE.md including:
 - Component breakdown
 - Data flow diagrams
 - Technology choices and rationale
@@ -633,7 +704,15 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Implement [component/feature]"** means:
 ```
-"Implement the [specific task/component] according to ai-dev-context/IMPLEMENTATION_PLAN.md.
+"Implement the [specific task/component] according to ai-dev-context/IMPLEMENTATION_PLAN.md. Before starting implementation, ask clarifying questions if:
+- Specific implementation details are ambiguous in the requirements
+- Multiple valid approaches exist without clear guidance
+- Integration points with existing code are unclear
+- Error handling strategies are not well-defined
+- User interface behavior or styling preferences are not specified
+- Configuration or environment-specific details are missing
+
+Then proceed with implementation:
 - Follow the architecture defined in ai-dev-context/ARCHITECTURE.md
 - Meet the requirements in ai-dev-context/REQUIREMENTS.md
 - Use the patterns from ai-dev-context/CODEBASE_EXPLORATION.md
@@ -1200,6 +1279,10 @@ AI can help by:
 10. Reading project state from documentation files
 11. Documenting critical technical decisions in files when requested
 12. Tracking outstanding issues and dependencies in documentation
+13. Asking clarifying questions when requirements or instructions are incomplete
+14. Seeking guidance on architectural choices and business logic decisions
+15. Requesting additional context when assumptions would be risky
+16. Proactively identifying areas where developer input is needed
 ```
 
 **AI's Session Resumption Support:**
@@ -1336,44 +1419,46 @@ Before marking any implementation task as complete:
 
 ### 🔧 Development Process Best Practices
 
-1. **Always reference previous work** - Start each session by reviewing relevant documents
-2. **Use specific commands** - Tell me exactly what to generate and why
-3. **Break complex tasks** - Use todo lists for multi-step implementations
-4. **Incremental delivery** - Aim for working functionality in each session
-5. **Progressive validation** - Test and validate work incrementally rather than at the end
-6. **Regular progress reports** - Use "Generate progress report" to track advancement
+- **Always reference previous work** - Start each session by reviewing relevant documents
+- **Use specific commands** - Tell me exactly what to generate and why
+- **Break complex tasks** - Use todo lists for multi-step implementations
+- **Incremental delivery** - Aim for working functionality in each session
+- **Progressive validation** - Test and validate work incrementally rather than at the end
+- **Regular progress reports** - Use "Generate progress report" to track advancement
+- **Expect AI questions** - AI should ask clarifying questions when requirements are unclear or incomplete
+- **Encourage AI guidance-seeking** - AI should request developer input for architectural decisions and trade-offs
 
 ### 🛡️ Quality Assurance Best Practices
 
-7. **Quality gate compliance** - Complete all Implementation Quality Gates before marking tasks as done
-8. **Rigorous testing protocol** - Never implement without comprehensive testing (unit, integration, regression)
-9. **Quality gate reviews** - Always review AI work against your requirements before proceeding
-10. **Validate against acceptance criteria** - Ensure all work meets documented requirements
+- **Quality gate compliance** - Complete all Implementation Quality Gates before marking tasks as done
+- **Rigorous testing protocol** - Never implement without comprehensive testing (unit, integration, regression)
+- **Quality gate reviews** - Always review AI work against your requirements before proceeding
+- **Validate against acceptance criteria** - Ensure all work meets documented requirements
 
 ### 📝 Task and Documentation Management
 
-11. **Todo list management** - Keep ai-dev-context/todo/current_todo_list.md synchronized with development progress and update after every task completion
-12. **Prioritize systematically** - Use todo list priority levels for task management
-13. **Decision documentation** - Record your decisions in ai-dev-context/DECISIONS.md with rationale for architectural choices
-14. **Documentation discipline** - Never complete a task without updating relevant tracking files
-15. **Cross-reference everything** - Link related documents and decisions for easy navigation
+- **Todo list management** - Keep ai-dev-context/todo/current_todo_list.md synchronized with development progress and update after every task completion
+- **Prioritize systematically** - Use todo list priority levels for task management
+- **Decision documentation** - Record your decisions in ai-dev-context/DECISIONS.md with rationale for architectural choices
+- **Documentation discipline** - Never complete a task without updating relevant tracking files
+- **Cross-reference everything** - Link related documents and decisions for easy navigation
 
 ### 🕐 Session Management Best Practices
 
-16. **Clear session boundaries** - Start and end sessions at logical breakpoints with clear goals
-17. **Time-boxed sessions** - Plan for 30-90 minute focused sessions with clear objectives
-18. **Strategic decision making** - Make architectural and business decisions yourself, let AI handle implementation
-19. **Session hygiene** - Follow the complete session end protocol to ensure clean handoffs
-20. **Know when to intervene** - Review AI work at phase transitions, make architectural decisions, approve major implementation approaches, validate against business requirements, and decide on trade-offs or compromises
-21. **Let AI work independently** - Allow AI to implement approved designs, write code following specifications, create documentation, execute systematic tasks, and update progress tracking
-22. **Match session length to task complexity** - Use 30-45 minutes for quick implementation tasks and documentation updates, 60-75 minutes for major component development and architecture design, and 90+ minutes for complex implementation and comprehensive testing
+- **Clear session boundaries** - Start and end sessions at logical breakpoints with clear goals
+- **Time-boxed sessions** - Plan for 30-90 minute focused sessions with clear objectives
+- **Strategic decision making** - Make architectural and business decisions yourself, let AI handle implementation
+- **Session hygiene** - Follow the complete session end protocol to ensure clean handoffs
+- **Know when to intervene** - Review AI work at phase transitions, make architectural decisions, approve major implementation approaches, validate against business requirements, and decide on trade-offs or compromises
+- **Let AI work independently** - Allow AI to implement approved designs, write code following specifications, create documentation, execute systematic tasks, and update progress tracking
+- **Match session length to task complexity** - Use 30-45 minutes for quick implementation tasks and documentation updates, 60-75 minutes for major component development and architecture design, and 90+ minutes for complex implementation and comprehensive testing
 
 ### 💾 Context Preservation Best Practices
 
-23. **Systematic status updates** - Update ai-dev-context/SESSION_STATUS.md after every major action and never end a session without updating it
-24. **Context window awareness** - Monitor conversation length and proactively archive context
-25. **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
-26. **Archive regularly** - Create progress archives at logical completion points
+- **Systematic status updates** - Update ai-dev-context/SESSION_STATUS.md after every major action and never end a session without updating it
+- **Context window awareness** - Monitor conversation length and proactively archive context
+- **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
+- **Archive regularly** - Create progress archives at logical completion points
 
 ## 🔧 Troubleshooting and Recovery Guide
 
