@@ -187,6 +187,8 @@ AI automatically handles:
 "Analyze [problem/feature]"          # → Creates PROBLEM_ANALYSIS.md
 "Explore codebase [area]"            # → Creates CODEBASE_EXPLORATION.md
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
+"Present solution options"           # → Creates SOLUTION_OPTIONS.md for decision
+"Select solution [approach]"         # → Documents chosen solution and rationale
 ```
 
 **Phase 2 - Requirements:**
@@ -258,6 +260,7 @@ project-root/
 │   ├── PROBLEM_ANALYSIS.md           # Problem statement and analysis (PROJECT CONTENT)
 │   ├── CODEBASE_EXPLORATION.md       # Existing code analysis (PROJECT CONTENT)
 │   ├── CONSTRAINTS.md                # Technical and business constraints (PROJECT CONTENT)
+│   ├── SOLUTION_OPTIONS.md           # Solution comparison for decision-making (PROJECT CONTENT)
 │   ├── REQUIREMENTS.md               # Functional requirements (PROJECT CONTENT)
 │   ├── ACCEPTANCE_CRITERIA.md        # Success criteria (PROJECT CONTENT)
 │   ├── USER_STORIES.md               # User-focused requirements (PROJECT CONTENT)
@@ -297,7 +300,7 @@ Track **how** the AI-assisted development is progressing:
 
 #### **Project Content Files** (About the Product)
 Document **what** is being built and how it should work:
-- **Discovery Phase**: `PROBLEM_ANALYSIS.md`, `CODEBASE_EXPLORATION.md`, `CONSTRAINTS.md`
+- **Discovery Phase**: `PROBLEM_ANALYSIS.md`, `CODEBASE_EXPLORATION.md`, `CONSTRAINTS.md`, `SOLUTION_OPTIONS.md`
 - **Requirements Phase**: `REQUIREMENTS.md`, `ACCEPTANCE_CRITERIA.md`, `USER_STORIES.md`, `TECHNICAL_SPEC.md`
 - **Architecture Phase**: `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `SEQUENCE_DIAGRAMS.md`, `TEST_STRATEGY.md`
 - **Implementation Phase**: `CODE_CHANGES.md`, `API_DOCUMENTATION.md`, `IMPLEMENTATION_NOTES.md`, `DEPLOYMENT_GUIDE.md`
@@ -319,6 +322,7 @@ Document **what** is being built and how it should work:
 - PROBLEM_ANALYSIS.md - Problem statement and analysis
 - CODEBASE_EXPLORATION.md - Existing code analysis
 - CONSTRAINTS.md - Technical and business constraints
+- SOLUTION_OPTIONS.md - Solution comparison for decision-making
 
 ### Phase 2: Requirements Definition
 - REQUIREMENTS.md - Functional requirements
@@ -468,20 +472,25 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 
 ## Phase 1: Discovery & Research
 
-**Goal**: Understand the problem, explore the codebase, and identify constraints.
+**Goal**: Understand the problem, explore the codebase, identify constraints, research multiple solution approaches, and select the optimal solution before proceeding to requirements.
+
+**⚠️ Critical Phase 1 Requirement**: This phase MUST include solution research, comparison, and user selection of the preferred approach before transitioning to Phase 2. No requirements can be defined without a chosen solution direction.
 
 ### Key Documentation to Generate
-- **ai-dev-context/PROBLEM_ANALYSIS.md** - Problem statement, current state analysis, stakeholder needs
+- **ai-dev-context/PROBLEM_ANALYSIS.md** - Problem statement, current state analysis, multiple solution approaches
 - **ai-dev-context/CODEBASE_EXPLORATION.md** - Existing architecture, relevant components, patterns
 - **ai-dev-context/CONSTRAINTS.md** - Technical limitations, dependencies, business rules
+- **ai-dev-context/SOLUTION_OPTIONS.md** - Comprehensive comparison of potential solutions for decision-making
 
 ### Primary Commands to Use
 
 **Use these SHORT commands when working with AI:**
 ```
-"Analyze [problem/feature]"          # → Creates PROBLEM_ANALYSIS.md
+"Analyze [problem/feature]"          # → Creates PROBLEM_ANALYSIS.md with solution options
 "Explore codebase [area]"            # → Creates CODEBASE_EXPLORATION.md
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
+"Present solution options"           # → Creates comparison summary for decision
+"Select solution [approach]"         # → Documents chosen approach and rationale
 "Start discovery session"            # → Begins discovery phase
 "End session"                        # → Ends current session
 ```
@@ -496,8 +505,12 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Current state assessment
 - Problem statement
 - Success criteria
-- Potential approaches
-- Risks and assumptions"
+- Multiple potential solution approaches with detailed comparison
+- Technology options with pros/cons analysis for each approach
+- Implementation complexity assessment for each solution
+- Resource and timeline implications for each approach
+- Risks and assumptions for each solution
+- Recommendation of preferred approach with rationale"
 ```
 
 **"Explore codebase [area]"** means:
@@ -519,15 +532,70 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Timeline/resource limitations"
 ```
 
+**"Present solution options"** means:
+```
+"If solution comparison in PROBLEM_ANALYSIS.md is too complex or lengthy, create a separate ai-dev-context/SOLUTION_OPTIONS.md with:
+- Executive summary of all viable approaches
+- Side-by-side comparison table of solutions
+- Technology stack implications for each option
+- Development effort estimates (time/complexity)
+- Pros and cons analysis with specific trade-offs
+- Risk assessment for each approach
+- Clear recommendation with rationale
+- Decision criteria framework for evaluation
+Note: Only create this separate document if solution comparison exceeds reasonable length for PROBLEM_ANALYSIS.md"
+```
+
+**"Select solution [approach]"** means:
+```
+"Document the chosen solution and prepare for requirements phase. Update ai-dev-context/DECISIONS.md with:
+- Selected approach with detailed description
+- Rationale for selection (why this over alternatives)
+- Rejected alternatives with reasons for dismissal
+- Key assumptions and dependencies for chosen solution
+- Success metrics and validation criteria
+- Next steps and transition to requirements phase
+- Update ai-dev-context/SESSION_STATUS.md with solution selection milestone"
+```
+
+**"Start discovery session"** means:
+```
+"Begin Phase 1 discovery work:
+- Load and review ai-dev-context/SESSION_STATUS.md for current state
+- Check ai-dev-context/todo/current_todo_list.md for active tasks
+- Initialize or resume discovery phase activities
+- Set session focus on research and solution exploration"
+```
+
+**"End session"** means:
+```
+"End current development session with full context preservation:
+- Update ai-dev-context/SESSION_STATUS.md with current progress
+- Archive conversation context if needed
+- Ensure all work is documented and recoverable
+- Prepare session for clean resumption"
+```
+
+### Solution Selection Commands
+
+**Essential commands for solution decision process:**
+```
+"Explain [solution name] approach"       # → Get detailed explanation of specific solution
+"Compare [solution A] vs [solution B]"   # → Direct comparison between two options
+"Recommend best solution"                # → AI recommendation with reasoning
+"Select solution [chosen approach]"      # → Document final decision and rationale
+"Validate solution choice"               # → Check chosen solution against constraints
+```
+
 **Session End Protocol:**
 ```
 "End discovery session:
-1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with final research status
-2. **Deliverable Validation**: Ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, and ai-dev-context/CONSTRAINTS.md are complete and meet quality standards
+1. **Status Update**: Update ai-dev-context/SESSION_STATUS.md with final research status and solution selection
+2. **Deliverable Validation**: Ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, ai-dev-context/CONSTRAINTS.md, and ai-dev-context/SOLUTION_OPTIONS.md (if created) are complete and solution has been selected and documented in ai-dev-context/DECISIONS.md
 3. **Todo Management**: Update ai-dev-context/todo/current_todo_list.md with completed research tasks and new discoveries
 4. **Decision Documentation**: Document any unresolved questions in ai-dev-context/ISSUES.md and key research decisions in ai-dev-context/DECISIONS.md
 5. **Context Preservation**: Archive current session files in ai-dev-context/archives/
-6. **Next Phase Preparation**: Summarize key findings in ai-dev-context/PROGRESS.md and prepare for requirements definition phase"
+6. **Next Phase Preparation**: Summarize key findings in ai-dev-context/PROGRESS.md and prepare for requirements definition phase with chosen solution"
 ```
 
 ## Phase 2: Requirements Definition
@@ -558,11 +626,12 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 
 **"Define requirements"** means:
 ```
-"Based on our research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md including:
-- Functional requirements
+"Based on our selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md including:
+- Functional requirements specific to chosen solution
 - Non-functional requirements (performance, security, scalability)
-- Integration requirements
-- Data requirements"
+- Integration requirements aligned with selected approach
+- Data requirements for the chosen technology stack
+- Solution-specific constraints and dependencies"
 ```
 
 **"Create acceptance criteria"** means:
@@ -586,6 +655,24 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Data models and schemas
 - Component interfaces
 - Error handling patterns"
+```
+
+**"Start requirements session"** means:
+```
+"Begin Phase 2 requirements work:
+- Load and review ai-dev-context/SESSION_STATUS.md for current state
+- Check ai-dev-context/DECISIONS.md for selected solution approach
+- Review ai-dev-context/todo/current_todo_list.md for active tasks
+- Initialize or resume requirements definition activities"
+```
+
+**"End session"** means:
+```
+"End current development session with full context preservation:
+- Update ai-dev-context/SESSION_STATUS.md with current progress
+- Archive conversation context if needed
+- Ensure all work is documented and recoverable
+- Prepare session for clean resumption"
 ```
 
 **Session End Protocol:**
@@ -652,6 +739,24 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Performance test requirements
 - Manual test cases
 - Automated test frameworks to use"
+```
+
+**"Start architecture session"** means:
+```
+"Begin Phase 3 architecture work:
+- Load and review ai-dev-context/SESSION_STATUS.md for current state
+- Check ai-dev-context/REQUIREMENTS.md for validated requirements
+- Review ai-dev-context/todo/current_todo_list.md for active tasks
+- Initialize or resume architecture and planning activities"
+```
+
+**"End session"** means:
+```
+"End current development session with full context preservation:
+- Update ai-dev-context/SESSION_STATUS.md with current progress
+- Archive conversation context if needed
+- Ensure all work is documented and recoverable
+- Prepare session for clean resumption"
 ```
 
 **Session End Protocol:**
@@ -771,6 +876,24 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Include testing and validation information"
 ```
 
+**"Start implementation session"** means:
+```
+"Begin Phase 4 implementation work:
+- Load and review ai-dev-context/SESSION_STATUS.md for current state
+- Check ai-dev-context/IMPLEMENTATION_PLAN.md for development roadmap
+- Review ai-dev-context/todo/current_todo_list.md for active tasks
+- Initialize or resume code development activities"
+```
+
+**"End session"** means:
+```
+"End current development session with full context preservation:
+- Update ai-dev-context/SESSION_STATUS.md with current progress
+- Archive conversation context if needed
+- Ensure all work is documented and recoverable
+- Prepare session for clean resumption"
+```
+
 **Session End Protocol:**
 ```
 "End implementation session:
@@ -832,6 +955,24 @@ The **`todo/`** directory contains task tracking files that AI automatically man
 - Bottleneck identification
 - Optimization recommendations
 - Scalability assessment"
+```
+
+**"Start validation session"** means:
+```
+"Begin Phase 5 validation work:
+- Load and review ai-dev-context/SESSION_STATUS.md for current state
+- Check ai-dev-context/TEST_STRATEGY.md for testing approach
+- Review ai-dev-context/todo/current_todo_list.md for active tasks
+- Initialize or resume validation and testing activities"
+```
+
+**"End session"** means:
+```
+"End current development session with full context preservation:
+- Update ai-dev-context/SESSION_STATUS.md with current progress
+- Archive conversation context if needed
+- Ensure all work is documented and recoverable
+- Prepare session for clean resumption"
 ```
 
 **Session End Protocol:**
@@ -1028,8 +1169,11 @@ Before marking any implementation task as complete:
 
 **Phase 1 → 2 (Discovery to Requirements):**
 - [ ] Problem clearly understood and documented in ai-dev-context/PROBLEM_ANALYSIS.md
+- [ ] Multiple solution approaches researched and documented with detailed comparison
 - [ ] Stakeholder needs identified and constraints documented in ai-dev-context/CONSTRAINTS.md
 - [ ] High-level feasibility assessed and codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
+- [ ] Solution options presented in ai-dev-context/SOLUTION_OPTIONS.md (if multiple viable approaches exist)
+- [ ] **CRITICAL**: Solution selected and documented in ai-dev-context/DECISIONS.md with clear rationale
 - [ ] All research deliverables complete and validated
 
 **Phase 2 → 3 (Requirements to Architecture):**
@@ -1781,6 +1925,8 @@ grep -r "search_term" ai-dev-context/
 "Analyze [problem/feature]"
 "Explore codebase [area]"
 "Identify constraints [feature]"
+"Present solution options"
+"Select solution [approach]"
 ```
 
 **Requirements Phase:**
@@ -1801,6 +1947,9 @@ grep -r "search_term" ai-dev-context/
 **Implementation Phase:**
 ```
 "Implement [component/feature]"
+"Test [component] implementation"
+"Validate [integration point]"
+"Check for regressions"
 "Review implementation [component]"
 "Update documentation [changes]"
 ```
@@ -1814,7 +1963,11 @@ grep -r "search_term" ai-dev-context/
 
 **Universal Session Commands:**
 ```
-"Start [phase] session"
+"Start discovery session"
+"Start requirements session"
+"Start architecture session"
+"Start implementation session"
+"Start validation session"
 "End session"
 "Generate progress report"
 ```
