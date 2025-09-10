@@ -1490,370 +1490,157 @@ You: "Analyze test failures" then "End session"
 
 ## Troubleshooting and Recovery Guide
 
-### Overview
+### 🚀 Quick Problem Solver
 
-Working with AI assistants introduces unique challenges that require specific troubleshooting approaches. This section provides systematic solutions for common issues encountered during AI-assisted software development.
+**Got a problem? Use these simple commands:**
 
-**🚀 QUICK START:** For immediate troubleshooting, use the SHORT commands like `"Emergency recovery"` or `"Check hallucinations"` - AI will execute the full protocols automatically. See the "Primary Commands to Use" section for the complete list.
+| Problem | Command | What It Does |
+|---------|---------|--------------|
+| **AI lost context** | `"Emergency recovery"` | Restores session from status files |
+| **AI giving wrong answers** | `"Check hallucinations"` | Validates AI suggestions against reality |
+| **AI won't stop being wrong** | `"Reset AI understanding"` | Fresh start with correct context |
+| **Code partially broken** | `"Handle implementation failure"` | Rolls back or fixes broken code |
+| **Documentation is messy** | `"Fix documentation corruption"` | Cleans up conflicting files |
+| **AI suggests conflicting things** | `"Resolve conflicts"` | Systematically picks best option |
+| **Session feels stuck** | `"Assess session restart"` | Decides whether to restart or continue |
+| **Everything is broken** | `"Critical failure protocol"` | Emergency procedures |
 
-### Quick Reference Guide
+### Common Problems & Solutions
 
-**Common Issues & SHORT Commands:**
-- **Context Loss**: Use `"Emergency recovery"` → Full automated recovery protocol
-- **AI Hallucination**: Use `"Check hallucinations"` → Automated detection and correction
-- **Poor AI Suggestions**: Use `"Reset AI understanding"` → Fix persistent poor suggestions
-- **Implementation Failures**: Use `"Handle implementation failure"` → Recover from partial failures
-- **Documentation Issues**: Use `"Fix documentation corruption"` → Resolve conflicting documentation
-- **Conflicting Suggestions**: Use `"Resolve conflicts"` → Systematic conflict resolution
-- **Session Stuck**: Use `"Assess session restart"` → Data-driven restart/continue decision
-- **Critical Failure**: Use `"Critical failure protocol"` → Emergency response procedures
+#### 🔄 Context Loss (AI forgets what we're doing)
 
-### Troubleshooting SHORT Command Examples
+**Signs:**
+- AI asks about things we already discussed
+- References old/wrong information
+- Gives generic responses
 
-**For Context Loss:**
-- `"Emergency recovery"` → AI automatically reads all status files and provides resumption guidance
-- `"Validate context"` → AI cross-references all documentation for consistency
-
-**For AI Issues:**
-- `"Check hallucinations"` → AI validates code against actual codebase and requirements
-- `"Reset AI understanding"` → AI fixes persistent poor suggestions with fresh context
-- `"Handle implementation failure"` → AI recovers from partial implementation problems
-- `"Fix documentation corruption"` → AI resolves conflicting documentation states
-- `"Resolve conflicts"` → AI systematically evaluates conflicting suggestions
-
-**For Session Management:**
-- `"Assess session restart"` → AI evaluates restart vs continue with data-driven recommendation
-- `"Critical failure protocol"` → AI executes emergency response with step-by-step guidance
-
-**For Prevention:**
-- `"Prevent issues"` → AI runs comprehensive validation across all development areas
-
-### AI Context Loss Scenarios and Recovery
-
-#### Common Context Loss Scenarios
-
-**Scenario 1: Session Interruption**
-- **Symptoms**: AI loses track of current task, references outdated information, forgets recent decisions
-- **Causes**: Long sessions, context window limits, system interruptions
-
-**Scenario 2: Context Window Overflow**
-- **Symptoms**: AI provides generic responses, repeats previous information, loses project-specific details
-- **Causes**: Extended conversations, complex multi-step tasks, large codebases
-
-**Scenario 3: State Synchronization Issues**
-- **Symptoms**: AI references incorrect file versions, outdated requirements, missing recent changes
-- **Causes**: Manual file edits, concurrent sessions, incomplete documentation updates
-
-#### Recovery Protocols
-
-**Immediate Recovery Protocol:**
+**Fix:**
 ```
-"Emergency recovery:
-1. Read ai-dev-context/SESSION_STATUS.md for current state
-2. Review ai-dev-context/PROGRESS.md for recent achievements
-3. Check ai-dev-context/ISSUES.md for outstanding problems
-4. Examine ai-dev-context/todo/current_todo_list.md for active tasks
-5. Verify codebase changes match documentation"
+"Emergency recovery"
 ```
+This command makes AI read all your status files and get back on track.
 
-**Context Reconstruction Steps:**
-1. **Document Current State** - Record what was being worked on before context loss
-2. **Validate Documentation** - Cross-reference ai-dev-context/ files for consistency
-3. **Resume with Context Summary** - Provide summary of completed work and next steps
+#### 🤖 AI Hallucinations (AI makes things up)
 
-### When to Restart vs Continue Sessions
+**Signs:**
+- Suggests code that doesn't exist
+- References functions/files that aren't there
+- Misunderstands your project completely
 
-#### Decision Framework
-
-🔴 **HIGH PRIORITY - Restart Required**
-- Context loss exceeds 50% of current session work
-- Critical project files corrupted or inconsistent
-- AI shows persistent misunderstanding of requirements
-- Session duration exceeds 120 minutes without logical breakpoints
-
-🟡 **MEDIUM PRIORITY - Consider Restart**
-- Multiple failed implementation attempts on same task
-- AI repeatedly suggests conflicting approaches
-- Documentation becomes significantly out of sync
-
-🟢 **LOW PRIORITY - Continue Session**
-- Minor context gaps easily recoverable
-- Single failed implementation easily corrected
-- AI understands requirements but suggests minor variations
-
-#### Session Transition Protocols
-
-**Clean Session Restart:**
+**Fix:**
 ```
-"Clean restart protocol:
-1. Archive current ai-dev-context/SESSION_STATUS.md
-2. Update ai-dev-context/PROGRESS.md with session summary
-3. Document lessons learned in ai-dev-context/ISSUES.md
-4. Create fresh ai-dev-context/SESSION_STATUS.md
-5. Load ai-dev-context/todo/current_todo_list.md for priority tasks"
+"Check hallucinations"
 ```
+This validates AI suggestions against your actual codebase.
 
-### Handling AI Hallucinations and Incorrect Implementations
+#### 🔧 Broken Implementation (Code doesn't work)
 
-#### Types of AI Issues
+**Signs:**
+- Tests failing after AI changes
+- Features partially working
+- Breaking existing functionality
 
-- **Code Hallucinations:** AI generates code that doesn't exist or references non-existent functions
-- **Logic Errors:** AI provides logically incorrect solutions or misunderstands requirements
-- **Context Misinterpretation:** AI misinterprets project context, technology stack, or constraints
-
-#### Detection and Correction Workflow
-
-**Pre-Implementation Validation:**
+**Fix:**
 ```
-"Validate AI suggestion before implementation:
-1. Cross-reference with ai-dev-context/REQUIREMENTS.md
-2. Check alignment with ai-dev-context/ARCHITECTURE.md
-3. Verify against existing codebase patterns
-4. Confirm technical constraints in ai-dev-context/CONSTRAINTS.md"
+"Handle implementation failure"
 ```
+This assesses damage and creates a recovery plan.
 
-**Post-Implementation Verification:**
+#### 📄 Documentation Problems (Files don't match)
+
+**Signs:**
+- ai-dev-context/ files contradict each other
+- Requirements don't match implementation
+- Status files are outdated
+
+**Fix:**
 ```
-"Verify implementation correctness:
-1. Run existing test suite
-2. Manual code review against requirements
-3. Check integration with existing components
-4. Validate against acceptance criteria"
+"Fix documentation corruption"
 ```
+This cleans up conflicting documentation.
 
-#### Prevention Strategies
+### When to Restart Your Session
 
-- **Context Grounding:** Always start tasks with explicit file references and use consistent terminology
-- **Progressive Validation:** Implement and test in small increments with frequent validation checkpoints
+**🔴 Restart Now:**
+- AI has lost >50% of session context
+- Session longer than 2 hours
+- AI persistently misunderstands requirements
+- Critical files corrupted
 
-### Dealing with Conflicting AI Suggestions
+**🟡 Consider Restarting:**
+- Multiple failed attempts on same task
+- AI keeps changing its mind
+- Documentation getting messy
 
-#### Types of Conflicts
+**🟢 Keep Going:**
+- Minor context gaps
+- Single failed attempt
+- AI understands but suggests variations
 
-- **Approach Conflicts:** Multiple valid but conflicting implementation approaches
-- **Technology Conflicts:** Suggested technologies conflict with existing stack or constraints
-- **Requirement Conflicts:** Suggestions don't align with documented requirements
+### Prevention Tips
 
-#### Conflict Resolution Framework
+**Before Starting:**
+- [ ] Update ai-dev-context/SESSION_STATUS.md
+- [ ] Check ai-dev-context/todo/current_todo_list.md
+- [ ] Verify requirements are clear
 
-**Conflict Assessment Matrix:**
+**During Work:**
+- [ ] Test frequently in small pieces
+- [ ] Update documentation after major changes
+- [ ] Use consistent terminology
 
-| Conflict Type | Assessment Criteria | Resolution Priority |
-|---------------|-------------------|-------------------|
-| **Approach** | Business impact, maintainability | High - Strategic |
-| **Technology** | Compatibility, learning curve | Medium - Technical |
-| **Requirements** | Specification compliance | Critical - Must resolve |
-
-**Resolution Workflow:**
-```
-"Resolve conflicting AI suggestions:
-1. Document all suggested approaches in ai-dev-context/ISSUES.md
-2. Evaluate each option against project constraints
-3. Assess trade-offs and implications
-4. Make explicit decision and document rationale
-5. Update ai-dev-context/DECISIONS.md with chosen approach"
-```
-
-### AI Performance and Quality Recovery
-
-#### **Persistent Poor Suggestions Recovery**
-**Symptoms:** AI repeatedly provides wrong approaches, misunderstands requirements, or suggests low-quality solutions
-
-**Recovery Protocol:**
-```
-"Reset AI understanding and approach:
-1. Stop current implementation attempts
-2. Reset AI context with explicit constraints from ai-dev-context/REQUIREMENTS.md
-3. Provide specific examples of correct vs incorrect approaches
-4. Break complex tasks into smaller, more specific subtasks
-5. If issues persist after 3 attempts, end session and restart with fresh context
-6. Document problematic patterns in ai-dev-context/ISSUES.md"
-```
-
-#### **Partial Implementation Failure Recovery**
-**Symptoms:** Feature partially implemented but breaks existing functionality or leaves critical gaps
-
-**Recovery Protocol:**
-```
-"Handle partial implementation failure:
-1. Immediately stop implementation and assess damage scope
-2. Run full regression test suite to identify all breaking changes
-3. Create rollback plan: revert code changes or fix forward
-4. Document failure patterns in ai-dev-context/ISSUES.md to prevent recurrence
-5. Break remaining work into smaller, testable increments
-6. Update ai-dev-context/CODE_CHANGES.md with recovery actions taken"
-```
-
-#### **Documentation Corruption Recovery**
-**Symptoms:** Conflicting information across ai-dev-context/ files, circular references, or sync issues between code and docs
-
-**Recovery Protocol:**
-```
-"Recover from documentation inconsistencies:
-1. Run documentation consistency check across all ai-dev-context/ files
-2. Identify source of truth (usually most recent validated document)
-3. Update conflicting files to match source of truth
-4. Add cross-references to prevent future inconsistencies
-5. Rebuild ai-dev-context/DOCUMENTATION_INDEX.md with current state
-6. Validate all file relationships and dependencies"
-```
+**Before Ending:**
+- [ ] Update session status
+- [ ] Mark completed tasks
+- [ ] Document any decisions made
 
 ### Emergency Procedures
 
-#### Critical Failure Response
-```
-"Critical failure protocol:
-1. Stop current work immediately
-2. Document failure symptoms in ai-dev-context/ISSUES.md
-3. Assess impact on project timeline
-4. Determine recovery strategy (restart vs continue)
-5. Implement chosen recovery approach
-6. Update ai-dev-context/PROGRESS.md with incident"
-```
+If everything goes wrong:
 
-### Troubleshooting SHORT Command Reference
+1. **Stop immediately** - Don't make it worse
+2. **Use `"Critical failure protocol"`** - Let AI guide recovery
+3. **Document what happened** - Learn from it
+4. **Start fresh if needed** - Sometimes it's faster
 
-**AI interprets the troubleshooting SHORT commands as detailed protocols:**
+### What Each Command Actually Does
 
-**"Emergency recovery"** means:
-```
-"Execute emergency context recovery:
-1. Read ai-dev-context/SESSION_STATUS.md for current state
-2. Review ai-dev-context/PROGRESS.md for recent achievements
-3. Check ai-dev-context/ISSUES.md for outstanding problems
-4. Examine ai-dev-context/todo/current_todo_list.md for active tasks
-5. Verify codebase changes match documentation
-6. Provide resumption instructions with next priority task"
-```
+**"Emergency recovery":**
+- Reads your status files
+- Figures out where you left off
+- Tells you what to do next
 
-**"Validate context"** means:
-```
-"Perform comprehensive context validation:
-1. Cross-reference all ai-dev-context/ files for consistency
-2. Verify code changes match implementation documentation
-3. Check requirement alignment across all phases
-4. Validate architectural decisions against constraints
-5. Report any inconsistencies found with correction recommendations"
-```
+**"Check hallucinations":**
+- Compares AI suggestions to your actual code
+- Fixes wrong references
+- Provides corrected implementation
 
-**"Check hallucinations"** means:
-```
-"Detect and correct AI hallucinations:
-1. Validate all code references against actual codebase
-2. Cross-reference implementation against ai-dev-context/REQUIREMENTS.md
-3. Verify API calls and function references exist
-4. Check suggested technologies against ai-dev-context/CONSTRAINTS.md
-5. Provide corrected implementation if hallucinations detected"
-```
+**"Reset AI understanding":**
+- Stops current work
+- Reloads correct context from files
+- Breaks tasks into smaller pieces
 
-**"Resolve conflicts"** means:
-```
-"Handle conflicting AI suggestions systematically:
-1. Document all conflicting approaches in ai-dev-context/ISSUES.md
-2. Evaluate each option against project constraints
-3. Assess trade-offs using conflict resolution matrix
-4. Recommend optimal approach with rationale
-5. Update ai-dev-context/DECISIONS.md with chosen solution"
-```
+**"Handle implementation failure":**
+- Stops implementation
+- Runs tests to find all problems
+- Creates plan to fix or rollback
 
-**"Assess session restart"** means:
-```
-"Evaluate restart vs continue decision:
-1. Assess current context loss percentage
-2. Evaluate session duration and logical breakpoints
-3. Check documentation synchronization status
-4. Review AI understanding of requirements
-5. Provide restart/continue recommendation with rationale"
-```
+**"Fix documentation corruption":**
+- Checks all ai-dev-context/ files
+- Finds conflicts and inconsistencies
+- Updates files to match reality
 
-**"Critical failure protocol"** means:
-```
-"Execute critical failure response:
-1. Immediately stop current work and document symptoms
-2. Assess timeline and project impact
-3. Determine optimal recovery strategy
-4. Implement chosen approach with step-by-step guidance
-5. Update ai-dev-context/PROGRESS.md with incident details"
-```
+**"Resolve conflicts":**
+- Lists all conflicting suggestions
+- Evaluates against your requirements
+- Picks the best option with reasoning
 
-**"Reset AI understanding"** means:
-```
-"Reset AI understanding and approach:
-1. Stop current implementation attempts
-2. Reset AI context with explicit constraints from ai-dev-context/REQUIREMENTS.md
-3. Provide specific examples of correct vs incorrect approaches
-4. Break complex tasks into smaller, more specific subtasks
-5. If issues persist after 3 attempts, end session and restart with fresh context
-6. Document problematic patterns in ai-dev-context/ISSUES.md"
-```
+**"Assess session restart":**
+- Measures how much context is lost
+- Checks documentation sync
+- Recommends restart or continue
 
-**"Handle implementation failure"** means:
-```
-"Handle partial implementation failure:
-1. Immediately stop implementation and assess damage scope
-2. Run full regression test suite to identify all breaking changes
-3. Create rollback plan: revert code changes or fix forward
-4. Document failure patterns in ai-dev-context/ISSUES.md to prevent recurrence
-5. Break remaining work into smaller, testable increments
-6. Update ai-dev-context/CODE_CHANGES.md with recovery actions taken"
-```
-
-**"Fix documentation corruption"** means:
-```
-"Recover from documentation inconsistencies:
-1. Run documentation consistency check across all ai-dev-context/ files
-2. Identify source of truth (usually most recent validated document)
-3. Update conflicting files to match source of truth
-4. Add cross-references to prevent future inconsistencies
-5. Rebuild ai-dev-context/DOCUMENTATION_INDEX.md with current state
-6. Validate all file relationships and dependencies"
-```
-
-**"Prevent issues"** means:
-```
-"Execute comprehensive prevention and validation:
-1. Run prevention checklist across all development areas
-2. Validate documentation completeness and consistency
-3. Check context synchronization status
-4. Assess recovery readiness across all ai-dev-context/ files
-5. Provide recommendations for improving development resilience"
-```
-
-### Quality Assurance for Troubleshooting
-
-#### Prevention Checklist
-- [ ] Regular context validation during sessions
-- [ ] Progressive implementation with frequent testing
-- [ ] Clear requirement documentation and validation
-- [ ] Consistent terminology and technical references
-- [ ] Regular progress updates and documentation sync
-
-#### Recovery Readiness Checklist
-- [ ] Current ai-dev-context/ files are up-to-date
-- [ ] Recent changes are committed to version control
-- [ ] Session status accurately reflects current work
-- [ ] Critical decisions are documented
-- [ ] Recovery procedures are practiced
-
-## Common Commands Reference
-
-**Documentation Generation:**
-- "Create [DOCUMENT_NAME.md] covering [specific topics]"
-- "Generate [type] documentation for [component]"
-- "Update [existing document] with [new information]"
-
-**Code Analysis:**
-- "Analyze [code/file/component] for [specific aspects]"
-- "Review [implementation] against [requirements/criteria]"
-- "Identify [issues/patterns] in [codebase area]"
-
-**Implementation:**
-- "Implement [feature/task] according to [plan/document]"
-- "Create [component] following [architecture/patterns]"
-- "Add [functionality] with [specific requirements]"
-
-**Testing & Validation:**
-- "Test [component/feature] against [criteria/document]"
-- "Validate [implementation] for [requirements]"
-- "Execute [test type] and report results"
-
+**"Critical failure protocol":**
+- Emergency stop procedures
+- Damage assessment
+- Step-by-step recovery guidance
