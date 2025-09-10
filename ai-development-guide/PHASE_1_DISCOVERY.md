@@ -21,7 +21,7 @@
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
 "Present solution options"           # → Creates comparison summary for requirements evaluation
 "Transition to Phase 2"              # → Complete Phase 1 quality gates and move to requirements phase
-"Start session"                      # → Begin work session within discovery phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -104,11 +104,13 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 
 **"Start session"** means:
 ```
-"Begin Phase 1 discovery work:
-- Load and review ai-dev-context/SESSION_STATUS.md for current state
-- Check ai-dev-context/todo/current_todo_list.md for active tasks
-- Initialize or resume discovery phase activities
-- Set session focus on research and solution exploration"
+"Resume development work (universal session resumption command):
+- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
+- Load appropriate PHASE_X file based on current phase from session status
+- Load ai-dev-context/todo/current_todo_list.md for active tasks
+- Review current phase deliverables and status
+- Show next priority task from todo list and begin work
+Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
 ```
 
 **"End session"** means:

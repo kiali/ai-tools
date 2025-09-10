@@ -41,7 +41,7 @@
 "Review implementation [component]"  # → Validates against requirements
 "Update documentation [changes]"     # → Updates API_DOCUMENTATION.md, etc.
 "Transition to Phase 5"              # → Complete Phase 4 quality gates and move to validation phase
-"Start session"                      # → Begin work session within implementation phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -117,11 +117,13 @@ Then proceed with implementation:
 
 **"Start session"** means:
 ```
-"Begin Phase 4 implementation work:
-- Load and review ai-dev-context/SESSION_STATUS.md for current state
-- Check ai-dev-context/IMPLEMENTATION_PLAN.md for development roadmap
-- Review ai-dev-context/todo/current_todo_list.md for active tasks
-- Initialize or resume code development activities"
+"Resume development work (universal session resumption command):
+- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
+- Load appropriate PHASE_X file based on current phase from session status
+- Load ai-dev-context/todo/current_todo_list.md for active tasks
+- Review current phase deliverables and status
+- Show next priority task from todo list and begin work
+Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
 ```
 
 **"End session"** means:

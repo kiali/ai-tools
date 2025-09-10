@@ -234,9 +234,9 @@ settings should they be able to modify, and are there any restrictions?"
 
 ### 🌐 Universal Session Commands
 ```
-"Restart session"            # Resume work automatically (AI reads SESSION_STATUS.md to determine phase)
-"End session"                # End current session with full context preservation
-"Generate progress report"   # Create comprehensive progress summary
+"Start session" / "Restart session"  # Resume work automatically (AI reads SESSION_STATUS.md to determine phase) - these are synonymous
+"End session"                        # End current session with full context preservation
+"Generate progress report"           # Create comprehensive progress summary
 ```
 
 ### 🎯 Phase-Specific SHORT Commands
@@ -248,7 +248,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
 "Present solution options"           # → Creates SOLUTION_OPTIONS.md for requirements evaluation
 "Transition to Phase 2"              # → Complete Phase 1 quality gates and move to requirements phase
-"Start session"                      # → Begin work session within discovery phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -261,7 +261,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Evaluate solution options"          # → Compares solutions against requirements
 "Select solution [approach]"         # → Documents chosen solution and rationale
 "Transition to Phase 3"              # → Complete Phase 2 quality gates and move to architecture phase
-"Start session"                      # → Begin work session within requirements phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -271,7 +271,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Create implementation plan"         # → Creates IMPLEMENTATION_PLAN.md
 "Develop test strategy"              # → Creates TEST_STRATEGY.md
 "Transition to Phase 4"              # → Complete Phase 3 quality gates and move to implementation phase
-"Start session"                      # → Begin work session within architecture phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -284,7 +284,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Review implementation [component]"  # → Validates against requirements
 "Update documentation [changes]"     # → Updates API_DOCUMENTATION.md, etc.
 "Transition to Phase 5"              # → Complete Phase 4 quality gates and move to validation phase
-"Start session"                      # → Begin work session within implementation phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -294,7 +294,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Analyze test failures"              # → Creates BUG_REPORT.md
 "Test performance [component]"       # → Creates PERFORMANCE_REPORT.md
 "Complete project"                   # → Complete Phase 5 quality gates and finalize project
-"Start session"                      # → Begin work session within validation phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 

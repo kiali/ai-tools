@@ -21,7 +21,7 @@
 "Evaluate solution options"          # → Compares solutions against requirements
 "Select solution [approach]"         # → Documents chosen solution and rationale
 "Transition to Phase 3"              # → Complete Phase 2 quality gates and move to architecture phase
-"Start session"                      # → Begin work session within requirements phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -102,11 +102,13 @@ Then include in the requirements document:
 
 **"Start session"** means:
 ```
-"Begin Phase 2 requirements work:
-- Load and review ai-dev-context/SESSION_STATUS.md for current state
-- Check ai-dev-context/DECISIONS.md for selected solution approach
-- Review ai-dev-context/todo/current_todo_list.md for active tasks
-- Initialize or resume requirements definition activities"
+"Resume development work (universal session resumption command):
+- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
+- Load appropriate PHASE_X file based on current phase from session status
+- Load ai-dev-context/todo/current_todo_list.md for active tasks
+- Review current phase deliverables and status
+- Show next priority task from todo list and begin work
+Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
 ```
 
 **"End session"** means:

@@ -19,7 +19,7 @@
 "Design sequence diagrams"           # → Creates SEQUENCE_DIAGRAMS.md
 "Develop test strategy"              # → Creates TEST_STRATEGY.md
 "Transition to Phase 4"              # → Complete Phase 3 quality gates and move to implementation phase
-"Start session"                      # → Begin work session within architecture phase
+"Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
 
@@ -77,12 +77,13 @@ Then create ai-dev-context/ARCHITECTURE.md including:
 
 **"Start session"** means:
 ```
-"Begin Phase 3 architecture work:
-- Load and review ai-dev-context/SESSION_STATUS.md for current state
-- Check ai-dev-context/REQUIREMENTS.md for validated requirements
-- Review ai-dev-context/DECISIONS.md for selected solution approach
-- Review ai-dev-context/todo/current_todo_list.md for active tasks
-- Initialize or resume architecture and planning activities based on chosen solution"
+"Resume development work (universal session resumption command):
+- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
+- Load appropriate PHASE_X file based on current phase from session status
+- Load ai-dev-context/todo/current_todo_list.md for active tasks
+- Review current phase deliverables and status
+- Show next priority task from todo list and begin work
+Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
 ```
 
 **"End session"** means:
