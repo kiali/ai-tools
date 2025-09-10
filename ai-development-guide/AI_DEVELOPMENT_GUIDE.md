@@ -1597,9 +1597,9 @@ Working with AI assistants introduces unique challenges that require specific tr
 
 #### Types of AI Issues
 
-**Code Hallucinations:** AI generates code that doesn't exist or references non-existent functions
-**Logic Errors:** AI provides logically incorrect solutions or misunderstands requirements
-**Context Misinterpretation:** AI misinterprets project context, technology stack, or constraints
+- **Code Hallucinations:** AI generates code that doesn't exist or references non-existent functions
+- **Logic Errors:** AI provides logically incorrect solutions or misunderstands requirements
+- **Context Misinterpretation:** AI misinterprets project context, technology stack, or constraints
 
 #### Detection and Correction Workflow
 
@@ -1623,16 +1623,16 @@ Working with AI assistants introduces unique challenges that require specific tr
 
 #### Prevention Strategies
 
-**Context Grounding:** Always start tasks with explicit file references and use consistent terminology
-**Progressive Validation:** Implement and test in small increments with frequent validation checkpoints
+- **Context Grounding:** Always start tasks with explicit file references and use consistent terminology
+- **Progressive Validation:** Implement and test in small increments with frequent validation checkpoints
 
 ### Dealing with Conflicting AI Suggestions
 
 #### Types of Conflicts
 
-**Approach Conflicts:** Multiple valid but conflicting implementation approaches
-**Technology Conflicts:** Suggested technologies conflict with existing stack or constraints
-**Requirement Conflicts:** Suggestions don't align with documented requirements
+- **Approach Conflicts:** Multiple valid but conflicting implementation approaches
+- **Technology Conflicts:** Suggested technologies conflict with existing stack or constraints
+- **Requirement Conflicts:** Suggestions don't align with documented requirements
 
 #### Conflict Resolution Framework
 
