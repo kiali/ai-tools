@@ -19,7 +19,6 @@ This guide provides a structured approach to working with AI coding assistants a
 - [Practical Example: User Authentication System](#practical-example-user-authentication-system)
 - [Best Practices](#best-practices)
 - [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide)
-- [Common Commands Reference](#common-commands-reference)
 
 ## Overview
 
