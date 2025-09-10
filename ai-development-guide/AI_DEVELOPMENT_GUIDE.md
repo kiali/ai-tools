@@ -4,20 +4,20 @@ This guide provides a structured approach to working with AI coding assistants a
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
+- [🎯 Overview](#-overview)
 - [🚀 Quick Start](#-quick-start)
-- [How to Use This Guide: User-AI Collaboration Model](#how-to-use-this-guide-user-ai-collaboration-model)
-- [Primary Commands to Use](#primary-commands-to-use)
-- [Phase 1: Discovery & Research](#phase-1-discovery--research)
-- [Phase 2: Requirements Definition](#phase-2-requirements-definition)
-- [Phase 3: Architecture & Planning](#phase-3-architecture--planning)
-- [Phase 4: Implementation](#phase-4-implementation)
-- [Phase 5: Validation & Refinement](#phase-5-validation--refinement)
-- [Central Documentation Hub](#central-documentation-hub)
-- [Context Management Across Sessions](#context-management-across-sessions)
-- [Unified Quality Assurance System](#unified-quality-assurance-system)
-- [Best Practices](#best-practices)
-- [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide)
+- [🤝 How to Use This Guide: User-AI Collaboration Model](#-how-to-use-this-guide-user-ai-collaboration-model)
+- [⚡ Primary Commands to Use](#-primary-commands-to-use)
+- [🔍 Phase 1: Discovery & Research](#-phase-1-discovery--research)
+- [📋 Phase 2: Requirements Definition](#-phase-2-requirements-definition)
+- [🏗️ Phase 3: Architecture & Planning](#️-phase-3-architecture--planning)
+- [💻 Phase 4: Implementation](#-phase-4-implementation)
+- [✅ Phase 5: Validation & Refinement](#-phase-5-validation--refinement)
+- [📁 Central Documentation Hub](#-central-documentation-hub)
+- [🔄 Context Management Across Sessions](#-context-management-across-sessions)
+- [🛡️ Unified Quality Assurance System](#️-unified-quality-assurance-system)
+- [💡 Best Practices](#-best-practices)
+- [🔧 Troubleshooting and Recovery Guide](#-troubleshooting-and-recovery-guide)
 
 ## 🎯 Overview
 
@@ -1364,9 +1364,9 @@ Before marking any implementation task as complete:
 25. **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
 26. **Archive regularly** - Create progress archives at logical completion points
 
-## Troubleshooting and Recovery Guide
+## 🔧 Troubleshooting and Recovery Guide
 
-### 🚀 Quick Problem Solver
+### 🔨 Quick Problem Solver
 
 **Got a problem? Use these simple commands:**
 
