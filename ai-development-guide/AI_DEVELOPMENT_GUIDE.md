@@ -16,7 +16,6 @@ This guide provides a structured approach to working with AI coding assistants a
 - [Phase 5: Validation & Refinement](#phase-5-validation--refinement)
 - [Context Management Across Sessions](#context-management-across-sessions)
 - [Unified Quality Assurance System](#unified-quality-assurance-system)
-- [Practical Example: User Authentication System](#practical-example-user-authentication-system)
 - [Best Practices](#best-practices)
 - [Troubleshooting and Recovery Guide](#troubleshooting-and-recovery-guide)
 
@@ -1364,89 +1363,6 @@ Before marking any implementation task as complete:
 
 **🚨 Need Help?** If experiencing issues during any phase, refer to the "Troubleshooting and Recovery Guide" section for specific problem resolution strategies.
 
-## Practical Example: User Authentication System
-
-### Real-World Session Flow
-
-**Session 1 (Discovery - 45 minutes):**
-```
-You: "Start discovery session"
-
-AI: Explores codebase, asks clarifying questions, creates ai-dev-context/PROBLEM_ANALYSIS.md
-AI: "Completed analysis. Ready to end session or continue?"
-
-You: "End session"
-AI: Updates ai-dev-context/SESSION_STATUS.md, creates archive
-```
-
-**Session 2 (Requirements - 60 minutes):**
-```
-You: "Start requirements session"
-
-AI: Reviews previous work, shows current status
-AI: Creates ai-dev-context/REQUIREMENTS.md, ai-dev-context/USER_STORIES.md, ai-dev-context/ACCEPTANCE_CRITERIA.md
-AI: "Requirements documented. Ready to end session here?"
-
-You: "End session"
-AI: Archives session, updates status for next phase
-```
-
-**Session 3 (Architecture - 75 minutes):**
-```
-You: "Start architecture session"
-
-AI: Validates requirements alignment, designs architecture
-AI: Creates ai-dev-context/ARCHITECTURE.md, ai-dev-context/IMPLEMENTATION_PLAN.md
-AI: "Architecture complete. Continue with implementation or end session?"
-
-You: "End session"
-```
-
-**Sessions 4-6 (Implementation - Multiple 60-minute sessions):**
-```
-You: "Start implementation session"
-
-AI: Shows current progress, implements components systematically
-AI: Updates code, tests, documentation after each component
-AI: "Component complete. Continue with next or end session?"
-
-You: "Implement [component]" or "End session"
-```
-
-**Session 7 (Validation - 90 minutes):**
-```
-You: "Start validation session"
-
-AI: Executes tests, validates against requirements, documents results
-AI: "Found issues. Ready to fix or end?"
-
-You: "Analyze test failures" then "End session"
-```
-
-### Session Decision-Making Guide
-
-**When You Should Intervene:**
-- Review AI work at phase transitions
-- Make architectural decisions
-- Approve major implementation approaches
-- Validate against business requirements
-- Decide on trade-offs or compromises
-
-**When AI Can Proceed Independently:**
-- Implement approved designs
-- Write code following specifications
-- Create documentation
-- Execute systematic tasks
-- Update progress tracking
-
-**Session Length Guidelines:**
-- **30-45 minutes**: Quick implementation tasks, documentation updates
-- **60-75 minutes**: Major component development, architecture design
-- **90+ minutes**: Complex implementation, comprehensive testing
-
-**See the "Unified Quality Assurance System" section for detailed quality gates and validation criteria.**
-
-
 ## Best Practices
 
 ### Development Process Best Practices
@@ -1479,13 +1395,16 @@ You: "Analyze test failures" then "End session"
 17. **Time-boxed sessions** - Plan for 30-90 minute focused sessions with clear objectives
 18. **Strategic decision making** - Make architectural and business decisions yourself, let AI handle implementation
 19. **Session hygiene** - Follow the complete session end protocol to ensure clean handoffs
+20. **Know when to intervene** - Review AI work at phase transitions, make architectural decisions, approve major implementation approaches, validate against business requirements, and decide on trade-offs or compromises
+21. **Let AI work independently** - Allow AI to implement approved designs, write code following specifications, create documentation, execute systematic tasks, and update progress tracking
+22. **Match session length to task complexity** - Use 30-45 minutes for quick implementation tasks and documentation updates, 60-75 minutes for major component development and architecture design, and 90+ minutes for complex implementation and comprehensive testing
 
 ### Context Preservation Best Practices
 
-20. **Systematic status updates** - Update ai-dev-context/SESSION_STATUS.md after every major action and never end a session without updating it
-21. **Context window awareness** - Monitor conversation length and proactively archive context
-22. **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
-23. **Archive regularly** - Create progress archives at logical completion points
+23. **Systematic status updates** - Update ai-dev-context/SESSION_STATUS.md after every major action and never end a session without updating it
+24. **Context window awareness** - Monitor conversation length and proactively archive context
+25. **Recovery-first mindset** - Always assume sessions will be interrupted and prepare accordingly
+26. **Archive regularly** - Create progress archives at logical completion points
 
 ## Troubleshooting and Recovery Guide
 
