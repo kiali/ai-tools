@@ -33,7 +33,7 @@ The development process is divided into 5 key phases:
 
 ### How to Start a New Project
 
-**What You Type:**
+**Command:**
 ```
 "Start new project: [describe what you want to build]"
 ```
@@ -42,33 +42,17 @@ The development process is divided into 5 key phases:
 - `"Start new project: Add user authentication system"`
 - `"Start new project: Build a product search feature"`
 - `"Start new project: Create admin dashboard"`
-- `"Start new project: Fix performance issues in checkout flow"`
 
-**What Happens Next:**
-The AI will automatically:
-1. Set up the ai-dev-context/ directory with all necessary files
-2. Analyze your existing codebase to understand the current system
-3. Ask clarifying questions about your requirements
-4. Create a structured plan with todo list
-5. Begin the discovery phase
+**What AI Does:**
+1. Sets up ai-dev-context/ directory structure
+2. Analyzes your codebase
+3. Asks clarifying questions
+4. Creates todo list and begins Phase 1 (Discovery)
 
-**Example:**
-
-**You:** `"Start new project: Add user authentication system"`
-
-**AI:**
-- "Project initialized! I've created the ai-dev-context/ structure."
-- "Analyzing your codebase to understand the current architecture..."
-- "Questions: Do you need login/signup, password reset, social auth, or role-based permissions?"
-- "I've created a todo list with the discovery phase tasks."
-
-That's it! The AI handles everything else and guides you through the structured development process described in this guide.
-
-**What Happens After You Start:**
-1. AI begins with Phase 1 (Discovery & Research) automatically
-2. You'll work through the 5-phase process using the SHORT commands described in each phase section
-3. AI manages all documentation, todo lists, and session transitions
-4. You simply follow the AI's guidance and provide input when asked
+**Your Role:**
+- Provide requirements and answer AI's questions
+- Use SHORT commands from each phase section
+- Review AI work at decision points
 
 ## How to Use This Guide: User-AI Collaboration Model
 
