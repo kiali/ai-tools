@@ -247,7 +247,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Explore codebase [area]"            # → Creates CODEBASE_EXPLORATION.md
 "Identify constraints [feature]"     # → Creates CONSTRAINTS.md
 "Present solution options"           # → Creates SOLUTION_OPTIONS.md for requirements evaluation
-"Transition to Phase 2"              # → Complete Phase 1 quality gates and move to requirements phase
+"Transition to Phase 2"              # → Complete Phase 1 quality gates and ASK USER for permission to move to requirements phase
 "Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
@@ -260,7 +260,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Design technical specs"             # → Creates TECHNICAL_SPEC.md
 "Evaluate solution options"          # → Compares solutions against requirements
 "Select solution [approach]"         # → Documents chosen solution and rationale
-"Transition to Phase 3"              # → Complete Phase 2 quality gates and move to architecture phase
+"Transition to Phase 3"              # → Complete Phase 2 quality gates and ASK USER for permission to move to architecture phase
 "Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
@@ -270,7 +270,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Design architecture [feature]"      # → Creates ARCHITECTURE.md
 "Create implementation plan"         # → Creates IMPLEMENTATION_PLAN.md
 "Develop test strategy"              # → Creates TEST_STRATEGY.md
-"Transition to Phase 4"              # → Complete Phase 3 quality gates and move to implementation phase
+"Transition to Phase 4"              # → Complete Phase 3 quality gates and ASK USER for permission to move to implementation phase
 "Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
@@ -283,7 +283,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Check for regressions"              # → Run existing tests to detect breaking changes
 "Review implementation [component]"  # → Validates against requirements
 "Update documentation [changes]"     # → Updates API_DOCUMENTATION.md, etc.
-"Transition to Phase 5"              # → Complete Phase 4 quality gates and move to validation phase
+"Transition to Phase 5"              # → Complete Phase 4 quality gates and ASK USER for permission to move to validation phase
 "Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
@@ -293,7 +293,7 @@ settings should they be able to modify, and are there any restrictions?"
 "Run tests [component]"              # → Executes tests, creates TEST_RESULTS.md
 "Analyze test failures"              # → Creates BUG_REPORT.md
 "Test performance [component]"       # → Creates PERFORMANCE_REPORT.md
-"Complete project"                   # → Complete Phase 5 quality gates and finalize project
+"Complete project"                   # → Complete Phase 5 quality gates and ASK USER for permission to finalize project
 "Start session"                      # → Resume work session (same as universal "Start session" command)
 "End session"                        # → Ends current session
 ```
@@ -371,6 +371,29 @@ settings should they be able to modify, and are there any restrictions?"
 7. **Success Validation**: Confirm all acceptance criteria and requirements are met
 8. **Status Update**: Mark project as complete in ai-dev-context/SESSION_STATUS.md"
 ```
+
+#### ⚠️ CRITICAL PHASE TRANSITION RULE
+
+**🚨 AI MUST NEVER AUTO-TRANSITION BETWEEN PHASES**
+- AI must **ALWAYS** ask for explicit permission before transitioning to any new phase
+- AI must **STOP and WAIT** for user confirmation before any phase transition
+- AI must present completed quality gates and ask: **"Should I transition to Phase X?"**
+- This rule applies to **ALL** phase transitions: 1→2, 2→3, 3→4, 4→5, and project completion
+- AI must **NEVER** assume user wants to move to next phase, even if all quality gates are met
+
+**Correct AI Behavior:**
+```
+✅ "Phase 4 implementation is complete. Should I transition to Phase 5 (Validation & Refinement)?"
+❌ "Phase 4 complete. Transitioning to Phase 5..." (WRONG - Never do this!)
+```
+
+**Exception**: Only "start session" and "end session" commands do not require phase transitions.
+
+**Why This Rule Exists:**
+- User may want to review work before proceeding
+- User may have additional requirements for current phase
+- User may want to end session at current phase
+- Maintains user control over development process
 
 ### Quality Assurance Commands
 ```
