@@ -2,7 +2,7 @@
 
 **Goal**: Design the solution architecture and create detailed implementation plan.
 
-**⚠️ Critical Phase 3 Requirement**: This phase MUST produce a complete architectural design and detailed implementation plan that serves as the roadmap for Phase 4.
+**🎯 Key Requirement**: Produce complete architectural design and implementation roadmap.
 
 ## Key Documentation to Generate
 - **ai-dev-context/ARCHITECTURE.md** - High-level design decisions and component relationships
@@ -29,15 +29,9 @@
 
 **"Design architecture [feature]"** means:
 ```
-"Design the architecture for [feature]. Before finalizing the design, ask clarifying questions about:
-- Scalability expectations and anticipated load patterns
-- Deployment environment preferences (cloud, on-premise, hybrid)
-- Technology stack constraints or organizational preferences
-- Integration requirements with existing services or databases
-- Security architecture requirements and compliance needs
-- Monitoring, logging, and observability expectations
+"Design the architecture for [feature]. Ask clarifying questions about scalability, deployment, technology constraints, and security requirements.
 
-Then create ai-dev-context/ARCHITECTURE.md including:
+Create ai-dev-context/ARCHITECTURE.md with:
 - Component breakdown
 - Data flow diagrams
 - Technology choices and rationale
@@ -47,12 +41,11 @@ Then create ai-dev-context/ARCHITECTURE.md including:
 
 **"Create implementation plan"** means:
 ```
-"Create ai-dev-context/IMPLEMENTATION_PLAN.md with a detailed development roadmap:
+"Create ai-dev-context/IMPLEMENTATION_PLAN.md with:
 - Task breakdown (use todo list tool)
 - Dependencies and prerequisites
-- Risk mitigation strategies
 - Timeline estimates
-- Success metrics"
+- Risk mitigation strategies"
 ```
 
 **"Design sequence diagrams"** means:
@@ -75,62 +68,38 @@ Then create ai-dev-context/ARCHITECTURE.md including:
 - Automated test frameworks to use"
 ```
 
-**"Start session"** means:
-```
-"Resume development work (universal session resumption command):
-- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
-- Load appropriate PHASE_X file based on current phase from session status
-- Load ai-dev-context/todo/current_todo_list.md for active tasks
-- Review current phase deliverables and status
-- Show next priority task from todo list and begin work
-Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
-```
+**"Start session"** → See main guide Session Management section
 
-**"End session"** means:
-```
-"End current development session with full context preservation:
-- Update ai-dev-context/SESSION_STATUS.md with current progress
-- Archive conversation context if needed
-- Ensure all work is documented and recoverable
-- Prepare session for clean resumption"
-```
+**"End session"** → See main guide Session Management section
 
 ## Session End Protocol
 
-**End architecture session:**
-```
-1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with architecture completion status using file tools
-2. **Deliverable Validation**: AI will ensure ai-dev-context/ARCHITECTURE.md, ai-dev-context/IMPLEMENTATION_PLAN.md, ai-dev-context/SEQUENCE_DIAGRAMS.md, and ai-dev-context/TEST_STRATEGY.md are complete and meet quality standards
-3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed architecture tasks and prepare detailed todo list for implementation phase
-4. **Decision Documentation**: AI will document key architectural decisions, technology choices, and design rationale in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: AI will create session summaries for ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with architecture achievements
-6. **Next Phase Preparation**: AI will validate architecture against requirements and prepare implementation roadmap
-```
+When ending a Phase 3 session:
+1. Update ai-dev-context/SESSION_STATUS.md with current progress
+2. Ensure architecture documents are complete
+3. Update ai-dev-context/todo/current_todo_list.md with implementation tasks
+4. Document architectural decisions in ai-dev-context/DECISIONS.md
 
 ## Phase 3 Quality Gates
 
-Before transitioning to Phase 4 (Implementation), ensure:
+Before transitioning to Phase 4, ensure:
 
-- [ ] Architecture decisions documented in ai-dev-context/ARCHITECTURE.md
-- [ ] Implementation plan created with detailed tasks in ai-dev-context/IMPLEMENTATION_PLAN.md
+- [ ] Architecture documented in ai-dev-context/ARCHITECTURE.md
+- [ ] Implementation plan created in ai-dev-context/IMPLEMENTATION_PLAN.md
 - [ ] Testing strategy defined in ai-dev-context/TEST_STRATEGY.md
 - [ ] Sequence diagrams completed in ai-dev-context/SEQUENCE_DIAGRAMS.md
-- [ ] All architecture deliverables complete and validated
-
-**🔑 Critical Success Factor**: Phase 3 must produce a complete architectural design and detailed implementation plan that serves as the roadmap for Phase 4.
 
 ## Transition to Phase 4
 
-When Phase 3 quality gates are met, AI should:
+When Phase 3 quality gates are met, AI should ask:
 ```
-"All Phase 3 quality gates have been completed:
-✅ Architecture decisions documented in ai-dev-context/ARCHITECTURE.md
-✅ Implementation plan created with detailed tasks in ai-dev-context/IMPLEMENTATION_PLAN.md
+"Phase 3 architecture & planning is complete. All quality gates met:
+✅ Architecture documented in ai-dev-context/ARCHITECTURE.md
+✅ Implementation plan created in ai-dev-context/IMPLEMENTATION_PLAN.md
 ✅ Testing strategy defined in ai-dev-context/TEST_STRATEGY.md
 ✅ Sequence diagrams completed in ai-dev-context/SEQUENCE_DIAGRAMS.md
-✅ All architecture deliverables complete and validated
 
-Phase 3 architecture & planning is complete. Should I transition to Phase 4 (Implementation)?"
+Should I transition to Phase 4 (Implementation)?"
 ```
 
-Only proceed with transition if developer confirms.
+**🔑 Key Rule**: Only proceed with developer permission.

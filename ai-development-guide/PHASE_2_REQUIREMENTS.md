@@ -1,8 +1,8 @@
 # Phase 2: Requirements Definition
 
-**Goal**: Create detailed, actionable requirements with acceptance criteria, then evaluate solution options against these requirements to select the optimal approach before proceeding to architecture.
+**Goal**: Create detailed requirements and select the optimal solution approach.
 
-**⚠️ Critical Phase 2 Requirement**: This phase MUST conclude with solution selection based on how well each researched approach meets the documented requirements. Phase transition to architecture cannot happen until the solution decision is made and documented.
+**🎯 Key Requirement**: Must conclude with solution selection based on requirements analysis.
 
 ## Key Documentation to Generate
 - **ai-dev-context/REQUIREMENTS.md** - Functional and non-functional requirements
@@ -31,20 +31,15 @@
 
 **"Define requirements"** means:
 ```
-"Based on selected solution from ai-dev-context/DECISIONS.md and research in ai-dev-context/PROBLEM_ANALYSIS.md, create detailed ai-dev-context/REQUIREMENTS.md. Before finalizing requirements, ask clarifying questions about:
-- Specific performance expectations or SLA requirements
-- Security and compliance requirements that may not be obvious
-- User experience expectations and workflow preferences
-- Integration requirements with existing systems
-- Data handling, storage, and privacy requirements
-- Error handling and edge case behavior expectations
+"Create ai-dev-context/REQUIREMENTS.md based on research in ai-dev-context/PROBLEM_ANALYSIS.md.
+Ask clarifying questions about performance, security, integration, and user experience expectations.
 
-Then include in the requirements document:
-- Functional requirements specific to chosen solution
+Include:
+- Functional requirements
 - Non-functional requirements (performance, security, scalability)
-- Integration requirements aligned with selected approach
-- Data requirements for the chosen technology stack
-- Solution-specific constraints and dependencies"
+- Integration requirements
+- Data requirements
+- Constraints and dependencies"
 ```
 
 **"Create acceptance criteria"** means:
@@ -78,47 +73,27 @@ Then include in the requirements document:
 
 **"Evaluate solution options"** means:
 ```
-"Evaluate the researched solution options from ai-dev-context/SOLUTION_OPTIONS.md against the documented requirements:
-- Compare each solution approach against functional requirements in ai-dev-context/REQUIREMENTS.md
-- Assess alignment with acceptance criteria in ai-dev-context/ACCEPTANCE_CRITERIA.md
-- Evaluate technical feasibility against constraints in ai-dev-context/CONSTRAINTS.md
-- Consider user story fulfillment from ai-dev-context/USER_STORIES.md
-- Document evaluation matrix showing how each solution meets requirements
-- Provide recommendation for optimal solution with detailed rationale"
+"Evaluate solution options from Phase 1 against documented requirements:
+- Compare each solution against ai-dev-context/REQUIREMENTS.md
+- Assess alignment with ai-dev-context/ACCEPTANCE_CRITERIA.md
+- Create evaluation matrix showing how each solution meets requirements
+- Provide recommendation with rationale"
 ```
 
 **"Select solution [approach]"** means:
 ```
-"Document the chosen solution and prepare for architecture phase. Update ai-dev-context/DECISIONS.md with:
-- Selected approach with detailed description
-- Rationale for selection based on requirements analysis
-- How chosen solution meets functional and non-functional requirements
-- Rejected alternatives with specific reasons based on requirements gaps
-- Key assumptions and dependencies for chosen solution
-- Success metrics and validation criteria
-- Next steps and transition to architecture phase
-- Update ai-dev-context/SESSION_STATUS.md with solution selection milestone"
+"Document the chosen solution in ai-dev-context/DECISIONS.md with:
+- Selected approach with description
+- Rationale based on requirements analysis
+- How solution meets requirements
+- Rejected alternatives and reasons
+- Key assumptions and dependencies
+- Update ai-dev-context/SESSION_STATUS.md with selection milestone"
 ```
 
-**"Start session"** means:
-```
-"Resume development work (universal session resumption command):
-- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
-- Load appropriate PHASE_X file based on current phase from session status
-- Load ai-dev-context/todo/current_todo_list.md for active tasks
-- Review current phase deliverables and status
-- Show next priority task from todo list and begin work
-Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
-```
+**"Start session"** → See main guide Session Management section
 
-**"End session"** means:
-```
-"End current development session with full context preservation:
-- Update ai-dev-context/SESSION_STATUS.md with current progress
-- Archive conversation context if needed
-- Ensure all work is documented and recoverable
-- Prepare session for clean resumption"
-```
+**"End session"** → See main guide Session Management section
 
 ## Solution Selection Commands
 
@@ -134,44 +109,35 @@ Note: This is the same command used across all phases - AI determines phase-spec
 
 ## Session End Protocol
 
-**End requirements session:**
-```
-1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with requirements completion status and solution selection using file tools
-2. **Deliverable Validation**: AI will ensure ai-dev-context/REQUIREMENTS.md, ai-dev-context/USER_STORIES.md, ai-dev-context/ACCEPTANCE_CRITERIA.md, and ai-dev-context/TECHNICAL_SPEC.md are complete and meet quality standards, and solution has been selected and documented in ai-dev-context/DECISIONS.md
-3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed requirements tasks and solution selection
-4. **Decision Documentation**: AI will document solution selection rationale and key requirement decisions in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: AI will create session summaries for ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with requirements achievements
-6. **Next Phase Preparation**: AI will prepare for architecture phase with validated requirements baseline and chosen solution approach
-```
+When ending a Phase 2 session:
+1. Update ai-dev-context/SESSION_STATUS.md with current progress
+2. Ensure requirements documents are complete
+3. Update ai-dev-context/todo/current_todo_list.md
+4. Document solution selection in ai-dev-context/DECISIONS.md
 
 ## Phase 2 Quality Gates
 
-Before transitioning to Phase 3 (Architecture), ensure:
+Before transitioning to Phase 3, ensure:
 
-- [ ] Requirements are specific and testable in ai-dev-context/REQUIREMENTS.md
+- [ ] Requirements documented in ai-dev-context/REQUIREMENTS.md
 - [ ] Acceptance criteria defined in ai-dev-context/ACCEPTANCE_CRITERIA.md
-- [ ] Technical specifications documented in ai-dev-context/TECHNICAL_SPEC.md
-- [ ] User stories complete and validated in ai-dev-context/USER_STORIES.md
-- [ ] **CRITICAL**: Solution options evaluated against requirements and optimal solution selected
-- [ ] Solution selection documented in ai-dev-context/DECISIONS.md with requirements-based rationale
-- [ ] Chosen solution aligns with all functional and non-functional requirements
-
-**🔑 Critical Success Factor**: Phase 2 must conclude with a clear solution selection based on requirements analysis. This prevents architecture phase from proceeding without a validated approach.
+- [ ] Technical specs documented in ai-dev-context/TECHNICAL_SPEC.md
+- [ ] User stories complete in ai-dev-context/USER_STORIES.md
+- [ ] **CRITICAL**: Solution selected and documented in ai-dev-context/DECISIONS.md
+- [ ] Chosen solution aligns with requirements
 
 ## Transition to Phase 3
 
-When Phase 2 quality gates are met, AI should:
+When Phase 2 quality gates are met, AI should ask:
 ```
-"All Phase 2 quality gates have been completed:
-✅ Requirements are specific and testable in ai-dev-context/REQUIREMENTS.md
+"Phase 2 requirements definition is complete. All quality gates met:
+✅ Requirements documented in ai-dev-context/REQUIREMENTS.md
 ✅ Acceptance criteria defined in ai-dev-context/ACCEPTANCE_CRITERIA.md
-✅ Technical specifications documented in ai-dev-context/TECHNICAL_SPEC.md
-✅ User stories complete and validated in ai-dev-context/USER_STORIES.md
-✅ Solution options evaluated against requirements and optimal solution selected
-✅ Solution selection documented in ai-dev-context/DECISIONS.md with requirements-based rationale
-✅ Chosen solution aligns with all functional and non-functional requirements
+✅ Technical specs documented in ai-dev-context/TECHNICAL_SPEC.md
+✅ User stories complete in ai-dev-context/USER_STORIES.md
+✅ Solution selected and documented in ai-dev-context/DECISIONS.md
 
-Phase 2 requirements definition is complete. Should I transition to Phase 3 (Architecture & Planning)?"
+Should I transition to Phase 3 (Architecture & Planning)?"
 ```
 
-Only proceed with transition if developer confirms.
+**🔑 Key Rule**: Only proceed with developer permission.

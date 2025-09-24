@@ -2,7 +2,7 @@
 
 **Goal**: Comprehensive testing, bug fixes, and final optimization.
 
-**⚠️ Critical Phase 5 Requirement**: This phase MUST produce a fully validated, production-ready implementation that meets all requirements and quality standards before project completion.
+**🎯 Key Requirement**: Produce a fully validated, production-ready implementation.
 
 ## Key Documentation to Generate
 - **ai-dev-context/TEST_RESULTS.md** - Test execution results and coverage reports
@@ -29,11 +29,11 @@
 
 **"Run tests [component]"** means:
 ```
-"Execute comprehensive testing according to ai-dev-context/TEST_STRATEGY.md:
+"Execute comprehensive testing for [component]:
 - Run unit tests and report coverage
-- Execute integration tests for [component]
-- Perform manual testing against ai-dev-context/ACCEPTANCE_CRITERIA.md
-- Document all test results in ai-dev-context/TEST_RESULTS.md"
+- Execute integration tests
+- Test against ai-dev-context/ACCEPTANCE_CRITERIA.md
+- Document results in ai-dev-context/TEST_RESULTS.md"
 ```
 
 **"Analyze test failures"** means:
@@ -49,9 +49,8 @@
 ```
 "Conduct performance testing for [component] and generate ai-dev-context/PERFORMANCE_REPORT.md:
 - Benchmark results vs requirements
-- Bottleneck identification
-- Optimization recommendations
-- Scalability assessment"
+- Identify bottlenecks
+- Recommend optimizations"
 ```
 
 **"Create release notes"** means:
@@ -64,37 +63,17 @@
 - Breaking changes and migration notes"
 ```
 
-**"Start session"** means:
-```
-"Resume development work (universal session resumption command):
-- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
-- Load appropriate PHASE_X file based on current phase from session status
-- Load ai-dev-context/todo/current_todo_list.md for active tasks
-- Review current phase deliverables and status
-- Show next priority task from todo list and begin work
-Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
-```
+**"Start session"** → See main guide Session Management section
 
-**"End session"** means:
-```
-"End current development session with full context preservation:
-- Update ai-dev-context/SESSION_STATUS.md with current progress
-- Archive conversation context if needed
-- Ensure all work is documented and recoverable
-- Prepare session for clean resumption"
-```
+**"End session"** → See main guide Session Management section
 
 ## Session End Protocol
 
-**End validation session:**
-```
-1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with validation progress using file tools
-2. **Deliverable Validation**: AI will ensure ai-dev-context/TEST_RESULTS.md, ai-dev-context/BUG_REPORT.md, ai-dev-context/PERFORMANCE_REPORT.md, and ai-dev-context/RELEASE_NOTES.md are complete and meet quality standards
-3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed validation tasks and remaining bug fixes
-4. **Decision Documentation**: AI will document validation decisions, bug fix priorities, and performance optimization choices in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: AI will create session summaries for ai-dev-context/archives/ and update ai-dev-context/PROGRESS.md with final validation status
-6. **Next Phase Preparation**: AI will prepare for production deployment or next iteration cycle based on validation results
-```
+When ending a Phase 5 session:
+1. Update ai-dev-context/SESSION_STATUS.md with validation progress
+2. Ensure validation documents are complete and current
+3. Update ai-dev-context/todo/current_todo_list.md with remaining tasks
+4. Document validation decisions in ai-dev-context/DECISIONS.md
 
 ## Phase 5 Quality Gates
 
@@ -105,21 +84,19 @@ Before marking project complete, ensure:
 - [ ] Bug fixes completed and documented in ai-dev-context/BUG_REPORT.md
 - [ ] Release notes created in ai-dev-context/RELEASE_NOTES.md
 - [ ] Documentation complete and deployment ready
-- [ ] All test results documented and issues resolved
-
-**🔑 Critical Success Factor**: Phase 5 must produce a fully validated, production-ready implementation that meets all requirements and quality standards.
 
 ## Project Completion
 
-When Phase 5 quality gates are met, AI should:
+When Phase 5 quality gates are met, AI should ask:
 ```
-"All Phase 5 quality gates have been completed:
+"Phase 5 validation & refinement is complete. All quality gates met:
 ✅ All acceptance criteria met and validated
 ✅ Performance requirements satisfied
+✅ Bug fixes completed and documented
+✅ Release notes created
 ✅ Documentation complete and deployment ready
-✅ All test results documented and issues resolved
 
-Phase 5 validation & refinement is complete. The project is now fully validated and production-ready. Should I complete the project?"
+The project is now fully validated and production-ready. Should I complete the project?"
 ```
 
-Only proceed with project completion if developer confirms.
+**🔑 Key Rule**: Only proceed with developer permission.

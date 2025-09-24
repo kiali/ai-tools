@@ -1,16 +1,14 @@
 # Phase 1: Discovery & Research
 
-**Goal**: Understand the problem, explore the codebase, identify constraints, and research multiple solution approaches to prepare for requirements definition.
+**Goal**: Understand the problem, explore the codebase, and research multiple solution approaches.
 
-**⚠️ Critical Phase 1 Requirement**: This phase MUST include solution research and comparison of potential approaches. Solution selection will occur after requirements are defined to ensure the chosen approach best meets the documented requirements.
-
-**🎯 Solution Discovery Strategy**: The most valuable Phase 1 outcomes emerge when multiple viable approaches are thoroughly explored and compared. Consider investigating different architectural patterns, technology stacks, implementation strategies, and integration approaches. This diversity of options provides the foundation for making optimal requirements-based decisions in Phase 2.
+**🎯 Key Requirement**: Research multiple solution approaches for evaluation in Phase 2.
 
 ## Key Documentation to Generate
-- **ai-dev-context/PROBLEM_ANALYSIS.md** - Problem statement, current state analysis, multiple solution approaches with detailed trade-off analysis
-- **ai-dev-context/CODEBASE_EXPLORATION.md** - Existing architecture, relevant components, patterns, and integration opportunities
-- **ai-dev-context/CONSTRAINTS.md** - Technical limitations, dependencies, business rules, and solution-shaping factors
-- **ai-dev-context/SOLUTION_OPTIONS.md** - Comprehensive comparison of potential solutions for requirements evaluation, including alternative approaches and hybrid solutions
+- **ai-dev-context/PROBLEM_ANALYSIS.md** - Problem statement and multiple solution approaches
+- **ai-dev-context/CODEBASE_EXPLORATION.md** - Existing architecture and integration opportunities
+- **ai-dev-context/CONSTRAINTS.md** - Technical limitations and business rules
+- **ai-dev-context/SOLUTION_OPTIONS.md** - Comparison of potential solutions (if needed)
 
 ## Primary Commands to Use
 
@@ -31,37 +29,25 @@
 
 **"Analyze [problem/feature]"** means:
 ```
-"Analyze this problem/request: [describe your feature/component]. Before proceeding, ask clarifying questions if:
-- The problem scope is unclear or too broad
-- Success criteria are not well-defined
-- Business context or user needs are missing
-- Technical constraints are not specified
+"Analyze this problem/request: [describe your feature/component].
+Ask clarifying questions if the problem scope, success criteria, or constraints are unclear.
 
-Then generate ai-dev-context/PROBLEM_ANALYSIS.md that includes:
+Generate ai-dev-context/PROBLEM_ANALYSIS.md with:
 - Current state assessment
-- Problem statement
-- Success criteria
-- Multiple potential solution approaches with detailed comparison (aim for 3 distinct approaches when feasible)
-- Technology options with pros/cons analysis for each approach
-- Implementation complexity assessment for each solution
-- Resource and timeline implications for each approach
-- Risks and assumptions for each solution
-- Alternative implementation patterns and architectural styles to consider
-- Hybrid approaches that combine elements from different solutions
-- Recommendation of preferred approach with rationale, noting why alternatives were considered but not selected
-- Any remaining questions that need developer input before moving to requirements phase"
+- Problem statement and success criteria
+- Multiple potential solution approaches (aim for 2-3 distinct approaches)
+- Technology options with pros/cons for each approach
+- Implementation complexity and resource implications
+- Recommendation with rationale"
 ```
 
 **"Explore codebase [area]"** means:
 ```
 "Explore the codebase for [specific functionality/area]. Create ai-dev-context/CODEBASE_EXPLORATION.md with:
 - Key files and their purposes
-- Existing patterns and architectures that could influence solution design
+- Existing patterns and architectures
 - Integration points and extension opportunities
-- Code quality assessment
-- Similar implementations or patterns already in use that could serve as templates
-- Areas where different solution approaches might fit naturally within the existing architecture
-- Potential integration challenges or opportunities that might favor certain solution approaches"
+- Code quality assessment"
 ```
 
 **"Identify constraints [feature]"** means:
@@ -76,20 +62,13 @@ Then generate ai-dev-context/PROBLEM_ANALYSIS.md that includes:
 
 **"Present solution options"** means:
 ```
-"If solution comparison in PROBLEM_ANALYSIS.md is too complex or lengthy, create a separate ai-dev-context/SOLUTION_OPTIONS.md with:
-- Executive summary of all viable approaches (consider both conventional and innovative options)
-- Side-by-side comparison table of solutions
-- Technology stack implications for each option
-- Development effort estimates (time/complexity)
-- Pros and cons analysis with specific trade-offs
-- Risk assessment for each approach
-- Scalability and maintainability considerations for each solution
-- Integration complexity with existing systems
-- Long-term implications and future flexibility of each approach
-- Scenarios where each solution would be optimal
+"Create ai-dev-context/SOLUTION_OPTIONS.md with:
+- Summary of all viable approaches
+- Side-by-side comparison table
+- Pros and cons for each option
+- Development effort estimates
 - Clear recommendation with rationale
-- Decision criteria framework for evaluation
-Note: Only create this separate document if solution comparison exceeds reasonable length for PROBLEM_ANALYSIS.md. When multiple solutions exist, ensure each is given fair consideration with detailed analysis."
+Note: Only create if solution comparison is too lengthy for PROBLEM_ANALYSIS.md"
 ```
 
 **"Transition to Phase 2"** means:
@@ -102,64 +81,39 @@ Note: Only create this separate document if solution comparison exceeds reasonab
 - Update session status and progress documentation"
 ```
 
-**"Start session"** means:
-```
-"Resume development work (universal session resumption command):
-- Read ai-dev-context/SESSION_STATUS.md to determine current phase and progress
-- Load appropriate PHASE_X file based on current phase from session status
-- Load ai-dev-context/todo/current_todo_list.md for active tasks
-- Review current phase deliverables and status
-- Show next priority task from todo list and begin work
-Note: This is the same command used across all phases - AI determines phase-specific actions based on SESSION_STATUS.md"
-```
+**"Start session"** → See main guide Session Management section
 
-**"End session"** means:
-```
-"End current development session with full context preservation:
-- Update ai-dev-context/SESSION_STATUS.md with current progress
-- Archive conversation context if needed
-- Ensure all work is documented and recoverable
-- Prepare session for clean resumption"
-```
+**"End session"** → See main guide Session Management section
 
 ## Session End Protocol
 
-**End discovery session:**
-```
-1. **Status Update**: AI will update ai-dev-context/SESSION_STATUS.md with final research status using file tools
-2. **Deliverable Validation**: AI will ensure ai-dev-context/PROBLEM_ANALYSIS.md, ai-dev-context/CODEBASE_EXPLORATION.md, ai-dev-context/CONSTRAINTS.md, and ai-dev-context/SOLUTION_OPTIONS.md (if created) are complete with comprehensive solution research
-3. **Todo Management**: AI will update ai-dev-context/todo/current_todo_list.md with completed research tasks and new discoveries
-4. **Decision Documentation**: AI will document any unresolved questions in ai-dev-context/ISSUES.md and key research decisions in ai-dev-context/DECISIONS.md
-5. **Context Preservation**: AI will help create session summaries for ai-dev-context/archives/ if requested
-6. **Next Phase Preparation**: AI will summarize key findings in ai-dev-context/PROGRESS.md and prepare for requirements definition phase with all researched solution options
-```
+When ending a Phase 1 session:
+1. Update ai-dev-context/SESSION_STATUS.md with current progress
+2. Ensure key deliverables are documented
+3. Update ai-dev-context/todo/current_todo_list.md
+4. Document unresolved questions in ai-dev-context/ISSUES.md
 
 ## Phase 1 Quality Gates
 
-Before transitioning to Phase 2 (Requirements), ensure:
+Before transitioning to Phase 2, ensure:
 
-- [ ] Problem clearly understood and documented in ai-dev-context/PROBLEM_ANALYSIS.md
-- [ ] Multiple solution approaches researched and documented with detailed comparison
-- [ ] Stakeholder needs identified and constraints documented in ai-dev-context/CONSTRAINTS.md
-- [ ] High-level feasibility assessed and codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
-- [ ] Solution options presented in ai-dev-context/SOLUTION_OPTIONS.md (if multiple viable approaches exist)
-- [ ] All research deliverables complete and validated for requirements definition
-
-**🔑 Critical Success Factor**: Phase 1 must produce multiple well-researched solution options. These will be evaluated against requirements in Phase 2 to select the optimal approach. Rushing to a single solution without proper exploration leads to suboptimal outcomes.
+- [ ] Problem documented in ai-dev-context/PROBLEM_ANALYSIS.md
+- [ ] Multiple solution approaches researched and compared
+- [ ] Constraints documented in ai-dev-context/CONSTRAINTS.md
+- [ ] Codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
+- [ ] Solution options ready for requirements evaluation
 
 ## Transition to Phase 2
 
-When Phase 1 quality gates are met, AI should:
+When Phase 1 quality gates are met, AI should ask:
 ```
-"All Phase 1 quality gates have been completed:
-✅ Problem clearly understood and documented in ai-dev-context/PROBLEM_ANALYSIS.md
-✅ Multiple solution approaches researched and documented with detailed comparison
-✅ Stakeholder needs identified and constraints documented in ai-dev-context/CONSTRAINTS.md
-✅ High-level feasibility assessed and codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
-✅ Solution options presented in ai-dev-context/SOLUTION_OPTIONS.md (if multiple viable approaches exist)
-✅ All research deliverables complete and validated for requirements definition
+"Phase 1 discovery is complete. All quality gates met:
+✅ Problem documented in ai-dev-context/PROBLEM_ANALYSIS.md
+✅ Multiple solution approaches researched
+✅ Constraints documented in ai-dev-context/CONSTRAINTS.md
+✅ Codebase explored in ai-dev-context/CODEBASE_EXPLORATION.md
 
-Phase 1 discovery is complete. Should I transition to Phase 2 (Requirements Definition)?"
+Should I transition to Phase 2 (Requirements Definition)?"
 ```
 
-Only proceed with transition if developer confirms.
+**🔑 Key Rule**: Only proceed with developer permission.
