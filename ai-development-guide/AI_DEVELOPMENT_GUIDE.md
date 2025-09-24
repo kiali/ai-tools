@@ -113,40 +113,47 @@ project-root/
 ```
 
 **Key Files**:
-- **SESSION_STATUS.md**: Current phase, priorities, and context
+- **SESSION_STATUS.md**: Current phase, next steps, and session context
+- **todo/current_todo_list.md**: Current phase tasks and transition requirements
 - **Phase-specific files**: Created as needed during each phase
-- **todo/current_todo_list.md**: Active tasks that persist across sessions
 
-**Task Management**: AI uses dual todo system:
-- **Built-in todo tool**: For within-session task tracking and progress
-- **File-based todos**: For cross-session persistence in ai-dev-context/todo/current_todo_list.md
+**Simple Session Continuity**: AI reads/writes 2 files for complete context restoration (ai-dev-context/SESSION_STATUS.md, ai-dev-context/todo/current_todo_list.md).
 
 ## 🔄 Session Management
 
 ### Starting a Session
 ```
-"Start session" → AI reads SESSION_STATUS.md → AI reads ai-dev-context/todo/current_todo_list.md → AI loads appropriate phase file → AI shows priorities and resumes todos
+"Start session" → AI reads SESSION_STATUS.md + todo/current_todo_list.md → AI asks permission to resume work
 ```
 
-**CRITICAL**: AI must always read ai-dev-context/SESSION_STATUS.md and ai-dev-context/todo/current_todo_list.md at session start to restore task context
+**CRITICAL**: AI must read ai-dev-context/SESSION_STATUS.md and ai-dev-context/todo/current_todo_list.md to restore the current phase and the remaining tasks to reach the next transition.
 
 ### During a Session
-- AI implements features and updates documentation
-- AI tracks progress using built-in todo system (within session)
-- AI asks clarifying questions when needed
-- AI requests permission for phase transitions
+- AI works on current phase tasks
+- AI asks permission before phase transitions
+- AI updates progress using built-in todo tool
 
 ### Ending a Session
 ```
 "End session" → AI updates SESSION_STATUS.md → AI writes ai-dev-context/todo/current_todo_list.md → AI provides next session instructions
 ```
 
-**CRITICAL**: AI must always update ai-dev-context/SESSION_STATUS.md and write current todo status to ai-dev-context/todo/current_todo_list.md before ending session for cross-session continuity
+**CRITICAL**: AI must update ai-dev-context/SESSION_STATUS.md and write ai-dev-context/todo/current_todo_list.md with appropriate information about the current phase and the remaining tasks to reach the next transition.
+**CRITICAL**: Never mark project "COMPLETED" unless Phase 5 is complete
 
 ### Session Guidelines
 - **Start sessions** when you have 30-90 minutes for focused work
 - **End sessions** at logical breakpoints or when needing strategic input
 - **Review work** at phase transitions and decision points
+
+### Simple Session End Template
+AI must write to todo/current_todo_list.md:
+```
+## Current Phase: [1/2/3/4/5]
+## Phase Status: [In Progress/Ready for Next Phase]
+## Remaining Tasks: [List key tasks]
+## Next Transition: [What needs to happen to move to next phase]
+```
 
 
 ## 🛡️ Quality Assurance

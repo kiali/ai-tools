@@ -144,3 +144,5 @@ Should I transition to Phase 5 (Validation & Refinement)?"
 ```
 
 **🔑 Key Rule**: Only proceed with developer permission.
+
+**⚠️ COMMON MISTAKE**: Do NOT mark project as "COMPLETED" when Phase 4 is done. Phase 4 completion means ready for Phase 5 (Validation & Refinement), not project completion.
