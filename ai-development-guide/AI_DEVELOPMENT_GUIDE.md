@@ -115,25 +115,33 @@ project-root/
 **Key Files**:
 - **SESSION_STATUS.md**: Current phase, priorities, and context
 - **Phase-specific files**: Created as needed during each phase
-- **Todo files**: Task tracking and management
+- **todo/current_todo_list.md**: Active tasks that persist across sessions
+
+**Task Management**: AI uses dual todo system:
+- **Built-in todo tool**: For within-session task tracking and progress
+- **File-based todos**: For cross-session persistence in ai-dev-context/todo/current_todo_list.md
 
 ## 🔄 Session Management
 
 ### Starting a Session
 ```
-"Start session" → AI reads SESSION_STATUS.md → AI loads appropriate phase file → AI shows priorities
+"Start session" → AI reads SESSION_STATUS.md → AI reads ai-dev-context/todo/current_todo_list.md → AI loads appropriate phase file → AI shows priorities and resumes todos
 ```
+
+**CRITICAL**: AI must always read ai-dev-context/SESSION_STATUS.md and ai-dev-context/todo/current_todo_list.md at session start to restore task context
 
 ### During a Session
 - AI implements features and updates documentation
-- AI tracks progress in todo lists
+- AI tracks progress using built-in todo system (within session)
 - AI asks clarifying questions when needed
 - AI requests permission for phase transitions
 
 ### Ending a Session
 ```
-"End session" → AI updates SESSION_STATUS.md → AI updates todo lists → AI provides next session instructions
+"End session" → AI updates SESSION_STATUS.md → AI writes ai-dev-context/todo/current_todo_list.md → AI provides next session instructions
 ```
+
+**CRITICAL**: AI must always update ai-dev-context/SESSION_STATUS.md and write current todo status to ai-dev-context/todo/current_todo_list.md before ending session for cross-session continuity
 
 ### Session Guidelines
 - **Start sessions** when you have 30-90 minutes for focused work
