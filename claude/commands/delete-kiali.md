@@ -1,0 +1,35 @@
+---
+description: Delete Kiali, Bookinfo, and Istio from Minikube
+---
+
+Execute the following steps to clean up Kiali environment from Minikube:
+
+1. Stop any running Kiali processes (run-kiali.sh):
+   ```bash
+   pkill -f run-kiali.sh
+   ```
+
+2. Delete the Bookinfo demo:
+   ```bash
+   kubectl delete -f $(ls -t kiali/_output/istio-*/samples/addons/extras/zipkin.yaml | head -1) 2>/dev/null || true
+   kubectl delete namespace bookinfo 2>/dev/null || true
+   ```
+
+3. Delete Kiali:
+   ```bash
+   kubectl delete -f $(ls -t kiali/_output/istio-*/samples/addons/kiali.yaml | head -1) 2>/dev/null || true
+   ```
+
+4. Uninstall Istio:
+   ```bash
+   ISTIOCTL=$(ls -t kiali/_output/istio-*/bin/istioctl | head -1)
+   $ISTIOCTL uninstall --purge -y
+   kubectl delete namespace istio-system
+   ```
+
+5. (Optional) Delete Minikube cluster entirely:
+   ```bash
+   minikube delete
+   ```
+
+Note: These commands assume you run them from the parent directory where the `kiali` repository is located.
