@@ -1,10 +1,53 @@
 # Claude Code Commands for Kiali Development
 
-This directory contains custom slash commands for Claude Code to streamline Kiali development workflows with Minikube, Istio, and the Bookinfo demo application.
+This directory contains a collection of custom slash commands for Claude Code to streamline Kiali development workflows with Minikube, Istio, and the Bookinfo demo application.
 
 ## Installation
 
-These commands are project-scoped and automatically available when you open Claude Code in this repository.
+To use these commands in Claude Code, you need to link them to the `.claude/commands/` directory in the parent directory of your Kiali repositories.
+
+### Quick Install (Recommended - Using Symlink)
+
+From the `kiali_sources` directory, run:
+
+```bash
+# Create the .claude directory if it doesn't exist
+mkdir -p .claude
+
+# Create a symbolic link to the commands directory
+ln -sf "$(pwd)/ai-tools/claude/commands" .claude/commands
+
+# Verify installation
+ls -la .claude/commands/
+```
+
+Using a symlink means any updates to `ai-tools/claude/commands/` will be automatically reflected in Claude Code without needing to copy files.
+
+### Alternative Install (Copy Files)
+
+If you prefer to copy the files instead of using a symlink:
+
+```bash
+# Create the .claude/commands directory
+mkdir -p .claude/commands
+
+# Copy the commands
+cp ai-tools/claude/commands/*.md .claude/commands/
+
+# Verify installation
+ls -la .claude/commands/
+```
+
+**Note:** With this method, you'll need to manually copy files again whenever the commands in `ai-tools/claude/commands/` are updated.
+
+### Verify Installation
+
+After installation, the commands will be available as slash commands in Claude Code:
+- `/start-kiali`
+- `/start-kiali-ambient`
+- `/delete-kiali`
+
+**Important:** The `.claude` directory is in your personal workspace and won't be committed to git. The `ai-tools/claude` directory is the source of truth and is version-controlled.
 
 ### Prerequisites
 
@@ -143,19 +186,25 @@ minikube delete
 
 ### Modifying Commands
 
-The command definitions are located in `ai-tools/.claude/commands/`:
+The command reference files are located in `ai-tools/claude/commands/`:
 - `start-kiali.md` - Standard Istio setup
 - `start-kiali-ambient.md` - Ambient mode setup
 - `delete-kiali.md` - Cleanup procedure
 
-You can edit these files to customize the behavior of each command.
+To customize a command:
+1. Edit the file in `ai-tools/claude/commands/` (this is the source of truth)
+2. Copy the modified file to `.claude/commands/` to activate the changes
+3. Restart Claude Code or reload the commands
 
 ### Adding New Commands
 
-1. Create a new `.md` file in `ai-tools/.claude/commands/`
+To add a new command:
+
+1. Create a new `.md` file in `ai-tools/claude/commands/`
 2. Name it with your command (e.g., `my-command.md`)
-3. Write the command description and instructions
-4. The command will be available as `/my-command` in Claude Code
+3. Write the command description and instructions (see example below)
+4. Copy it to `.claude/commands/` to make it available
+5. The command will be available as `/my-command` in Claude Code
 
 **Example command structure:**
 ```markdown
