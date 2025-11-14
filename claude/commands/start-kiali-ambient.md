@@ -26,6 +26,5 @@ Execute the following steps to start Kiali in Minikube with Istio Ambient mode:
    cd kiali/hack && ./run-kiali.sh -pg 13000:3000 -pp 19090:9090 -app 8080 -es false -iu http://127.0.0.1:15014 -ke ~/go/bin/kiali_core -hkc current -cn Kubernetes
    ```
 
-After executing these steps, Kiali should be accessible at http://localhost:13000
 
 Note: These commands assume you run them from the parent directory where the `kiali` repository is located.
