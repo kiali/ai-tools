@@ -46,6 +46,7 @@ After installation, the commands will be available as slash commands in Claude C
 - `/start-kiali`
 - `/start-kiali-ambient`
 - `/delete-kiali`
+- `/check-syntax`
 
 **Important:** The `.claude` directory is in your personal workspace and won't be committed to git. The `ai-tools/claude` directory is the source of truth and is version-controlled.
 
@@ -150,6 +151,61 @@ minikube delete
 
 ---
 
+### `/check-syntax`
+
+Validates syntax and content quality of uncommitted files in the kiali.io documentation repository.
+
+**What it does:**
+1. Automatically locates the kiali.io repository (checks common parent directories)
+2. Analyzes all uncommitted changes using `git diff`
+3. Performs comprehensive syntax validation based on file type:
+   - **Markdown files**: Checks for unclosed code blocks, Hugo shortcodes, front matter, malformed links, and spelling/grammar errors
+   - **TOML files**: Validates TOML syntax structure
+   - **JSON files**: Validates JSON syntax
+   - **HTML/Template files**: Checks for unclosed HTML tags and Go template syntax
+4. Presents each issue with:
+   - File name and line number
+   - Issue type (e.g., "Spelling error", "Unclosed code block")
+   - Current problematic text
+   - **Suggested:** corrected version
+5. Asks if you want to apply the suggested fixes
+6. Automatically applies all corrections if approved
+
+**Usage:**
+```
+/check-syntax
+```
+
+**Example output:**
+```
+## Syntax Validation Report
+
+**File:** content/en/docs/Configuration/perses.md
+
+### Issues Found:
+
+#### Issue 1
+- **Line:** 80
+- **Type:** Spelling error
+- **Current:** "you must follow te perses staeps"
+- **Suggested:** "you must follow the Perses steps"
+
+### Summary:
+- Total files checked: 1
+- Total issues found: 1
+- Status: ✗ Issues found
+
+Do you want to apply the suggested fixes automatically?
+```
+
+**Prerequisites:**
+- The kiali.io repository should be in a parent directory (`../kiali.io` or `../../kiali.io`)
+- Git repository with uncommitted changes to validate
+
+**Note:** This command focuses on both syntax validation and content quality (spelling/grammar) to ensure documentation is error-free before committing.
+
+---
+
 ## Typical Workflow
 
 ### Standard Development (with sidecars)
@@ -180,6 +236,18 @@ minikube delete
 /delete-kiali
 ```
 
+### Documentation Validation
+
+```bash
+# 1. Make changes to kiali.io documentation
+# 2. Before committing, validate syntax and content
+/check-syntax
+
+# 3. Review the issues found
+# 4. Accept the suggested fixes (or fix manually)
+# 5. Commit your changes
+```
+
 ---
 
 ## Customization
@@ -190,6 +258,7 @@ The command reference files are located in `ai-tools/claude/commands/`:
 - `start-kiali.md` - Standard Istio setup
 - `start-kiali-ambient.md` - Ambient mode setup
 - `delete-kiali.md` - Cleanup procedure
+- `check-syntax.md` - Syntax validation for kiali.io documentation
 
 To customize a command:
 1. Edit the file in `ai-tools/claude/commands/` (this is the source of truth)
@@ -283,4 +352,4 @@ When adding or modifying commands:
 
 ---
 
-**Last Updated:** November 2025
+**Last Updated:** November 14, 2025
