@@ -1,0 +1,377 @@
+---
+description: Workflow for reviewing GitHub PRs and code changes across multiple repositories
+globs:
+alwaysApply: false
+---
+
+# Code Review Workflow
+
+When asked to review a PR or set of code changes, follow this workflow.
+
+## Phase Transitions
+
+Transitions between phases should be automatic where possible:
+
+| Transition | Behavior |
+|------------|----------|
+| **Phase 1 → Phase 2** | **Wait for user confirmation.** After listing discovered files, ask "Ready to proceed with analysis?" and wait for user to confirm before analyzing. |
+| **Phase 2 → Phase 3** | **Automatic.** After completing analysis, immediately write the report to a file without asking. |
+| **Phase 3 → Phase 4** | **Automatic.** After writing the report, immediately perform self-validation to verify all issues. |
+| **Phase 4 → Phase 5** | **Automatic.** After self-validation, present the validated report to the user, highlighting any issues marked as "likely invalid" for their review. |
+| **Phase 5 → Phase 6** | **Wait for user request.** Only create the GitHub PR review when the user explicitly asks (e.g., "create the PR review", "add comments to the PR"). |
+
+## Phase 1: Discovery
+
+Before analyzing code, first understand the scope. A single GitHub issue may have multiple PRs across different repositories.
+
+1. **Identify the feature/issue** - Ask the user for:
+   - The GitHub issue number
+   - All associated PR numbers and their repositories (e.g., "PR #123 in kiali/kiali, PR #456 in kiali/kiali-operator")
+
+2. **Ask about local checkout** - Ask the user:
+   > "Is the PR code checked out locally in your git repositories? If so, please provide the local paths to each repo. Reading local files is faster and more reliable than fetching from GitHub."
+
+   Based on their answer:
+   - **If locally checked out**: Use the local paths provided to read files directly. This is preferred.
+   - **If not locally checked out**: Use `gh` CLI to fetch file contents from GitHub.
+
+3. **Locate all related code across all repos** - For each repository/PR:
+   - **Local checkout (preferred)**: Read the local git repo files directly
+   - **Remote only**: Use `gh pr view <number> --repo <owner/repo> --json files` to list changed files, then fetch contents via GitHub API
+   - Track which files belong to which repo/PR
+
+4. **Organize by component** - Group discovered files by component:
+   - Server backend (e.g., Go code in `kiali/`)
+   - Server frontend (e.g., TypeScript/React in `kiali/frontend/`)
+   - Operator (e.g., Ansible/Go in `kiali-operator/`)
+   - Helm charts (e.g., templates in `helm-charts/`)
+   - Other components as needed
+
+5. **Confirm with user** - Present the organized list of files per component/repo and confirm you have located all relevant code
+
+6. **Do NOT analyze yet** - Wait for user confirmation before starting analysis
+
+## Phase 2: Detailed Analysis
+
+### Before Analyzing: Read and Understand the Code
+
+1. **Read all new/modified files** - Read every file discovered in Phase 1 to fully understand the new code
+2. **Read surrounding context** - For modified files, also read related code (callers, callees, related types) to understand how the new code integrates
+3. **For large PRs (50+ files)** - Prioritize reading in this order:
+   - Core logic files (new features, business logic)
+   - Configuration and type definitions
+   - API handlers and routes
+   - Tests
+   - Documentation
+4. **Track file paths precisely** - Always use paths that uniquely identify the file (e.g., `config/config.go` not `config.go`, `ai/store.go` not `store.go`)
+5. **Note line numbers** - When you identify code of interest, note the file path AND line numbers for later reference
+
+### Cross-Component Analysis
+
+When reviewing multi-repo changes, specifically look for mismatches between components:
+
+- **CRD Schema vs Go Config** - Ensure CRD fields match Go struct fields (names, types, defaults)
+- **Helm values.yaml vs Go Config** - Ensure Helm default values align with Go defaults
+- **Operator templates vs Helm templates** - Ensure operator-generated resources match Helm-generated resources
+- **Frontend types vs Backend types** - Ensure TypeScript interfaces match Go API response structures
+- **CRD Sync** - If CRD schema changed, verify sync was performed to all locations (manifests, docs, etc.)
+
+Report cross-component issues in the component where the fix should be made, noting the related component.
+
+### Analysis Categories
+
+Perform a thorough analysis looking for three categories of issues:
+
+### 2.1 Bugs
+
+Look for bugs in these categories (not limited to these - find any bugs you can):
+
+**Logic & Control Flow**
+- Incorrect conditional logic
+- Off-by-one errors
+- Infinite loops or missing loop termination
+- Unreachable code paths
+
+**Error Handling**
+- Missing error handling
+- Errors logged but not propagated
+- Silent failures
+
+**Concurrency**
+- Race conditions
+- Deadlocks
+- Improper synchronization
+
+**Resource Management**
+- Memory leaks
+- Unclosed resources (files, connections, channels)
+- Resource exhaustion
+
+**Data Integrity**
+- Null/nil pointer dereferences
+- Type mismatches
+- Data corruption scenarios
+
+**Configuration & Validation**
+- Missing validation
+- Invalid default values
+- Configuration mismatches between components
+
+**Permissions & Access**
+- Missing permission checks
+- Insufficient permissions for required operations
+- Missing RBAC roles or bindings
+- File or resource permission issues
+
+**Any other bugs** - Use your judgment to identify any issues that could cause incorrect behavior, crashes, or unexpected results
+
+### 2.2 Security Issues
+
+Look for security issues in these categories (not limited to these - find any vulnerabilities you can):
+
+**Input Validation**
+- Missing or insufficient input validation
+- Injection vulnerabilities (SQL, command, XSS, etc.)
+- Path traversal
+
+**Authentication & Authorization**
+- Authentication bypasses
+- Authorization gaps
+- Session management issues
+- Privilege escalation
+
+**Data Protection**
+- Sensitive data exposure (logs, errors, responses)
+- Insecure storage of secrets or credentials
+- Missing encryption where needed
+
+**Configuration**
+- Insecure defaults
+- Overly permissive settings
+- Missing security headers or flags
+
+**Any other security issues** - Use your judgment to identify any vulnerabilities, weaknesses, or security concerns
+
+### 2.3 Improvements
+
+Look for improvement opportunities in these categories (not limited to these - suggest any enhancements you find):
+
+**Observability**
+- Missing metrics or monitoring
+- Insufficient logging
+- Missing tracing or correlation IDs
+
+**Reliability**
+- Missing timeout handling
+- Missing retry logic
+- Missing circuit breakers
+- Missing graceful degradation
+
+**Code Quality**
+- Dead code or unused parameters
+- Misleading names or comments
+- Code duplication
+- Complex code that could be simplified
+
+**Testing** (do NOT review for code coverage - focus on test correctness)
+- Tests that don't actually test what they claim to test
+- Tests with incorrect assertions or expectations
+- Tests that would pass even if the code was broken
+- Tests with hardcoded values that don't match real behavior
+
+**Documentation**
+- Missing or outdated documentation
+- Missing code comments for complex logic
+
+**Any other improvements** - Use your judgment to suggest enhancements that would improve the code quality, maintainability, reliability, or user experience
+
+## Phase 3: Report Structure
+
+Create a markdown report file at the workspace root (e.g., `review<issue_number>.md`) with this structure. Organize by component, which maps to repositories/PRs:
+
+```markdown
+# Code Review Report: <Feature Name> (Issue #<number>)
+
+## Associated PRs
+- Server: <owner>/<repo>#<pr_number>
+- Operator: <owner>/<repo>#<pr_number>
+- Helm Charts: <owner>/<repo>#<pr_number>
+
+---
+
+## 1. <COMPONENT 1> CODE ANALYSIS (e.g., SERVER BACKEND)
+**Repository:** <owner>/<repo>
+**PR:** #<pr_number>
+
+### 1.1 Bugs
+
+#### **BUG-<C><N>: <Short Title>**
+In `<file_path>:<line_numbers>`:
+```<language>
+<code snippet>
+```
+<Description of the bug and its impact>
+
+**Priority: HIGH|MEDIUM|LOW**
+
+### 1.2 Security Issues
+
+#### **SEC-<C><N>: <Short Title>**
+<Same format as bugs>
+
+### 1.3 Improvements
+
+#### **IMP-<C><N>: <Short Title>**
+<Same format as bugs>
+
+---
+
+## 2. <COMPONENT 2> CODE ANALYSIS (e.g., SERVER FRONTEND)
+**Repository:** <owner>/<repo>
+**PR:** #<pr_number>
+
+<Same structure>
+
+---
+
+## 3. <COMPONENT 3> CODE ANALYSIS (e.g., OPERATOR)
+**Repository:** <owner>/<repo>
+**PR:** #<pr_number>
+
+<Same structure - or "No issues identified." if none found>
+
+---
+
+## Summary of Critical Issues
+
+| Priority | ID | Component | Repository | Issue |
+|----------|-----|-----------|------------|-------|
+| **HIGH** | BUG-B1 | Backend | kiali/kiali | <description> |
+| **MEDIUM** | SEC-F1 | Frontend | kiali/kiali | <description> |
+| **LOW** | IMP-O1 | Operator | kiali/kiali-operator | <description> |
+```
+
+### Naming Conventions
+- Use component prefixes: B (Backend), F (Frontend), O (Operator), H (Helm)
+- Number sequentially within each category: BUG-B1, BUG-B2, SEC-B1, IMP-B1
+- When removing items, renumber remaining items to maintain sequence
+
+### Priority Guidelines
+- **HIGH**: Crashes, data corruption, security vulnerabilities, deadlocks, race conditions
+- **MEDIUM**: Functionality gaps, missing validation, poor error handling
+- **LOW**: Code cleanup, minor improvements, cosmetic issues
+
+### File Path and Line Number Requirements
+
+Every issue MUST include:
+- **Full file path** - Use paths that uniquely identify the file within the repo (e.g., `config/config.go`, `ai/providers/openai.go`, `frontend/src/components/ChatBot/useChatbot.ts`)
+- **Line numbers** - Specify exact line numbers or ranges (e.g., `:42`, `:123-127`)
+- **Code snippet** - Include the relevant code for context
+
+This is critical because:
+1. Users need to quickly locate the code
+2. Line numbers are required when creating GitHub PR review comments in Phase 6
+3. Ambiguous paths like `config.go` or `types.go` could refer to multiple files
+
+## Phase 4: Self-Validation
+
+Immediately after writing the report, perform a second deep-dive pass to validate all identified issues:
+
+1. **Re-examine each issue** - Go back to the code and verify the issue is real
+2. **Consider wider context** - Look at:
+   - How the code is called (trace callers)
+   - Related code in other files
+   - Whether validation/handling happens elsewhere
+   - Whether the "issue" is actually intentional design
+3. **Check for false positives** - Common patterns that seem like issues but aren't:
+   - "Security issues" that require pre-existing vulnerabilities to exploit
+   - "Missing validation" when validation happens at a different layer (e.g., Kubernetes API, framework)
+   - "Race conditions" in code paths that are actually serialized
+   - "Missing features" that are intentionally out of scope
+   - "Unused code" that is actually used via reflection, generics, or external calls
+4. **Mark questionable issues** - If an issue is probably not valid after deeper analysis, mark it as **[LIKELY INVALID]** in the report with a brief explanation of why
+5. **Update the report** - Modify the report file to reflect validated findings and mark likely invalid issues
+
+Do NOT remove likely invalid issues yet - leave them marked for user review in Phase 5.
+
+## Phase 5: Iterative Refinement with User
+
+Present the validated report to the user, highlighting any issues marked as **[LIKELY INVALID]**.
+
+1. **Review likely invalid issues first** - Ask the user to review issues marked as likely invalid and decide whether to:
+   - Remove them (if they agree the issue isn't valid)
+   - Keep them (if they believe the issue is still valid)
+   - Revise them (if the issue exists but needs different description)
+2. **Be prepared to explain** - User may ask "explain BUG-X in detail"
+3. **Remove confirmed false positives** - When user agrees an issue isn't valid, remove it and renumber
+4. **Add details on request** - Include additional file paths, line numbers, and code snippets as needed
+5. **Revise descriptions** - Update issue descriptions based on user feedback
+
+## Phase 6: Create GitHub PR Reviews
+
+After the report is finalized, create pending PR reviews for each PR involved. When multiple PRs are associated with an issue, create separate reviews for each PR with only the comments relevant to that PR's files.
+
+### For each PR:
+
+1. **Identify which issues apply** - Match report issues to the PR based on file paths
+2. **Create pending review** - Use the GitHub CLI:
+
+```bash
+# Create pending review with line comments for a specific PR
+cat << 'REVIEW_EOF' | gh api repos/<owner>/<repo>/pulls/<pr_number>/reviews --method POST --input -
+{
+  "comments": [
+    {
+      "path": "path/to/file.go",
+      "line": 123,
+      "body": "**BUG-B1: <Title>**\n\n<Description>\n\n**Priority: HIGH**"
+    },
+    {
+      "path": "path/to/another/file.ts",
+      "line": 45,
+      "body": "**SEC-F1: <Title>**\n\n<Description>\n\n**Priority: MEDIUM**"
+    }
+  ]
+}
+REVIEW_EOF
+```
+
+3. **Repeat for each PR** - Create separate pending reviews for each repository's PR
+
+### Example with multiple repos:
+
+```bash
+# Server PR (kiali/kiali)
+gh api repos/kiali/kiali/pulls/9006/reviews --method POST --input - << 'EOF'
+{ "comments": [ /* backend and frontend issues */ ] }
+EOF
+
+# Operator PR (kiali/kiali-operator)
+gh api repos/kiali/kiali-operator/pulls/789/reviews --method POST --input - << 'EOF'
+{ "comments": [ /* operator issues */ ] }
+EOF
+
+# Helm PR (kiali/helm-charts)
+gh api repos/kiali/helm-charts/pulls/456/reviews --method POST --input - << 'EOF'
+{ "comments": [ /* helm chart issues */ ] }
+EOF
+```
+
+### Important notes:
+- Omit the `event` field to create a PENDING review (not submitted)
+- Use `--paginate` when fetching PR files if there are many files
+- Line numbers must be lines that are part of the diff (added/modified lines)
+- For new files, line numbers correspond directly to the file
+- Only include comments for files that exist in that specific PR
+- The user can review and submit each pending review manually
+- If a component has no issues, skip creating a review for that PR
+
+## Trigger Phrases
+
+Activate this workflow when the user says:
+- "review this PR"
+- "review PR #<number>"
+- "do a code review"
+- "analyze this code for bugs"
+- "check for security issues"
+- "/codereview"
