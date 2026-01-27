@@ -42,7 +42,7 @@ To start a new project:
 
 ### 🌐 Universal Session Commands
 ```
-"Start session"          # Resume work (AI reads SESSION_STATUS.md to determine phase and avoid past mistakes)
+"Start session"          # Resume work (AI reads SESSION_STATUS.md to determine phase and avoid past mistakes, then reads all files in ai-dev-context/)
 "End session"            # End session with context preservation
 "Avoid [approach]"       # Add failed approach to SESSION_STATUS.md to prevent repetition
 ```
@@ -123,7 +123,7 @@ project-root/
 
 ### Starting a Session
 ```
-"Start session" → AI reads SESSION_STATUS.md + todo/current_todo_list.md → AI asks permission to resume work
+"Start session" → AI reads SESSION_STATUS.md + todo/current_todo_list.md + all ai-dev-context/ files → AI asks permission to resume work
 ```
 
 **CRITICAL**: AI must read ai-dev-context/SESSION_STATUS.md and ai-dev-context/todo/current_todo_list.md to restore the current phase and the remaining tasks to reach the next transition.
