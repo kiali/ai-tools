@@ -1,7 +1,7 @@
 ---
 description: Workflow for reviewing GitHub PRs and code changes across multiple repositories
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Code Review Workflow
