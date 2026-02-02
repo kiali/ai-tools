@@ -8,6 +8,22 @@ alwaysApply: true
 
 When asked to review a PR or set of code changes, follow this workflow.
 
+> **CRITICAL: NEVER post public comments to GitHub without explicit user approval.**
+> - NEVER use `event="COMMENT"` or `event="REQUEST_CHANGES"` in API calls
+> - NEVER use `gh pr review --comment` or `gh pr comment` directly
+> - ALWAYS create PENDING reviews by omitting the `event` field
+> - ALWAYS complete Phases 1-5 and get user confirmation before Phase 6
+
+## Trigger Phrases
+
+Activate this workflow when the user says:
+- "review this PR"
+- "review PR #<number>"
+- "do a code review"
+- "analyze this code for bugs"
+- "check for security issues"
+- "/codereview"
+
 ## Phase Transitions
 
 Transitions between phases should be automatic where possible:
@@ -18,7 +34,18 @@ Transitions between phases should be automatic where possible:
 | **Phase 2 → Phase 3** | **Automatic.** After completing analysis, immediately write the report to a file without asking. |
 | **Phase 3 → Phase 4** | **Automatic.** After writing the report, immediately perform self-validation to verify all issues. |
 | **Phase 4 → Phase 5** | **Automatic.** After self-validation, present the validated report to the user, highlighting any issues marked as "likely invalid" for their review. |
-| **Phase 5 → Phase 6** | **Wait for user request.** Only create the GitHub PR review when the user explicitly asks (e.g., "create the PR review", "add comments to the PR"). |
+| **Phase 5 → Phase 6** | **STOP and wait for explicit user request.** Do NOT proceed to Phase 6 until user explicitly says "create the PR review", "add comments to the PR", or similar. Ask: "The report is ready. Would you like me to create pending GitHub review comments? I will NOT submit them - you'll review and submit manually." |
+
+## Anti-Patterns (NEVER DO THESE)
+
+| NEVER | INSTEAD |
+|-------|---------|
+| Post comments directly to GitHub without user review | Create pending review, let user submit |
+| Skip phases to "save time" | Follow all phases in order |
+| Use `event="COMMENT"` in gh api calls | Omit `event` field entirely for pending reviews |
+| Use `gh pr review --comment` | Use `gh api` with no `event` field |
+| Create individual comments via `/pulls/{id}/comments` | Use `/pulls/{id}/reviews` with `comments` array |
+| Assume "review this PR" means "post comments now" | It means "analyze and report to me first" |
 
 ## Phase 1: Discovery
 
@@ -309,7 +336,18 @@ Present the validated report to the user, highlighting any issues marked as **[L
 
 ## Phase 6: Create GitHub PR Reviews
 
-After the report is finalized, create pending PR reviews for each PR involved. When multiple PRs are associated with an issue, create separate reviews for each PR with only the comments relevant to that PR's files.
+> **STOP: Do not enter this phase unless the user explicitly requested it.**
+
+### Pre-Flight Checklist (MUST verify before proceeding)
+
+Before creating any GitHub reviews, verify ALL of the following:
+- [ ] User explicitly requested PR review creation (not just "review the PR")
+- [ ] Report file exists and has been reviewed by user in Phase 5
+- [ ] All [LIKELY INVALID] items have been resolved
+- [ ] Will use `gh api` with NO `event` field (creates PENDING review)
+- [ ] Will NOT use `gh pr review --comment` or `gh pr comment`
+
+**If any checkbox is unchecked, STOP and resolve before proceeding.**
 
 ### For each PR:
 
@@ -318,6 +356,7 @@ After the report is finalized, create pending PR reviews for each PR involved. W
 
 ```bash
 # Create pending review with line comments for a specific PR
+# NOTE: Do NOT include "event" field - this keeps the review PENDING
 cat << 'REVIEW_EOF' | gh api repos/<owner>/<repo>/pulls/<pr_number>/reviews --method POST --input -
 {
   "comments": [
@@ -341,7 +380,7 @@ REVIEW_EOF
 ### Example with multiple repos:
 
 ```bash
-# Server PR (kiali/kiali)
+# Server PR (kiali/kiali) - NO event field = PENDING review
 gh api repos/kiali/kiali/pulls/9006/reviews --method POST --input - << 'EOF'
 { "comments": [ /* backend and frontend issues */ ] }
 EOF
@@ -357,21 +396,29 @@ gh api repos/kiali/helm-charts/pulls/456/reviews --method POST --input - << 'EOF
 EOF
 ```
 
+### After Creating Pending Reviews
+
+Inform the user with this message:
+
+> "I've created pending review(s) for the following PRs:
+> - kiali/kiali#123: X comments
+> - kiali/kiali-operator#456: Y comments
+>
+> **These are NOT public until you submit them.**
+>
+> To view and submit each review:
+> 1. Go to the PR on GitHub
+> 2. Click 'Files changed' tab
+> 3. Look for 'Pending review' button in the top right
+> 4. Review the comments, then click 'Submit review'
+>
+> You can edit or delete any comments before submitting."
+
 ### Important notes:
-- Omit the `event` field to create a PENDING review (not submitted)
+- **Omit the `event` field** to create a PENDING review (not submitted)
 - Use `--paginate` when fetching PR files if there are many files
 - Line numbers must be lines that are part of the diff (added/modified lines)
 - For new files, line numbers correspond directly to the file
 - Only include comments for files that exist in that specific PR
 - The user can review and submit each pending review manually
 - If a component has no issues, skip creating a review for that PR
-
-## Trigger Phrases
-
-Activate this workflow when the user says:
-- "review this PR"
-- "review PR #<number>"
-- "do a code review"
-- "analyze this code for bugs"
-- "check for security issues"
-- "/codereview"
