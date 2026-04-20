@@ -1,0 +1,33 @@
+---
+description: Start Kiali in Minikube with Istio and Bookinfo demo
+globs: 
+alwaysApply: false
+---
+
+# Start Kiali
+
+Execute the following steps to start Kiali in Minikube:
+
+1. Check if Minikube is running. If not, start it with `minikube start`.
+
+2. Install Istio by running:
+   ```bash
+   cd kiali/hack/istio && ./install-istio-via-istioctl.sh -c kubectl
+   ```
+
+3. Apply the Kiali manifest (automatically uses the latest Istio version):
+   ```bash
+   kubectl apply -f $(ls -t kiali/_output/istio-*/samples/addons/kiali.yaml | head -1)
+   ```
+
+4. Install the Bookinfo demo by running:
+   ```bash
+   cd kiali/hack/istio && ./install-bookinfo-demo.sh -c kubectl -tg
+   ```
+
+5. Start Kiali with port-forward by running:
+   ```bash
+   cd kiali/hack && ./run-kiali.sh -pg 13000:3000 -pp 19090:9090 -app 8080 -es false -iu http://127.0.0.1:15014 -ke ~/go/go/bin/kiali_core -hkc current -cn Kubernetes
+   ```
+
+Note: These commands assume you run them from the parent directory where the `kiali` repository is located.
