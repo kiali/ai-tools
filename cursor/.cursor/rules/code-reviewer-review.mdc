@@ -1,5 +1,5 @@
 ---
-description: "Activated when the user says /code-reviewer:review, /review, or asks to run the code review pipeline. Supports phase-specific variants: /code-reviewer:review:adversarial, /code-reviewer:review:style, /code-reviewer:review:testing (or short forms /review:adversarial, /review:style, /review:testing)."
+description: "Activated when the user says /code-reviewer:review or asks to run the code review pipeline. Supports phase-specific variants: /code-reviewer:review:adversarial, /code-reviewer:review:style, /code-reviewer:review:testing."
 globs:
 alwaysApply: false
 ---
@@ -56,10 +56,10 @@ Numbers are sequential within each prefix. During consolidation, IDs are finaliz
 ## Step 0: Parse Arguments
 
 Check the user's message for a specific phase request:
-- `/code-reviewer:review`, `/review`, or "run code review" — run all three phases
-- `/code-reviewer:review:adversarial`, `/review:adversarial`, or "run adversarial review" — run adversarial phase only
-- `/code-reviewer:review:style`, `/review:style`, or "run style review" — run style phase only
-- `/code-reviewer:review:testing`, `/review:testing`, or "run testing review" — run testing phase only
+- `/code-reviewer:review` or "run code review" — run all three phases
+- `/code-reviewer:review:adversarial` or "run adversarial review" — run adversarial phase only
+- `/code-reviewer:review:style` or "run style review" — run style phase only
+- `/code-reviewer:review:testing` or "run testing review" — run testing phase only
 
 ## Step 1: Setup Guard
 
@@ -102,13 +102,13 @@ Launch all three Task calls **in a single message** for parallel execution:
 
 For multiple review units, dispatch one style-reviewer and one testing-reviewer **per unit**, all in parallel alongside the single adversarial-reviewer.
 
-**If `/code-reviewer:review:adversarial` (or `/review:adversarial`):**
+**If `/code-reviewer:review:adversarial`:**
 Dispatch only the adversarial-reviewer with the full-scope brief.
 
-**If `/code-reviewer:review:style` (or `/review:style`):**
+**If `/code-reviewer:review:style`:**
 For each review unit, dispatch the style-reviewer with the unit-scoped brief.
 
-**If `/code-reviewer:review:testing` (or `/review:testing`):**
+**If `/code-reviewer:review:testing`:**
 For each review unit, dispatch the testing-reviewer with the unit-scoped brief.
 
 ## Step 4: Consolidation
@@ -164,7 +164,7 @@ The user may:
 
 After the user has addressed the findings, read and follow the doc-update skill (`.cursor/code-reviewer/skills/doc-update/SKILL.md`) to consider whether reference docs need updating based on the discussion.
 
-The user can re-run `/code-reviewer:review` (or `/review`) to verify fixes.
+The user can re-run `/code-reviewer:review` to verify fixes.
 
 ## Step 8: GitHub PR Review Creation (Optional)
 
