@@ -17,7 +17,8 @@ Find cursor related resources [here](./cursor/). Add cursor rules to your Kiali 
 
 ## Claude
 
-Claude-related resources live under [`claude/.claude`](./claude/.claude/). 
+Claude-related resources live under [`claude/.claude`](./claude/.claude/), with skills stored using the standard `skill-name/SKILL.md` layout.
 
 - Use `kiali-backstage-validate-deps` when validating dependency update PRs in the Kiali Backstage workspace.
+- The Cursor rule and Claude skill both include the validation workflow, so teams can use either tool directly.
 - Invoke it in Claude with a request like: `Use the kiali-backstage-validate-deps skill to validate this dependency update PR.`
