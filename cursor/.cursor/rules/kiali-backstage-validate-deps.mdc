@@ -1,0 +1,157 @@
+---
+description: Validate dependency update changes in the Kiali Backstage workspace. Use when reviewing dependency PRs, Backstage upgrades, package.json or yarn.lock changes, or when the user asks to validate the Kiali Backstage frontend in a checkout of backstage/community-plugins.
+globs:
+alwaysApply: false
+---
+
+# Kiali Backstage Dependency Validation
+
+## When To Use This Rule
+
+- Dependency update PRs for the Kiali Backstage workspace
+- Backstage version upgrades
+- Changes to `package.json`, `yarn.lock`, or Playwright E2E tests in that workspace
+- Any request to validate the Kiali Backstage frontend after dependency changes
+
+## Repository Context
+
+- The commands below assume a checkout of [`backstage/community-plugins`](https://github.com/backstage/community-plugins/), where the Kiali workspace lives at `workspaces/kiali`.
+
+## Validation Workflow
+
+1. Verify Node.js 22 before running any other step:
+   - `node --version`
+   - If the version is not `v22.x.x`, switch first with `nvm use 22` or install it if needed.
+   - Abort validation until the Node.js version is correct to avoid false failures.
+
+2. Verify the Kiali environment:
+   - Confirm the Kiali pod is running: `kubectl get pods -n istio-system | grep kiali`
+   - Confirm port-forwarding on port 20001: `lsof -i :20001 || netstat -tuln | grep 20001`
+   - Confirm `KIALI_ENDPOINT` is configured, typically `http://localhost:20001`
+   - If port-forwarding is missing, start it with `kubectl port-forward -n istio-system svc/kiali 20001:20001 &`
+
+3. Run validation from the Kiali Backstage workspace root:
+   - `cd workspaces/kiali`
+   - `yarn install`
+   - `yarn tsc`
+   - `yarn test:e2e`
+
+4. For deeper validation when needed:
+   - Run `yarn playwright test --ui` to inspect failures interactively
+   - Run `yarn start` and manually verify the app at `http://localhost:3000/kiali`
+
+## Manual Review Checklist
+
+- Verify the main tabs still work: Overview, Traffic Graph, Workloads, Services, Applications, Istio Config
+- Verify namespace selection flows still work
+- Verify charts, sparklines, drawers, icons, and buttons render correctly
+- Check for browser console errors during manual navigation
+- Review dependency changes for breaking changes or unexpected lockfile churn
+- Verify compatibility with the targeted Backstage version
+- Check the RHDH compatibility matrix when Backstage is updated: `https://github.com/redhat-developer/rhdh-plugin-export-overlays?tab=readme-ov-file#backstage-compatibility`
+
+## Common Failure Patterns
+
+- Wrong Node.js version:
+  - Typical symptoms include native module build failures, dependency resolution issues, or cryptic test failures.
+  - Fix by switching to Node.js 22 before continuing.
+
+- Missing or broken port-forward:
+  - Verify Kiali responds with `curl http://localhost:20001/kiali/api/status`
+  - If needed, restart port-forwarding after stopping the stale process.
+
+- Dependency conflicts:
+  - Run `yarn dedupe`
+  - Re-run `yarn install`
+
+- TypeScript failures after updates:
+  - Check whether related `@types/*` packages also need updates.
+  - Review breaking changes in the upgraded packages.
+
+## Expected Report Format
+
+Summarize validation results with:
+
+- Environment check: Node.js version, Kiali pod, port-forward status, endpoint status
+- Installation: success or failure, plus any vulnerability findings
+- Compilation: TypeScript pass/fail status
+- E2E tests: passed/failed counts, duration, and failed tests if any
+- Remaining manual review items
+description: Validate dependency update changes in the Kiali Backstage workspace. Use when reviewing dependency PRs, Backstage upgrades, package.json or yarn.lock changes, or when the user asks to validate the Kiali Backstage frontend in a checkout of backstage/community-plugins.
+globs:
+alwaysApply: false
+---
+
+# Kiali Backstage Dependency Validation
+
+## When To Use This Rule
+
+- Dependency update PRs for the Kiali Backstage workspace
+- Backstage version upgrades
+- Changes to `package.json`, `yarn.lock`, or Playwright E2E tests in that workspace
+- Any request to validate the Kiali Backstage frontend after dependency changes
+
+## Repository Context
+
+- The commands below assume a checkout of [`backstage/community-plugins`](https://github.com/backstage/community-plugins/), where the Kiali workspace lives at `workspaces/kiali`.
+
+## Validation Workflow
+
+1. Verify Node.js 22 before running any other step:
+   - `node --version`
+   - If the version is not `v22.x.x`, switch first with `nvm use 22` or install it if needed.
+   - Abort validation until the Node.js version is correct to avoid false failures.
+
+2. Verify the Kiali environment:
+   - Confirm the Kiali pod is running: `kubectl get pods -n istio-system | grep kiali`
+   - Confirm port-forwarding on port 20001: `lsof -i :20001 || netstat -tuln | grep 20001`
+   - Confirm `KIALI_ENDPOINT` is configured, typically `http://localhost:20001`
+   - If port-forwarding is missing, start it with `kubectl port-forward -n istio-system svc/kiali 20001:20001 &`
+
+3. Run validation from the Kiali Backstage workspace root:
+   - `cd workspaces/kiali`
+   - `yarn install`
+   - `yarn tsc`
+   - `yarn test:e2e`
+
+4. For deeper validation when needed:
+   - Run `yarn playwright test --ui` to inspect failures interactively
+   - Run `yarn start` and manually verify the app at `http://localhost:3000/kiali`
+
+## Manual Review Checklist
+
+- Verify the main tabs still work: Overview, Traffic Graph, Workloads, Services, Applications, Istio Config
+- Verify namespace selection flows still work
+- Verify charts, sparklines, drawers, icons, and buttons render correctly
+- Check for browser console errors during manual navigation
+- Review dependency changes for breaking changes or unexpected lockfile churn
+- Verify compatibility with the targeted Backstage version
+- Check the RHDH compatibility matrix when Backstage is updated: `https://github.com/redhat-developer/rhdh-plugin-export-overlays?tab=readme-ov-file#backstage-compatibility`
+
+## Common Failure Patterns
+
+- Wrong Node.js version:
+  - Typical symptoms include native module build failures, dependency resolution issues, or cryptic test failures.
+  - Fix by switching to Node.js 22 before continuing.
+
+- Missing or broken port-forward:
+  - Verify Kiali responds with `curl http://localhost:20001/kiali/api/status`
+  - If needed, restart port-forwarding after stopping the stale process.
+
+- Dependency conflicts:
+  - Run `yarn dedupe`
+  - Re-run `yarn install`
+
+- TypeScript failures after updates:
+  - Check whether related `@types/*` packages also need updates.
+  - Review breaking changes in the upgraded packages.
+
+## Expected Report Format
+
+Summarize validation results with:
+
+- Environment check: Node.js version, Kiali pod, port-forward status, endpoint status
+- Installation: success or failure, plus any vulnerability findings
+- Compilation: TypeScript pass/fail status
+- E2E tests: passed/failed counts, duration, and failed tests if any
+- Remaining manual review items

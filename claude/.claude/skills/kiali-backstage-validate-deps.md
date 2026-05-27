@@ -1,0 +1,280 @@
+---
+name: kiali-backstage-validate-deps
+description: Validate dependency update PRs for the Kiali Backstage workspace by checking Node.js version, Kiali environment, running tests, and verifying compilation
+version: 1.1.0
+author: josunect
+---
+
+# Kiali Backstage Dependency Validation Skill
+
+This skill helps validate PRs that update dependencies in the Kiali Backstage workspace. It ensures:
+1. A Kiali environment is properly set up and accessible
+2. Dependencies are installed correctly
+3. E2E tests pass
+4. Manual review points are highlighted
+
+Invoke it in Claude with a request like: "Use the `kiali-backstage-validate-deps` skill to validate this dependency update PR."
+
+## Repository Context
+
+The command examples below assume a checkout of [`backstage/community-plugins`](https://github.com/backstage/community-plugins/), where the Kiali Backstage workspace root is `workspaces/kiali`.
+
+## Prerequisites Check
+
+Before running the validation, verify:
+
+### 1. Node.js Version
+**CRITICAL:** Verify you're using Node.js 22 as required by the workspace:
+```bash
+node --version
+```
+
+Expected: `v22.x.x`
+
+If incorrect version:
+```bash
+# Using nvm
+nvm use 22
+# Or nvm install 22 if not installed
+
+# Using volta
+volta pin node@22
+```
+
+**Why this matters:**
+- The Kiali workspace requires Node.js 22 (specified in package.json engines)
+- Wrong Node version can cause dependency installation failures
+- Native modules may fail to build with incorrect Node version
+- Tests may behave differently or fail with wrong Node version
+
+### 2. Kiali Environment Running
+Check if Kiali is deployed and accessible:
+```bash
+kubectl get pods -n istio-system | grep kiali
+```
+
+Expected: Kiali pod should be running
+
+### 3. Port-Forward to Kiali
+Verify port-forward is active on port 20001:
+```bash
+lsof -i :20001 || netstat -tuln | grep 20001
+```
+
+If not running, start it:
+```bash
+kubectl port-forward -n istio-system svc/kiali 20001:20001 &
+```
+
+### 4. Kiali Endpoint Configuration
+Ensure KIALI_ENDPOINT is properly configured:
+```bash
+echo $KIALI_ENDPOINT
+```
+
+Expected: Should show the Kiali endpoint (e.g., http://localhost:20001)
+
+## Validation Steps
+
+### Step 0: Verify Node.js Version (CRITICAL)
+**MUST RUN FIRST** - Check Node.js version before any other step:
+```bash
+node --version
+```
+
+**Expected:** v22.x.x
+
+**If wrong version:**
+```bash
+nvm use 22  # or nvm install 22
+```
+
+**Abort validation if Node version is incorrect** - proceeding with wrong version will cause false failures.
+
+### Step 1: Navigate to the Kiali Backstage Workspace Root
+```bash
+cd workspaces/kiali
+```
+
+### Step 2: Clean Install Dependencies
+Install fresh dependencies to ensure no stale packages:
+```bash
+yarn install
+```
+
+**Check for:**
+- No errors during installation
+- No high/critical security vulnerabilities
+- Correct dependency resolution
+- Native modules build successfully
+
+### Step 3: Type Check
+Verify TypeScript compilation:
+```bash
+yarn tsc
+```
+
+**Check for:**
+- No TypeScript compilation errors
+- No type mismatches
+
+### Step 4: Run E2E Tests
+Execute the end-to-end test suite:
+```bash
+yarn test:e2e
+```
+
+**Check for:**
+- All tests passing
+- No timeouts
+- No flaky test behavior
+- Kiali UI components rendering correctly
+
+**Common test scenarios validated:**
+- Header components (provider selector, namespace selector, cluster info)
+- Overview page with metrics/sparklines
+- Traffic Graph tab with topology visualization
+- Workloads tab with table and drawer
+- Services tab with health indicators
+- Applications tab with namespace info
+- Istio Config tab with validation
+
+### Step 5: Interactive Test (Optional)
+For thorough validation, run tests in UI mode:
+```bash
+yarn playwright test --ui
+```
+
+This allows:
+- Visual inspection of test execution
+- Debugging failed tests
+- Watching component interactions
+
+## Manual Review Checklist
+
+After automated tests pass, perform manual verification:
+
+### UI/UX Review
+- [ ] Start the development server: `yarn start`
+- [ ] Navigate to http://localhost:3000/kiali
+- [ ] Test key user flows:
+  - [ ] Navigate through all tabs (Overview, Traffic Graph, Workloads, Services, Applications, Istio Config)
+  - [ ] Test namespace selector (Select All / Deselect All)
+  - [ ] Verify charts and sparklines render correctly
+  - [ ] Open and close drawers for workloads/services/applications
+  - [ ] Check that all icons and buttons are functional
+  - [ ] Verify no console errors in browser DevTools
+
+### Dependency-Specific Checks
+- [ ] Review package.json changes
+- [ ] Check for breaking changes in updated packages
+- [ ] Verify compatibility with Backstage version
+- [ ] Check [RHDH compatibility](https://github.com/redhat-developer/rhdh-plugin-export-overlays?tab=readme-ov-file#backstage-compatibility) if Backstage was updated
+- [ ] Review lock file changes for unexpected updates
+
+### Regression Testing
+- [ ] Verify existing features still work
+- [ ] Check that performance hasn't degraded
+- [ ] Ensure accessibility features remain intact
+- [ ] Test with different Kiali configurations (if applicable)
+
+## Common Issues and Solutions
+
+### Wrong Node.js Version
+**Problem:** Using incorrect Node.js version
+**Solution:**
+```bash
+# Check current version
+node --version
+
+# Switch to Node 22 using nvm
+nvm use 22
+
+# Or install if not available
+nvm install 22
+nvm use 22
+
+# Using volta
+volta pin node@22
+```
+
+**Symptoms of wrong Node version:**
+- Native module build failures (better-sqlite3, canvas, isolated-vm)
+- Unexpected dependency resolution issues
+- Tests failing with cryptic errors
+
+### Port-Forward Issues
+**Problem:** Port 20001 is not accessible
+**Solution:**
+```bash
+# Kill existing port-forward
+pkill -f "port-forward.*kiali"
+# Restart port-forward
+kubectl port-forward -n istio-system svc/kiali 20001:20001 &
+```
+
+### Test Timeout Issues
+**Problem:** E2E tests timeout
+**Solution:**
+- Verify Kiali is responding: `curl http://localhost:20001/kiali/api/status`
+- Check if test data (bookinfo app) is deployed
+- Increase timeout in playwright.config.ts if needed
+
+### Dependency Conflicts
+**Problem:** Yarn install fails with dependency conflicts
+**Solution:**
+```bash
+yarn dedupe
+yarn install
+```
+
+### TypeScript Errors After Update
+**Problem:** New TypeScript errors after dependency update
+**Solution:**
+- Check if types packages need updating (`@types/*`)
+- Review breaking changes in updated packages
+- May need code changes to match new API
+
+## Report Format
+
+After validation, provide a summary:
+
+✅ **Environment Check**
+- Node.js version: [v22.x.x/Wrong Version]
+- Kiali pod: [Running/Not Running]
+- Port-forward: [Active on 20001/Not Active]
+- Endpoint: [Configured/Not Configured]
+
+✅ **Installation**
+- Dependencies installed: [Success/Failed]
+- Security vulnerabilities: [None/List]
+
+✅ **Compilation**
+- TypeScript: [Passed/Failed with X errors]
+
+✅ **E2E Tests**
+- Test results: [X/Y passed]
+- Duration: [time]
+- Failed tests: [list if any]
+
+⚠️ **Manual Review Required**
+- [ ] UI/UX verification
+- [ ] Dependency change review
+- [ ] Regression testing
+
+## Notes
+
+- **CRITICAL:** Always verify Node.js version 22 before starting validation
+- Node.js version mismatches are the #1 cause of false-positive failures
+- Always run tests with a clean Kiali environment
+- E2E tests expect the bookinfo application to be deployed in the cluster
+- Some tests may be flaky; re-run if necessary
+- For Backstage version upgrades, follow the upgrade guide in `DEVELOPMENT.md`
+- Consider running tests in CI/CD before merging
+- If native modules fail to build, verify Node.js version first before investigating other issues
+
+## Related Documentation
+
+- See `DEVELOPMENT.md` in the Kiali Backstage repository
+- See `packages/app/e2e-tests/` in the Kiali Backstage repository
+- [RHDH Compatibility Matrix](https://github.com/redhat-developer/rhdh-plugin-export-overlays?tab=readme-ov-file#backstage-compatibility)
