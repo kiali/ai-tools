@@ -484,6 +484,35 @@ OSSM security issues are Red Hat internal. After creating the PR,
 assign it to the user and request the reviewer using
 `gh pr edit <number> --add-reviewer <username>`.
 
+#### Requesting a reviewer
+
+Before creating the first PR (master/main), ask the user who should
+review the PRs. Offer Kiali maintainers as options, **excluding the
+PR assignee** (since the assignee cannot review their own PR):
+
+- `jshaughn`
+- `ferhoyos`
+- `hhovsepy`
+- Other (let the user type a GitHub username)
+
+The selected reviewer applies to **all** PRs for this CVE (master,
+backports, and OSSMC). After creating each PR, request review:
+
+```
+gh pr edit <PR_NUMBER> --repo <REPO> --add-reviewer <REVIEWER>
+```
+
+#### Adding "backport needed" label to master/main PRs
+
+After creating the PR against `master` (or `main` for OSSMC), add the
+`backport needed` label to signal that backport PRs are required:
+
+```
+gh pr edit <PR_NUMBER> --repo <REPO> --add-label "backport needed"
+```
+
+This label is only added to the master/main PR, not to backport PRs.
+
 #### Setting the GitHub Project on PRs
 
 Every PR (master and backports) must be added to the Kiali GitHub
@@ -572,7 +601,11 @@ For each backport branch:
      `yarn install --no-immutable`
    - **Go**: `go get <module>@latest`, then `go mod tidy`
 3. Commit, push to the user's fork, and create a PR targeting the release
-   branch
+   branch. The backport PR description **must** reference the master/main
+   PR by number (e.g. "Backport of #<MASTER_PR_NUMBER> to <branch>.").
+   This causes GitHub to automatically display cross-references in the
+   master PR timeline, making it easy to see all backport PRs and their
+   merge status from the master PR.
 4. Assign the PR to the user
 
 ## Step 8: Apply Fix to OSSMC (NPM/JS dependencies only, if affected)
@@ -612,6 +645,9 @@ The fix procedure is identical to Step 7 but using the paths above:
 Backporting follows the same process as described in Step 7, using the
 Supported Branches table in `AGENTS.md`. The OSSMC repo uses the same
 branch names.
+Each OSSMC backport PR must reference the OSSMC `main` PR by number (e.g.
+"Backport of #<MAIN_PR_NUMBER> to <branch>.") so that GitHub cross-references
+appear on the `main` PR.
 
 ## Step 9: Set Fix Versions and Close Issues
 
@@ -642,11 +678,26 @@ approval before making any changes. Then update each issue using
 `jira_update_issue` with:
 - **fields**: `{"fixVersions": [{"name": "<fix version>"}]}`
 
+### Setting the Git Pull Request field
+
+Before transitioning issues to Release Pending, set the "Git Pull
+Request" custom field (`customfield_10875`) on each issue with the
+GitHub PR URL(s) that fix it. This is a textarea field — set it to
+the PR URL for the branch that corresponds to the issue's OSSM version.
+
+Map each issue to its PR based on the OSSM version in the summary
+(e.g. `[ossm-3.3]` maps to the `v2.22` backport PR, `[ossm-2.6]`
+maps to the `v1.73` backport PR). Kiali server issues and OSSMC issues
+are separate Jira tickets, so each issue maps to exactly one PR URL.
+
+Use `jira_update_issue` with:
+- **fields**: `{"customfield_10875": "<PR_URL>"}`
+
 ### Transitioning to Release Pending
 
-After fix versions are set, ask the user whether to transition the issues
-to "Release Pending". If approved, use `jira_transition_issue` to move
-each issue.
+After fix versions and Git Pull Request fields are set, ask the user
+whether to transition the issues to "Release Pending". If approved,
+use `jira_transition_issue` to move each issue.
 
 **Always look up available transitions** using `jira_get_transitions`
 before transitioning. Transition IDs can vary by project and workflow.
