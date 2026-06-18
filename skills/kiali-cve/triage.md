@@ -270,15 +270,23 @@ Skip branches where the fixed Go version is not available.
 
 ### After successful build
 
-Ask user to commit and create PR. Ask for reviewer (see Reviewer
-Selection in SKILL.md, exclude PR assignee).
+Ask user to commit and create PR. Ask for reviewer (see "Requesting a
+reviewer" in SKILL.md, exclude PR assignee).
 
 PR description must reference CVE but **not** OSSM Jira keys.
 
+After creating **every** CVE PR, assign it to the user (use
+`issue_write` with `method: "update"` and the PR number, since
+`create_pull_request` does not support assignees).
+
+Adding PRs to the Kiali GitHub Project is a **separate step that
+requires user approval** — see GitHub Project Setup in SKILL.md.
+Do not add PRs to the project automatically.
+
 After creating master PR:
 1. Add `backport needed` label
-2. Add to GitHub Project (see SKILL.md)
-3. Request reviewer
+2. Request reviewer
+3. Ask user about adding to GitHub Project (see SKILL.md)
 
 ### Backporting
 
@@ -295,7 +303,9 @@ For each backport branch:
 3. Commit, push, create PR targeting release branch
 4. PR description **must** reference master PR number
    (e.g. "Backport of #<NUMBER> to <branch>.")
-5. Assign to user, request reviewer, add to GitHub Project
+5. Assign to user, request reviewer; add to the GitHub project only if
+   the user has approved project tracking (see GitHub Project Setup in
+   SKILL.md)
 
 ## Step 8: Apply Fix to OSSMC (NPM/JS only)
 
@@ -317,7 +327,9 @@ Same procedure as Step 7 but using OSSMC paths:
 2. Update `plugin/package.json` or `plugin/yarn.lock`
 3. `yarn install --no-immutable` in `plugin/`
 4. Verify build
-5. Create PR against `main`, add `backport needed` label
+5. Create PR against `main` and assign to the user; add `backport needed`
+   label; add to the GitHub project only if the user has approved project
+   tracking (see GitHub Project Setup in SKILL.md)
 
 Backports follow same process. Each OSSMC backport PR references
 the OSSMC `main` PR.

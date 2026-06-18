@@ -16,6 +16,8 @@ If intent is unclear, ask the user which feature they want.
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
+The same approval rule applies to adding CVE PRs to the Kiali GitHub Project
+— ask first, then act only after the user confirms.
 
 ## Tool Access Verification
 
@@ -23,12 +25,19 @@ Before either feature, verify all tools in parallel:
 
 1. **Jira MCP**: `jira_search` with query
    `project = OSSM AND summary ~ CVE ORDER BY created DESC` (limit 1)
-2. **GitHub CLI**: `gh auth status`
+2. **GitHub CLI**: `gh auth status` (`repo` scope minimum for PR creation).
+   Project-board access is verified separately when the user approves
+   adding PRs to the project (see GitHub Project Setup). Do not block
+   triage on project scopes at Step 0.
 3. **GitLab CLI**: `glab auth status --hostname gitlab.cee.redhat.com`
 
 If any fails, report and stop:
 - Jira: "The Jira MCP server is not connected. Check MCP configuration."
 - GitHub: "Run: `gh auth login`"
+- GitHub Project (when adding PRs to the project): "Run:
+  `gh auth refresh -h github.com -s read:org,read:project,project` and
+  complete the browser/device authorization. Verify with
+  `gh project list --owner kiali`."
 - GitLab: "Run: `glab auth login --hostname gitlab.cee.redhat.com`"
 
 ## Jira API Reference
@@ -114,6 +123,7 @@ Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
 - Backport PR descriptions **must** reference master/main PR number
   (e.g. "Backport of #<NUMBER> to <branch>.") for GitHub cross-references
 - All PRs added to the Kiali GitHub Project with "In review" status
+  (requires user approval — see GitHub Project Setup)
 - Merge method: `merge` (not squash or rebase)
 
 ### Requesting a reviewer
@@ -155,23 +165,76 @@ tickets, so each issue maps to exactly one PR URL.
 
 ### GitHub Project Setup
 
-After creating a PR, add it to the Kiali project:
+CVE PRs should be tracked on the Kiali GitHub Project. This applies to
+all repositories and branches:
 
-```bash
-gh project list --owner kiali --format json
-gh project item-add <PROJECT_NUMBER> --owner kiali --url <PR_URL>
-```
+- `kiali/kiali` — master and backport PRs
+- `kiali/openshift-servicemesh-plugin` — main and backport PRs
 
-Then set status to "In review":
-```bash
-gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200
-gh project field-list <PROJECT_NUMBER> --owner kiali --format json
-gh project item-edit \
-  --project-id <PROJECT_ID> \
-  --id <ITEM_ID> \
-  --field-id <STATUS_FIELD_ID> \
-  --single-select-option-id <IN_REVIEW_OPTION_ID>
-```
+**Do not execute project updates without explicit user approval**, the
+same as Jira changes. When PRs are ready (after creating the master/main
+PR, after creating backports, or when backfilling an existing batch):
+
+1. **Ask the user** whether to add the PR(s) to the project and set
+   status to "In review". Present a list of PR URLs that would be updated.
+
+2. **Verify token access** before running any `gh project` commands:
+
+   ```bash
+   gh auth status
+   gh project list --owner kiali --format json
+   ```
+
+   Required token scopes: `read:org`, `read:project`, and `project`.
+   If `gh auth status` shows missing scopes, or project commands fail
+   with `unknown owner type` or `INSUFFICIENT_SCOPES`, stop and ask the
+   user to refresh:
+
+   ```bash
+   gh auth refresh -h github.com -s read:org,read:project,project
+   ```
+
+   Complete the browser/device authorization when prompted, then re-run
+   `gh project list --owner kiali` to confirm access before proceeding.
+
+3. **After the user confirms and access is verified**, look up the
+   project number (there is only one Kiali project):
+
+   ```bash
+   gh project list --owner kiali --format json
+   ```
+
+   Add each approved PR:
+
+   ```bash
+   gh project item-add <PROJECT_NUMBER> --owner kiali --url <PR_URL>
+   ```
+
+   Then set the project status to "In review". First, find the item ID
+   and the Status field metadata:
+
+   ```bash
+   gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200
+   gh project field-list <PROJECT_NUMBER> --owner kiali --format json
+   ```
+
+   From the field list, find the Status field ID (type
+   `ProjectV2SingleSelectField`, name `Status`) and the "In review"
+   option ID. Then update each item:
+
+   ```bash
+   gh project item-edit \
+     --project-id <PROJECT_ID> \
+     --id <ITEM_ID> \
+     --field-id <STATUS_FIELD_ID> \
+     --single-select-option-id <IN_REVIEW_OPTION_ID>
+   ```
+
+   The user may approve adding PRs one at a time or as a batch. Only
+   update the PRs the user explicitly approved.
+
+If access cannot be restored, provide the `gh project` commands for the
+user to run manually, or ask them to add the PRs via the GitHub UI.
 
 ## Code Freeze Check
 
