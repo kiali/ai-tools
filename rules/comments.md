@@ -1,6 +1,5 @@
 ---
 description: Comments for generated code
-globs:
 alwaysApply: true
 ---
 

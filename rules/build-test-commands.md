@@ -1,6 +1,5 @@
 ---
 description: Standard build and test commands for the Kiali project
-globs: 
 alwaysApply: true
 ---
 

@@ -1,6 +1,5 @@
 ---
 description: Code quality standards and formatting rules for the Kiali workspace
-globs: 
 alwaysApply: true
 ---
 

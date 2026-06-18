@@ -1,6 +1,5 @@
 ---
 description: Rules about files and directories that should not be modified
-globs: 
 alwaysApply: true
 ---
 

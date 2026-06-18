@@ -11,16 +11,37 @@ The ai-tools repository is designed to:
 - **Document Best Practices**: Capture proven approaches and guidelines for effectively using AI in the context of the Kiali project
 - **Enable Collaboration**: Offer a shared space for team members to contribute and discover AI-powered solutions
 
-## Cursor
+## Repository Structure
 
-Find cursor related resources [here](./cursor/). Add cursor rules to your Kiali repo under `<kiali-repo-root>/.cursor/rules`.
+```
+ai-tools/
+├── rules/              # Agnostic rules (work with both Cursor and Claude Code)
+├── skills/             # Agnostic skills (work with both Cursor and Claude Code)
+├── cursor/             # Cursor-specific resources (code-reviewer plugin, etc.)
+├── claude/             # Claude Code-specific resources
+└── ai-development-guide/
+```
 
-- In Cursor, ask with a request like: `Validate this dependency update PR in the Kiali Backstage workspace.`
+## Rules
 
-## Claude
+Agnostic rules live in [`rules/`](./rules/). Each file uses dual frontmatter compatible with both Cursor (`alwaysApply`, `globs`) and Claude Code (`paths`).
 
-Claude-related resources live under [`claude/.claude`](./claude/.claude/), with skills stored using the standard `skill-name/SKILL.md` layout.
+To use them in a Kiali repo, symlink or copy into the tool-specific directory:
 
-- Use `kiali-backstage-validate-deps` when validating dependency update PRs in the Kiali Backstage workspace.
-- The Cursor rule and Claude skill now share the detailed workflow in `claude/.claude/skills/kiali-backstage-validate-deps/reference.md`, while keeping tool-specific entrypoints.
-- Invoke it in Claude with a request like: `Use the kiali-backstage-validate-deps skill to validate this dependency update PR.`
+```bash
+# Cursor
+ln -s /path/to/ai-tools/rules <kiali-repo>/.cursor/rules
+
+# Claude Code
+ln -s /path/to/ai-tools/rules <kiali-repo>/.claude/rules
+```
+
+## Skills
+
+Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/SKILL.md` layout. Both Cursor and Claude Code discover skills in this format.
+
+| Skill | Description |
+|-------|-------------|
+| `kiali-backstage-validate-deps` | Validate dependency update PRs for the Kiali Backstage workspace |
+| `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
+| `progress-report` | Generate a progress report for the current task |
