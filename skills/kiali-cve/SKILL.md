@@ -487,13 +487,10 @@ assign it to the user and request the reviewer using
 #### Requesting a reviewer
 
 Before creating the first PR (master/main), ask the user who should
-review the PRs. Offer Kiali maintainers as options, **excluding the
-PR assignee** (since the assignee cannot review their own PR):
-
-- `jshaughn`
-- `ferhoyos`
-- `hhovsepy`
-- Other (let the user type a GitHub username)
+review the PRs. Look up repository collaborators with write access
+using `gh api repos/<owner>/<repo>/collaborators --jq '.[].login'`,
+**exclude the PR assignee** (since the assignee cannot review their
+own PR), and present the list as options.
 
 The selected reviewer applies to **all** PRs for this CVE (master,
 backports, and OSSMC). After creating each PR, request review:
