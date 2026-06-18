@@ -7,6 +7,8 @@ description: Triage new OSSM Jira CVE issues for the Kiali component. Use when t
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
+The same approval rule applies to adding CVE PRs to the Kiali GitHub Project
+— ask first, then act only after the user confirms.
 
 ## Step 0: Verify Tool Access
 
@@ -19,7 +21,11 @@ Run these checks in parallel:
    authenticated.
 
 2. **GitHub CLI (`gh`)**: Run `gh auth status` to confirm the user is
-   authenticated to GitHub.
+   authenticated to GitHub (`repo` scope minimum for PR creation).
+
+   Project-board access is verified separately when the user approves
+   adding PRs to the project (see "Setting the GitHub Project on PRs"
+   in Step 7). Do not block triage on project scopes at Step 0.
 
 3. **GitLab CLI (`glab`)**: Run
    `glab auth status --hostname gitlab.cee.redhat.com` to confirm the
@@ -30,6 +36,10 @@ the user needs to authenticate:
 - Jira: "The Jira MCP server is not connected. Please check your MCP
   configuration."
 - GitHub: "Please run: `gh auth login`"
+- GitHub Project (when adding PRs to the project): "Please run:
+  `gh auth refresh -h github.com -s read:org,read:project,project` and
+  complete the browser/device authorization. Verify with
+  `gh project list --owner kiali`."
 - GitLab: "Please run: `glab auth login --hostname gitlab.cee.redhat.com`"
 
 Only proceed to Step 1 once all three tools are confirmed working.
@@ -480,9 +490,15 @@ Ask the user if they want to commit and create a PR. Also ask who
 should be requested as reviewer. The PR description must reference the
 CVE identifier but **MUST NOT include any OSSM Jira issue keys or
 references** (e.g. OSSM-XXXXX). The kiali GitHub repo is public, while
-OSSM security issues are Red Hat internal. After creating the PR,
-assign it to the user and request the reviewer using
-`gh pr edit <number> --add-reviewer <username>`.
+OSSM security issues are Red Hat internal.
+
+After creating **every** CVE PR, assign it to the user (use
+`issue_write` with `method: "update"` and the PR number, since
+`create_pull_request` does not support assignees).
+
+Adding PRs to the Kiali GitHub Project is a **separate step that
+requires user approval** — see "Setting the GitHub Project on PRs" below.
+Do not add PRs to the project automatically.
 
 #### Requesting a reviewer
 
@@ -512,41 +528,76 @@ This label is only added to the master/main PR, not to backport PRs.
 
 #### Setting the GitHub Project on PRs
 
-Every PR (master and backports) must be added to the Kiali GitHub
-Project and set to "In review" status. After creating a PR, look up
-the project number:
+CVE PRs should be tracked on the Kiali GitHub Project. This applies to
+all repositories and branches:
 
-```
-gh project list --owner kiali --format json
-```
+- `kiali/kiali` — master and backport PRs
+- `kiali/openshift-servicemesh-plugin` — main and backport PRs
 
-There is only one project. Add the PR to it:
+**Do not execute project updates without explicit user approval**, the
+same as Jira changes. When PRs are ready (after creating the master/main
+PR, after creating backports, or when backfilling an existing batch):
 
-```
-gh project item-add <PROJECT_NUMBER> --owner kiali --url <PR_URL>
-```
+1. **Ask the user** whether to add the PR(s) to the project and set
+   status to "In review". Present a list of PR URLs that would be updated.
 
-Then set the project status to "In review". First, find the item ID
-and the Status field metadata:
+2. **Verify token access** before running any `gh project` commands:
 
-```
-gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200
-gh project field-list <PROJECT_NUMBER> --owner kiali --format json
-```
+   ```
+   gh auth status
+   gh project list --owner kiali --format json
+   ```
 
-From the field list, find the Status field ID (type
-`ProjectV2SingleSelectField`, name `Status`) and the "In review"
-option ID. Then update each item:
+   Required token scopes: `read:org`, `read:project`, and `project`.
+   If `gh auth status` shows missing scopes, or project commands fail
+   with `unknown owner type` or `INSUFFICIENT_SCOPES`, stop and ask the
+   user to refresh:
 
-```
-gh project item-edit \
-  --project-id <PROJECT_ID> \
-  --id <ITEM_ID> \
-  --field-id <STATUS_FIELD_ID> \
-  --single-select-option-id <IN_REVIEW_OPTION_ID>
-```
+   ```
+   gh auth refresh -h github.com -s read:org,read:project,project
+   ```
 
-Do this for every PR immediately after adding it to the project.
+   Complete the browser/device authorization when prompted, then re-run
+   `gh project list --owner kiali` to confirm access before proceeding.
+
+3. **After the user confirms and access is verified**, look up the
+   project number (there is only one Kiali project):
+
+   ```
+   gh project list --owner kiali --format json
+   ```
+
+   Add each approved PR:
+
+   ```
+   gh project item-add <PROJECT_NUMBER> --owner kiali --url <PR_URL>
+   ```
+
+   Then set the project status to "In review". First, find the item ID
+   and the Status field metadata:
+
+   ```
+   gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200
+   gh project field-list <PROJECT_NUMBER> --owner kiali --format json
+   ```
+
+   From the field list, find the Status field ID (type
+   `ProjectV2SingleSelectField`, name `Status`) and the "In review"
+   option ID. Then update each item:
+
+   ```
+   gh project item-edit \
+     --project-id <PROJECT_ID> \
+     --id <ITEM_ID> \
+     --field-id <STATUS_FIELD_ID> \
+     --single-select-option-id <IN_REVIEW_OPTION_ID>
+   ```
+
+   The user may approve adding PRs one at a time or as a batch. Only
+   update the PRs the user explicitly approved.
+
+If access cannot be restored, provide the `gh project` commands for the
+user to run manually, or ask them to add the PRs via the GitHub UI.
 
 ### Backporting
 
@@ -603,7 +654,9 @@ For each backport branch:
    This causes GitHub to automatically display cross-references in the
    master PR timeline, making it easy to see all backport PRs and their
    merge status from the master PR.
-4. Assign the PR to the user
+4. Assign the PR to the user; add to the GitHub project only if the user
+   has approved project tracking (see "Setting the GitHub Project on
+   PRs" above)
 
 ## Step 8: Apply Fix to OSSMC (NPM/JS dependencies only, if affected)
 
@@ -637,7 +690,9 @@ The fix procedure is identical to Step 7 but using the paths above:
    (transitive deps)
 3. Run `yarn install --no-immutable` in the `plugin/` directory
 4. Verify the build succeeds
-5. Create PR against `main`, assign to the user
+5. Create PR against `main` and assign to the user; add to the GitHub
+   project only if the user has approved project tracking (see
+   "Setting the GitHub Project on PRs" in Step 7)
 
 Backporting follows the same process as described in Step 7, using the
 Supported Branches table in `AGENTS.md`. The OSSMC repo uses the same
