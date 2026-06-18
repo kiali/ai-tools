@@ -15,63 +15,69 @@ MCP server is connected before proceeding.
 
 ## Step R1: Find CVEs Pending Review
 
-### Jira query
+GitHub PRs are the primary source of truth. Search for open CVE PRs
+first, then look up corresponding Jira issues.
 
-Search for Kiali CVE issues in "Code Review" status:
+### 1a. Search GitHub for open CVE PRs
+
+Search all three repos **in parallel**:
+
+```bash
+gh pr list --repo kiali/kiali \
+  --search "CVE in:title state:open" \
+  --json number,title,headRefName,baseRefName,url,author \
+  --limit 50
+```
+
+```bash
+gh pr list --repo kiali/openshift-servicemesh-plugin \
+  --search "CVE in:title state:open" \
+  --json number,title,headRefName,baseRefName,url,author \
+  --limit 50
+```
+
+```bash
+gh pr list --repo kiali/kiali-operator \
+  --search "CVE in:title state:open" \
+  --json number,title,headRefName,baseRefName,url,author \
+  --limit 50
+```
+
+Group results by CVE identifier (extracted from PR title). Each CVE
+will have a master/main PR plus backport PRs across supported branches.
+
+### 1b. Find corresponding Jira issues
+
+For each CVE found in GitHub, search Jira for related issues:
 
 ```
-project = OSSM AND component = Kiali AND status = "Code Review" AND summary ~ CVE ORDER BY created DESC
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND summary ~ kiali ORDER BY created DESC
 ```
 
-Also run the secondary query for issues filed under other components:
+Also run Konflux queries per active OSSM version:
 
 ```
-project = OSSM AND summary ~ kiali AND status = "Code Review" AND summary ~ CVE ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-X-Y" AND summary ~ "CVE-YYYY-NNNNN" ORDER BY created DESC
 ```
-
-Run Konflux queries per active OSSM version (same pattern as triage.md
-Step 1, but filtering for "Code Review" status instead of "New").
 
 Use `jira_search` with fields
 `summary,status,components,priority,assignee,created,customfield_10875`
 and `limit` of 50. Set `projects_filter` to `OSSM`.
 
-Deduplicate and group by CVE identifier (from summary).
-
-### Extract PR URLs
-
-For each issue, read the Git Pull Request field (`customfield_10875`).
-This was set by triage in Step 9a and contains the GitHub PR URL
-corresponding to that issue's OSSM version.
-
-If the field is empty on some issues, fall back to searching GitHub:
-
-```bash
-gh pr list --repo kiali/kiali \
-  --search "CVE-YYYY-NNNNN in:title state:open" \
-  --json number,title,headRefName,baseRefName,url \
-  --limit 20
-```
-
-Also check OSSMC if OSSMC issues are present:
-
-```bash
-gh pr list --repo kiali/openshift-servicemesh-plugin \
-  --search "CVE-YYYY-NNNNN in:title state:open" \
-  --json number,title,headRefName,baseRefName,url \
-  --limit 20
-```
+Report the Jira status of each issue (typically "Code Review" or
+"In Progress") so the user knows the current state.
 
 ### User-provided input
 
 If user provides a specific CVE ID, PR URL, or Jira issue key, use that
-as the starting point and find all related issues and PRs.
+as the starting point and find all related PRs and issues.
 
 ### Present overview
 
-| CVE | Library | Jira Issues | PRs (kiali) | PRs (OSSMC) |
-|-----|---------|-------------|-------------|-------------|
-| CVE-YYYY-NNNNN | library-name | 8 issues | #101, #102, #103 | #21, #22 |
+| CVE | Library | PRs (kiali) | PRs (OSSMC) | PRs (operator) | Jira Issues (status) |
+|-----|---------|-------------|-------------|----------------|----------------------|
+| CVE-YYYY-NNNNN | library-name | #101, #102, #103 | #21, #22 | — | 8 issues (Code Review) |
+| CVE-YYYY-MMMMM | other-lib | #201, #202 | — | #51 | 4 issues (In Progress) |
 
 ## Step R2: Gather PR Details
 
@@ -205,15 +211,18 @@ Process repos separately. Within each repo:
 
 For each PR:
 
-1. **Approve**: Use `create_pull_request_review` (GitHub MCP) with
-   event `APPROVE` and body summarizing the review:
-   "CVE-YYYY-NNNNN fix reviewed. Dependency upgraded from X to Y.
-   Cross-branch consistency verified. CI passing."
+1. **Approve**:
+   ```bash
+   gh pr review <PR_NUMBER> --repo <owner>/<repo> --approve \
+     --body "CVE-YYYY-NNNNN fix reviewed. Dependency upgraded from X to Y. Cross-branch consistency verified. CI passing."
+   ```
 
-2. **Merge**: Use `merge_pull_request` (GitHub MCP) with
-   merge_method `merge` (see SKILL.md PR Conventions).
+2. **Merge** (squash — kiali repos only allow squash merge):
+   ```bash
+   gh pr merge <PR_NUMBER> --repo <owner>/<repo> --squash
+   ```
 
-3. **Verify merge succeeded**: Check response. If merge fails
+3. **Verify merge succeeded**: Check exit code. If merge fails
    (conflicts, branch protection), report and skip. Continue with
    remaining PRs.
 
@@ -230,16 +239,13 @@ After all PRs for a CVE are merged, update the Jira issues.
 
 ### 7a. Use issues already found in Step R1
 
-The Jira issues for this CVE were already identified in Step R1 (status
-"Code Review"). Use that same set — no need to re-query.
+The Jira issues for this CVE were already found in Step R1b. Use that
+same set — no need to re-query.
 
-If any issues were missed (e.g. user provided a CVE ID directly), run:
-
-```
-project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND summary ~ kiali AND status = "Code Review" ORDER BY created DESC
-```
-
-Also run Konflux queries per OSSM version (see triage.md Step 1).
+Issues may be in statuses other than "Code Review" (e.g. "In Progress"
+if triage didn't transition them). The transition in Step 7d should
+handle moving from the current status to Release Pending — verify the
+available transitions with `jira_get_transitions` first.
 
 ### 7b. Determine fix versions
 

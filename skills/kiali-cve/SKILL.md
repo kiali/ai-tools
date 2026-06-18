@@ -124,7 +124,7 @@ Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
   (e.g. "Backport of #<NUMBER> to <branch>.") for GitHub cross-references
 - All PRs added to the Kiali GitHub Project with "In review" status
   (requires user approval — see GitHub Project Setup)
-- Merge method: `merge` (not squash or rebase)
+- Merge method: `squash` (kiali repos only allow squash merge)
 
 ### Requesting a reviewer
 
@@ -260,3 +260,4 @@ The OSSM-to-Kiali branch mapping is in the "Supported Branches" table in
 |---|---|---|---|
 | `kiali/kiali` | `master` | `frontend/` (JS), root (Go) | Server |
 | `kiali/openshift-servicemesh-plugin` | `main` | `plugin/` (JS) | OSSMC |
+| `kiali/kiali-operator` | `master` | root (Python/Ansible) | Operator |
