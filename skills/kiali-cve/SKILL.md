@@ -119,9 +119,11 @@ Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
 ### Requesting a reviewer
 
 Before creating the first PR (master/main), ask the user who should
-review the PRs. Look up repository collaborators (see Reviewer
-Selection section below), **exclude the PR assignee**, and present
-the list as options.
+review the PRs. Look up repository collaborators with write access
+using `gh api repos/<owner>/<repo>/collaborators --jq '.[].login'`,
+**exclude the PR assignee** (cannot review own PR), and present the
+list as options.
+
 The selected reviewer applies to **all** PRs for this CVE (master,
 backports, and OSSMC). After creating each PR, request review:
 
@@ -148,9 +150,8 @@ issue with the PR URL for the branch that corresponds to the issue's
 OSSM version. Kiali server issues and OSSMC issues are separate Jira
 tickets, so each issue maps to exactly one PR URL.
 
-```
-jira_update_issue with fields: {"customfield_10875": "<PR_URL>"}
-```
+`jira_update_issue` with fields
+`{"customfield_10875": "<PR_URL>"}`
 
 ### GitHub Project Setup
 
@@ -189,13 +190,6 @@ Warn the user and ask whether to proceed with "Do Not Merge" labels or skip.
 The OSSM-to-Kiali branch mapping is in the "Supported Branches" table in
 `AGENTS.md`. Always read it before creating or reviewing backport PRs.
 `master` maps to the next unreleased OSSM version (not a backport target).
-
-## Reviewer Selection
-
-Look up repository collaborators with write access using
-`gh api repos/<owner>/<repo>/collaborators --jq '.[].login'`.
-Exclude the PR assignee (cannot review own PR) and present the
-list as options.
 
 ## Repos
 

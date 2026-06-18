@@ -7,7 +7,11 @@ This feature solves the problem of reviewing N near-identical PRs per CVE
 (one per supported branch). Instead of manually reviewing each PR, the
 agent summarizes the fix once and verifies consistency across branches.
 
-Prerequisites: Tool access verified per SKILL.md.
+Prerequisites: Tool access verified per SKILL.md. Additionally, review
+uses the GitHub MCP server for PR operations (`get_pull_request`,
+`get_pull_request_files`, `get_pull_request_status`,
+`create_pull_request_review`, `merge_pull_request`). Verify the GitHub
+MCP server is connected before proceeding.
 
 ## Step R1: Find CVEs Pending Review
 
@@ -207,7 +211,7 @@ For each PR:
    Cross-branch consistency verified. CI passing."
 
 2. **Merge**: Use `merge_pull_request` (GitHub MCP) with
-   merge_method `merge`.
+   merge_method `merge` (see SKILL.md PR Conventions).
 
 3. **Verify merge succeeded**: Check response. If merge fails
    (conflicts, branch protection), report and skip. Continue with
@@ -269,8 +273,11 @@ After approval, execute updates via `jira_update_issue`.
 
 ### 7d. Transition to Release Pending
 
+Verify the Release Pending transition ID using `jira_get_transitions`
+on one of the Code Review issues (expected ID `"131"` but always confirm).
+
 Transition all updated issues using `jira_transition_issue` with
-transition_id `"131"` (Release Pending).
+the verified transition ID.
 
 Present list for user approval before executing.
 
