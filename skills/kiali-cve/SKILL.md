@@ -1,134 +1,518 @@
 ---
 name: kiali-cve
-description: Triage and review OSSM Jira CVE issues for the Kiali component. Two features - triage (find new CVEs, close inapplicable issues, create fix PRs for master and supported branches) and review (review fix PRs across branches, verify consistency and CI, approve, merge, update Jira). Use when the user mentions CVE triage, CVE review, OSSM CVE, or kiali-cve.
-disable-model-invocation: true
+description: Triage new OSSM Jira CVE issues for the Kiali component. Use when the user mentions CVE triage, OSSM CVE, or kiali-cve.
 ---
 
-# Kiali CVE Management
-
-Two features: **triage** and **review**.
-
-| Trigger | Feature | Action |
-|---------|---------|--------|
-| "triage", "kiali-cve:triage", "new CVEs" | Triage | Read [triage.md](triage.md) and follow its steps |
-| "review", "kiali-cve:review", "review CVE PRs" | Review | Read [review.md](review.md) and follow its steps |
-
-If intent is unclear, ask the user which feature they want.
+# OSSM CVE Triage for Kiali
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
 
-## Tool Access Verification
+## Step 0: Verify Tool Access
 
-Before either feature, verify all tools in parallel:
+Before starting triage, verify that all required tools are accessible.
+Run these checks in parallel:
 
-1. **Jira MCP**: `jira_search` with query
-   `project = OSSM AND summary ~ CVE ORDER BY created DESC` (limit 1)
-2. **GitHub CLI**: `gh auth status`
-3. **GitLab CLI**: `glab auth status --hostname gitlab.cee.redhat.com`
+1. **Jira MCP**: Call `jira_search` with a trivial query
+   (`project = OSSM AND summary ~ CVE ORDER BY created DESC` with
+   `limit` of 1) to confirm the Jira MCP server is connected and
+   authenticated.
 
-If any fails, report and stop:
-- Jira: "The Jira MCP server is not connected. Check MCP configuration."
-- GitHub: "Run: `gh auth login`"
-- GitLab: "Run: `glab auth login --hostname gitlab.cee.redhat.com`"
+2. **GitHub CLI (`gh`)**: Run `gh auth status` to confirm the user is
+   authenticated to GitHub.
 
-## Jira API Reference
+3. **GitLab CLI (`glab`)**: Run
+   `glab auth status --hostname gitlab.cee.redhat.com` to confirm the
+   user is authenticated to the internal Red Hat GitLab.
 
-### Transition IDs
+If any tool fails, report which one(s) and stop. Provide the command
+the user needs to authenticate:
+- Jira: "The Jira MCP server is not connected. Please check your MCP
+  configuration."
+- GitHub: "Please run: `gh auth login`"
+- GitLab: "Please run: `glab auth login --hostname gitlab.cee.redhat.com`"
 
-| Transition | ID | Notes |
-|---|---|---|
-| New | 11 | |
-| In Progress | 41 | |
-| Closed | 61 | |
-| Code Review | — | Discover via `jira_get_transitions` on first use |
-| Release Pending | 131 | |
+Only proceed to Step 1 once all three tools are confirmed working.
 
-The "Code Review" transition ID is not hardcoded. On first use, call
-`jira_get_transitions` on any In Progress OSSM issue and cache the ID
-for the session. Always verify transition IDs before transitioning.
+## Step 1: Identify New CVE Issues
 
-### CVE Lifecycle
+Use the Jira MCP to find new CVE issues.
+
+### JQL Query
+
+The combined `status = New AND summary ~ CVE` JQL does not work reliably on this
+Jira instance. Use this multi-step approach instead:
+
+1. Run the primary query (component-based):
 
 ```
-New → In Progress → [create PRs] → Code Review → [merge PRs] → Release Pending
-                                    ^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                    triage sets    review sets
+project = OSSM AND component = Kiali AND status != Closed ORDER BY created DESC
 ```
 
-### Custom Fields
+2. Filter results client-side for issues where **status** is `New` and
+   **summary** contains `CVE`.
 
-| Field | ID | Type | Notes |
-|---|---|---|---|
-| VEX Justification | `customfield_10873` | Select | Values below |
-| Git Pull Request | `customfield_10875` | Textarea | GitHub PR URL |
+3. Run a secondary query to catch Kiali issues filed under other components
+   (e.g. "Istio", "Maistra"). Some Kiali CVEs — especially Konflux-built
+   images — are not tagged with the Kiali component:
 
-### VEX Justification Values (case-sensitive)
+```
+project = OSSM AND summary ~ kiali AND status != Closed ORDER BY created DESC
+```
 
-- `"Component not Present"` — language component absent (e.g. JS CVE on Python operator)
-- `"Vulnerable Code not Present"` — code doesn't exist (e.g. CVE targets Go 1.26, Kiali uses 1.25)
-- `"Vulnerable Code not in Execute Path"` — code exists but never called by Kiali
+   Filter these results the same way (status `New`, summary contains `CVE`).
+   Deduplicate against the primary results.
 
-### API Parameter Notes
+4. Run additional queries for Konflux image names. Jira text search
+   does not reliably match `kiali` inside path-like tokens such as
+   `redhat-user-workloads/kiali-3-3-ossmc`. Run one query per active
+   OSSM version using the hyphenated token that Jira does index:
 
-- `jira_transition_issue`: `fields` is an **object**
-  (e.g. `{"resolution": {"name": "Not a Bug"}}`)
-- `jira_add_comment`: comment text parameter is **`comment`**
-- `jira_update_issue`: `fields` is an **object**; for assignee use flat email
-  string (e.g. `{"assignee": "user@example.com"}`)
-- Comments cannot be included in `jira_transition_issue` (ADF format error).
-  Add separately via `jira_add_comment`.
-- VEX cannot be set in transition call. Set via `jira_update_issue` after.
+```
+project = OSSM AND summary ~ "kiali-X-Y" AND status != Closed ORDER BY created DESC
+```
+
+   Derive the `X-Y` values from the Supported Branches table in
+   `AGENTS.md`, replacing dots with hyphens (e.g. OSSM 3.3 becomes
+   `kiali-3-3`, OSSM 2.6 becomes `kiali-2-6`). Filter and deduplicate
+   as above.
+
+Use `jira_search` with fields `summary,status,components,priority,assignee,created`
+and `limit` of 50. Set `projects_filter` to `OSSM`.
+
+### User-Provided Issues
+
+If the user provides a specific Jira issue URL or key, fetch it with
+`jira_get_issue`, extract the CVE identifier from the summary, then search
+for all related Kiali issues:
+
+```
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND summary ~ kiali ORDER BY created DESC
+```
+
+This catches issues across all components and image types for that CVE.
+
+### Issue Naming Pattern
+
+```
+CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
+```
+
+- **Operator images**: `kiali-rhel9-operator`, `kiali-operator-bundle`
+- **Server images**: `kiali-rhel9`, `kiali-rhel8`
+- **OSSMC images**: `kiali-ossmc-rhel9`, `kiali-ossmc-rhel8`
+- **Konflux images**: `redhat-user-workloads/kiali-X-Y` (e.g.
+  `redhat-user-workloads/kiali-3-2`). These are often filed under non-Kiali
+  components (e.g. "Istio", "Maistra") — the secondary search is needed to
+  find them.
+- **OSSM versions**: Typically span all active versions (e.g. 2.6, 3.0, 3.1, 3.2)
+- **Grouping**: A single CVE generates multiple issues — one per image per OSSM version
+
+### Presenting Results
+
+Summarize findings grouped by CVE, showing:
+- The CVE identifier and affected library/description
+- A table of issue keys organized by image and OSSM version
+- Total issue count
+- Whether any are already assigned
+
+### Multiple CVEs
+
+Step 1 may find issues for more than one CVE. Group the issues by CVE
+identifier (extracted from the beginning of the summary). Then perform
+the applicable steps independently for **each** CVE before moving to the
+next one. Present each CVE group separately so the user can make decisions
+per-CVE.
+
+- **JavaScript/NPM CVEs**: Steps 2-9 (including OSSMC in Step 8)
+- **Go CVEs**: Steps 2-7, 9 (Step 8/OSSMC does not apply; operator
+  issues are closed or handled manually, server issues are fixed)
+- **Python CVEs**: Steps 2-3 (close operator issues), then Steps 4-5
+  for any remaining issues (handled manually)
+- **Other**: Steps 2, 4-5 (remaining steps handled manually)
+
+## Step 2: Classify the Vulnerability Type
+
+For the current CVE, ask the user:
+"What type of dependency is this? JavaScript/NPM, Go, Python, or Other?"
+
+The answer determines how subsequent steps are handled:
+- **JavaScript/NPM**: Proceed to Step 3 (close operator issues), then
+  Steps 4-9 (including OSSMC in Step 8)
+- **Go**: Proceed to Step 3 (handle operator issues per Go-specific rules),
+  then Steps 4-7 (assign, qualify, fix server issues), then Step 9.
+  Step 8 (OSSMC) does not apply. Operator fixes are manual.
+- **Python**: Proceed to Step 3 (close operator issues), then Steps 4-5
+  for any remaining issues. Remaining steps are handled manually.
+- **Other**: Skip Step 3, proceed to Steps 4-5 (assign and move to
+  In Progress). Remaining steps are handled manually.
+
+## Step 3: Handle Operator and Bundle Issues
+
+Operator and bundle images are identified by these strings in the summary:
+- `kiali-rhel9-operator`
+- `kiali-operator-bundle`
+
+### 3a. Bundle Issues
+
+The operator bundle (`kiali-operator-bundle`) is an OLM metadata image. It
+does not contain executable code, so no code CVE can affect it. Close ALL
+bundle issues regardless of vulnerability type.
+
+- Resolution: "Not a Bug"
+- VEX Justification: "Component not Present"
+- Comment: "The kiali-operator-bundle is an OLM metadata image that does not
+  contain executable code. It cannot be affected by code vulnerabilities."
+
+### 3b. Operator Issues — JavaScript/NPM CVEs
+
+The operator (`kiali-rhel9-operator`) is Python/Ansible-based and does not
+contain JavaScript code. Close ALL operator issues for JavaScript/NPM CVEs.
+
+- Resolution: "Not a Bug"
+- VEX Justification: "Component not Present"
+- Comment: "The Kiali operator is Python/Ansible-based and does not contain
+  a JavaScript component. Any JavaScript dependency is transitive from the
+  ansible-operator base image."
+
+### 3c. Operator Issues — Go CVEs
+
+Only the latest operator release is supported. The latest OSSM version
+is the highest version that has operator CVE issues filed against it.
+
+**Older OSSM versions** (not the latest): Close as "Won't Do" with comment:
+"Closing as Won't Do because only the latest release of Kiali Operator is
+supported, and handles all supported versions of Kiali. Users are encouraged
+to update if they are using an older version."
+
+**Latest OSSM version**: Ask the user: "Does Kiali expose this vulnerability?"
+- If **no**: Close as "Not a Bug" with VEX Justification "Component not
+  Present" and comment: "The Kiali operator is Python/Ansible-based and does
+  not contain a Go component. Any Go dependency is transitive from the
+  ansible-operator base image."
+- If **yes**: Leave open — these issues will be assigned and moved to
+  In Progress in Steps 4-5 for manual handling.
+
+### 3d. Operator Issues — Python CVEs
+
+The operator uses Python via the ansible-operator base image, but Kiali
+has minimal use of Python and does not expose Python library vulnerabilities.
+Close ALL operator issues for Python CVEs.
+
+- Resolution: "Not a Bug"
+- VEX Justification: "Vulnerable Code not in Execute Path"
+- Comment: "Kiali Operator has minimal use of Python and does not expose
+  this CVE. Kiali regularly updates the ansible operator base image when
+  it is updated."
+
+### 3e. Operator Issues — Other CVEs
+
+Skip — these proceed to Steps 4-5 (assign and move to In Progress) for
+manual handling.
+
+Present all proposed closures in a single summary table for user approval
+before executing any changes.
 
 ### Closure Sequences
 
-**"Not a Bug"** (JS operator issues, Go not-exposed, early closures):
-1. `jira_transition_issue` — transition_id `"61"`,
-   fields `{"resolution": {"name": "Not a Bug"}}`
-2. `jira_add_comment` — comment text
-3. `jira_update_issue` —
-   `{"customfield_10873": {"value": "<VEX value>"}}`
+**Do not execute any changes until the user explicitly approves.**
 
-**"Won't Do"** (Go older operator versions):
-1. `jira_transition_issue` — transition_id `"61"`,
-   fields `{"resolution": {"name": "Won't Do"}}`
-2. `jira_add_comment` — comment text
-3. No VEX for Won't Do.
+**API parameter notes:**
+- `jira_transition_issue`: the `fields` parameter is an **object**
+  (e.g. `{"resolution": {"name": "Not a Bug"}}`)
+- `jira_add_comment`: the comment text parameter is named **`comment`**
+- `jira_update_issue`: the `fields` parameter is an **object**; for
+  `assignee`, provide a flat string email
+  (e.g. `{"assignee": "user@example.com"}`)
 
-## Issue Naming and Image Classification
+Comments cannot be included in the `jira_transition_issue` call (ADF format
+error). Add comments separately using `jira_add_comment` after the transition.
 
-Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]`
+### VEX Justification
 
-| Category | Image strings | Language |
-|---|---|---|
-| Operator | `kiali-rhel9-operator` | Python/Ansible |
-| Bundle | `kiali-operator-bundle` | OLM metadata (no code) |
-| Server | `kiali-rhel9`, `kiali-rhel8` | Go + JS frontend |
-| OSSMC | `kiali-ossmc-rhel9`, `kiali-ossmc-rhel8` | JS |
-| Konflux | `redhat-user-workloads/kiali-X-Y` | Varies |
-| Konflux OSSMC | `kiali-X-Y-ossmc` | JS |
+The VEX Justification field is `customfield_10873`. Valid values
+(case-sensitive) include:
 
-## PR Conventions
+- `"Component not Present"` — the entire language component is absent from
+  the product (e.g. JS or Go CVE on the Python/Ansible-based operator or
+  operator bundle)
+- `"Vulnerable Code not Present"` — the vulnerable code does not exist in
+  the product (e.g. CVE affects Go 1.26 but Kiali server uses Go 1.25)
+- `"Vulnerable Code not in Execute Path"` — the vulnerable code exists in
+  the image but is never called by Kiali (e.g. Go stdlib function that
+  Kiali does not use, or Python library CVE on the operator where Kiali
+  has minimal Python usage and does not expose the vulnerability)
 
-- PRs **must not** reference OSSM Jira issue keys (public repo, internal issues)
-- Master/main PRs get `backport needed` label
-- Backport PR descriptions reference master PR number for cross-linking
-- All PRs added to the Kiali GitHub Project with "In review" status
-- Merge method: `merge` (not squash or rebase)
+Set VEX via `jira_update_issue` after the transition since it cannot be
+included in the transition call.
 
-### GitHub Project Setup
+### "Not a Bug" closure
 
-After creating a PR, add it to the Kiali project:
+Used for: JS operator issues, Go latest-not-exposed, and early closures
+(Step 6d).
 
-```bash
+1. `jira_transition_issue` with transition_id `"61"` and fields
+   `{"resolution": {"name": "Not a Bug"}}`
+2. `jira_add_comment` with `comment` set to the appropriate comment text
+3. `jira_update_issue` with fields
+   `{"customfield_10873": {"value": "<appropriate VEX value>"}}` — choose
+   the VEX value based on the reason (see above)
+
+### "Won't Do" closure
+
+Used for: Go older-version operator issues.
+
+1. `jira_transition_issue` with transition_id `"61"` and fields
+   `{"resolution": {"name": "Won't Do"}}`
+2. `jira_add_comment` with `comment` set to the comment text
+
+No VEX Justification is set for "Won't Do" resolutions.
+
+## Step 4: Assign Remaining Open Issues for This CVE
+
+After operator issues are handled (closed or left open), assign all remaining
+open issues for this CVE. Ask the user: "Who should the remaining issues be
+assigned to?" The default should be the current user.
+
+If the user confirms the default or provides a different assignee, use
+`jira_update_issue` to set the assignee on each remaining open issue:
+- **fields**: `{"assignee": "<email>"}`
+
+Present the list of issues to be assigned and the proposed assignee for approval
+before executing.
+
+## Step 5: Move Issues to In Progress
+
+After assignment, transition this CVE's remaining open issues to "In Progress" using
+`jira_transition_issue` with:
+- **transition_id**: `"41"` (In Progress)
+
+Present the list of issues to be transitioned for approval before executing.
+
+## Step 6: Qualify the Vulnerability
+
+After initial triage is complete, extract details from the CVE and check the
+Kiali codebase to determine if a fix is straightforward.
+
+### 6a. Extract vulnerability details
+
+Use `jira_get_issue` on one of the open issues (with `fields` set to
+`"description"`) and extract from the description:
+- **Library name** (e.g. `lodash`, `immutable`)
+- **Fixed version** (often stated as "upgrade to version X.Y.Z")
+- **Vulnerability type** (e.g. prototype pollution, arbitrary code execution)
+
+### 6b. Check current dependency version
+
+**Before checking any branch**, always fetch the latest refs from
+upstream to avoid using stale local data. Fetch `master` plus all
+versioned branches from the Supported Branches table in `AGENTS.md`:
+
+```
+git fetch upstream master <branch1> <branch2> ...
+```
+
+Then use `git show upstream/<branch>:<file>` to inspect files on each
+branch without switching branches. Check **all supported branches**, not
+just master — the fix may already have been applied on some or all of
+them by another developer or automated tooling.
+
+**For NPM/JS dependencies:**
+1. Read `frontend/package.json` and search for the library name
+2. If not found as a direct dependency, search `frontend/yarn.lock` for the
+   package — it may be a transitive dependency
+
+**For Go third-party dependencies:**
+1. Read `go.mod` and search for the module name
+2. If not a direct dependency, check `go.sum`
+
+**For Go standard library vulnerabilities** (e.g. `crypto/x509`, `os`,
+`net/http` — identifiable by the CVE summary referencing a Go stdlib
+package rather than a third-party module):
+1. The library is part of Go itself, not a third-party module in `go.mod`
+2. Check the Go version in `go.mod` (the `go X.Y.Z` directive)
+3. Search the web for the CVE to determine which Go versions are affected
+   and which patch version includes the fix
+4. Determine whether Kiali's Go version is in the affected range
+5. If the Go version IS in the affected range, search the Kiali codebase
+   for usage of the affected function (e.g. `grep` for `os.Root`,
+   `Root.Chmod`, `x509.ParseCertificate`, etc.)
+
+### 6c. Present findings
+
+Summarize for the user:
+- Library name and current version in the codebase
+- Whether it is a direct or transitive dependency
+- The fixed version (if stated in the CVE description)
+- Whether the current version is already at or above the fix
+
+Then ask the user how to proceed (e.g. attempt the upgrade, investigate
+further, or handle manually).
+
+### 6d. Early closure (not affected)
+
+If qualification determines Kiali is not affected, present the findings
+and ask the user whether to close the issues immediately. Kiali may be
+"not affected" for two reasons:
+
+1. **Go version not in affected range**: The CVE only affects specific Go
+   versions and Kiali's Go version is outside that range.
+   - VEX Justification: `"Vulnerable Code not Present"`
+   - Comment template: "CVE-YYYY-NNNNN only affects Go X.Y (fixed in
+     X.Y.Z). Kiali uses Go A.B.C, which is not vulnerable. The vulnerable
+     code is not present."
+
+2. **Vulnerable function never called**: The Go version is in the affected
+   range, but Kiali never calls the vulnerable function.
+   - VEX Justification: `"Vulnerable Code not in Execute Path"`
+   - Comment template: "CVE-YYYY-NNNNN affects Go's PACKAGE.FUNCTION.
+     Kiali does not use PACKAGE.FUNCTION anywhere in its codebase. The
+     vulnerable code is not in the execute path."
+     (Replace PACKAGE.FUNCTION with the actual name, e.g. `os.Root.Chmod`)
+
+Follow the "Not a Bug" closure sequence for all issues (transition, comment,
+VEX). Steps 7-9 do not apply when closing early.
+
+### Go CVEs: operator vs server
+
+For Go CVEs, **operator** fixes are handled manually (the operator depends
+on ansible-operator, which is upstream). Automated triage for operator
+issues is complete after Step 5.
+
+**Server** Go fixes can proceed to Step 7, which covers both JS and Go
+dependency upgrades.
+
+## Step 7: Fix the Vulnerability
+
+If the user approves an upgrade attempt, create a PR against master first.
+If CI passes and the user confirms, create backport PRs for older versions
+back to the oldest version reported by the CVEs.
+
+### NPM/JS upgrade approach
+
+Do NOT add `resolutions` to `package.json` unless absolutely necessary.
+The approach differs based on whether the library is a direct or transitive
+dependency (Step 6c will have determined this).
+
+**Common first step:**
+1. Create a new branch from master (e.g. `CVE-YYYY-NNNNN-library-upgrade`)
+
+**For direct dependencies** (listed in `frontend/package.json`):
+2. Update the version in `frontend/package.json` to the **latest
+   version within the same major** (not just the minimum CVE fix
+   version). Use `npm view <package> version` to find the latest.
+   For example, if the CVE fix is `1.15.1` but the latest `1.x` is
+   `1.15.2`, set `"^1.15.2"` in `package.json`. This keeps
+   `package.json` consistent with what `yarn.lock` resolves.
+3. Run `yarn install --no-immutable` in the `frontend/` directory
+
+**For transitive/indirect dependencies** (only in `frontend/yarn.lock`):
+2. Remove the old entry for the package from `frontend/yarn.lock` entirely
+   (the entry block starts with `"package@npm:..."` and ends before the next
+   top-level entry). Use a script to do this reliably rather than manual
+   editing, since lockfile entries can be long and complex.
+3. Run `yarn install --no-immutable` in the `frontend/` directory to
+   regenerate the lockfile with the latest available version
+
+**NPM/JS verification steps:**
+4. Run `make build-ui` to verify the frontend builds
+5. Run `make build-ui-test` to verify frontend tests pass
+6. Present the diff and results to the user for review
+
+### Go third-party module upgrade approach
+
+1. Create a new branch from master (e.g. `CVE-YYYY-NNNNN-library-upgrade`)
+2. Run `go get <module>@latest` to pull the latest version within the same
+   major version (e.g. `go get github.com/go-jose/go-jose/v4@latest`).
+   Go's semantic import versioning ensures `@latest` stays within the
+   current major version. This preempts future CVEs for the same module.
+3. Run `go mod tidy`
+
+**Go verification steps:**
+4. Run `make build` to verify the backend builds
+5. Run `make test` to verify backend tests pass
+6. Present the diff and results to the user for review
+
+### Go standard library upgrade approach
+
+For Go stdlib CVEs, the fix is upgrading the Go version in `go.mod`.
+
+**Master branch:**
+1. Create a new branch from master (e.g. `CVE-YYYY-NNNNN-go-upgrade`)
+2. Update the `go` directive in `go.mod` to the fixed Go version
+3. Run `go mod tidy`
+4. Verify with `make build` and `make test`
+
+**Supported branches (backports):**
+Before backporting a Go version bump to a supported branch, verify that
+the fixed Go version is available in the downstream builder image.
+
+First, check that `skopeo` can access the Red Hat Brew registry. Run:
+
+```
+skopeo inspect docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder 2>&1 | head -5
+```
+
+If authentication fails, ask the user to log in before continuing:
+"I need access to the Red Hat Brew registry to check the downstream Go
+builder version. Please run: `podman login brew.registry.redhat.io`
+and let me know when it's done."
+
+Once authenticated, list available Go tags for the target minor version:
+
+```
+skopeo inspect docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder 2>&1 \
+  | python3 -c "import sys,json; tags=json.load(sys.stdin)['RepoTags']; [print(t) for t in sorted(tags) if '1.XX' in t]"
+```
+
+(Replace `1.XX` with the Go minor version, e.g. `1.25`.)
+
+If the fixed Go version tag is present, backports can proceed. If not,
+skip the backports for that branch.
+
+If the fixed Go version is **not available** downstream, skip the
+`go.mod` update for that supported branch — the fix cannot be built
+there until the builder image is updated.
+
+### After successful build
+
+Ask the user if they want to commit and create a PR. Also ask who
+should be requested as reviewer. The PR description must reference the
+CVE identifier but **MUST NOT include any OSSM Jira issue keys or
+references** (e.g. OSSM-XXXXX). The kiali GitHub repo is public, while
+OSSM security issues are Red Hat internal. After creating the PR,
+assign it to the user and request the reviewer using
+`gh pr edit <number> --add-reviewer <username>`.
+
+#### Setting the GitHub Project on PRs
+
+Every PR (master and backports) must be added to the Kiali GitHub
+Project and set to "In review" status. After creating a PR, look up
+the project number:
+
+```
 gh project list --owner kiali --format json
+```
+
+There is only one project. Add the PR to it:
+
+```
 gh project item-add <PROJECT_NUMBER> --owner kiali --url <PR_URL>
 ```
 
-Then set status to "In review":
-```bash
+Then set the project status to "In review". First, find the item ID
+and the Status field metadata:
+
+```
 gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200
 gh project field-list <PROJECT_NUMBER> --owner kiali --format json
+```
+
+From the field list, find the Status field ID (type
+`ProjectV2SingleSelectField`, name `Status`) and the "In review"
+option ID. Then update each item:
+
+```
 gh project item-edit \
   --project-id <PROJECT_ID> \
   --id <ITEM_ID> \
@@ -136,34 +520,222 @@ gh project item-edit \
   --single-select-option-id <IN_REVIEW_OPTION_ID>
 ```
 
-## Code Freeze Check
+Do this for every PR immediately after adding it to the project.
 
-Before creating or merging backport PRs, check downstream code freeze:
+### Backporting
 
-```bash
-glab api --hostname gitlab.cee.redhat.com \
-  "projects/istio%2Fkonflux%2Fkiali-fbc/repository/files/renovate.json/raw?ref=main"
+After the main/master PR is created (and ideally merged), ask the user
+whether to create backport PRs for supported release branches. Backports
+should be offered even if there are no Jira issues for a specific OSSM
+version — the fix may still be needed.
+
+#### Code freeze check
+
+Before creating backport PRs, check whether the Kiali downstream is in
+code freeze. Fetch the renovate configuration using `glab`:
+
+```
+glab api --hostname gitlab.cee.redhat.com "projects/istio%2Fkonflux%2Fkiali-fbc/repository/files/renovate.json/raw?ref=main"
 ```
 
-If `"automerge": false` in `packageRules`, code freeze is enabled.
-Warn the user and ask whether to proceed with "Do Not Merge" labels or skip.
+Inspect the `automerge` field in the `packageRules`. If
+`"automerge": false`, code freeze is **enabled**.
 
-## Version Mapping
+When code freeze is active, warn the user:
+"Kiali downstream is currently in code freeze. Backport PRs cannot be
+merged until code freeze is lifted."
 
-The OSSM-to-Kiali branch mapping is in the "Supported Branches" table in
-`AGENTS.md`. Always read it before creating or reviewing backport PRs.
-`master` maps to the next unreleased OSSM version (not a backport target).
+Then ask whether to:
+1. **Create backport PRs with a "Do Not Merge" label** — this signals
+   to other developers that these PRs are ready but blocked by code
+   freeze. Use `gh pr edit <number> --add-label "Do Not Merge"` after
+   creating each backport PR.
+2. **Skip backports for now** — revisit after code freeze is lifted.
 
-## Kiali Maintainers (for reviewer selection)
+Ask the user which branches to backport to. The OSSM-to-Kiali version
+mapping is defined in the "Supported Branches" table in `AGENTS.md`
+(the single source of truth for branch mappings).
 
-Exclude the PR assignee (cannot review own PR):
-- `jshaughn`
-- `ferhoyos`
-- `hhovsepy`
+**Important notes for CVE triage:**
+- `master` maps to the next unreleased OSSM version and is NOT a
+  backport target — it receives the initial fix, not a backport.
 
-## Repos
+Backport to all supported branches back to the oldest version reported
+by the CVEs.
 
-| Repo | Main branch | Dependency path | Image type |
-|---|---|---|---|
-| `kiali/kiali` | `master` | `frontend/` (JS), root (Go) | Server |
-| `kiali/openshift-servicemesh-plugin` | `main` | `plugin/` (JS) | OSSMC |
+For each backport branch:
+1. Create a branch from `origin/<version>` (e.g.
+   `CVE-YYYY-NNNNN-library-vX.Y`)
+2. Apply the same type-appropriate change:
+   - **NPM/JS**: update `package.json` to the latest version within
+     the same major and/or remove entries from `yarn.lock`, then
+     `yarn install --no-immutable`
+   - **Go**: `go get <module>@latest`, then `go mod tidy`
+3. Commit, push to the user's fork, and create a PR targeting the release
+   branch
+4. Assign the PR to the user
+
+## Step 8: Apply Fix to OSSMC (NPM/JS dependencies only, if affected)
+
+Check the Jira issue summaries from Step 1 for OSSMC image names:
+- `kiali-ossmc-rhel9`
+- `kiali-ossmc-rhel8`
+- `kiali-X-Y-ossmc` (Konflux-built)
+
+If OSSMC issues exist for this CVE (Konflux or non-Konflux), the fix
+must be applied to the OSSMC repo as well — Kiali and OSSMC have
+separate `package.json` files. Inform the user and ask whether to
+apply the same fix to the OSSMC repo (`kiali/openshift-servicemesh-plugin`).
+
+If the user confirms, apply the same upgrade approach as Step 7 with these
+differences:
+
+### OSSMC repo differences
+
+- **Repo**: `kiali/openshift-servicemesh-plugin` (vs `kiali/kiali`)
+- **Dependency path**: `plugin/` (vs `frontend/`)
+- **Main branch**: `main` (vs `master`)
+- **Package file**: `plugin/package.json` (vs `frontend/package.json`)
+- **Lockfile**: `plugin/yarn.lock` (vs `frontend/yarn.lock`)
+
+Ask the user for the local path to the OSSMC repo if not already known.
+
+The fix procedure is identical to Step 7 but using the paths above:
+1. Create a branch from `main`
+2. Update `plugin/package.json` to the latest version within the same
+   major (direct deps) or remove entries from `plugin/yarn.lock`
+   (transitive deps)
+3. Run `yarn install --no-immutable` in the `plugin/` directory
+4. Verify the build succeeds
+5. Create PR against `main`, assign to the user
+
+Backporting follows the same process as described in Step 7, using the
+Supported Branches table in `AGENTS.md`. The OSSMC repo uses the same
+branch names.
+
+## Step 9: Set Fix Versions and Close Issues
+
+After fixes are complete (automated PRs merged for JS CVEs, or manual fix
+completed for Go/Other CVEs), set the fix version on each remaining open
+Jira issue for this CVE.
+
+### Determining the fix version
+
+Each issue targets a specific OSSM minor version (visible in the summary
+as `[ossm-X.Y]`). The fix version is the next unreleased patch for that
+minor version.
+
+To determine the correct fix version:
+1. Use `jira_get_project_versions` with `project_key` set to `"OSSM"` to
+   retrieve all project versions. Filter for versions where
+   `released: false` and `archived: false` that match the target OSSM
+   minor version. Pick the lowest unreleased patch (e.g. for OSSM 3.2,
+   if both `OSSM 3.2.4` and `OSSM 3.2.5` are unreleased, use
+   `OSSM 3.2.4`).
+2. If no unreleased version exists for the minor, ask the user for the
+   fix version.
+
+### Applying fix versions
+
+Present a table of all issues with their proposed fix versions for user
+approval before making any changes. Then update each issue using
+`jira_update_issue` with:
+- **fields**: `{"fixVersions": [{"name": "<fix version>"}]}`
+
+### Transitioning to Release Pending
+
+After fix versions are set, ask the user whether to transition the issues
+to "Release Pending". If approved, use `jira_transition_issue` to move
+each issue.
+
+**Always look up available transitions** using `jira_get_transitions`
+before transitioning. Transition IDs can vary by project and workflow.
+Known transition IDs for the OSSM project (verify before use):
+
+| Transition | ID |
+|---|---|
+| New | 11 |
+| In Progress | 41 |
+| Closed | 61 |
+| Release Pending | 131 |
+
+After completing the applicable steps for this CVE, if there are additional
+CVEs from Step 1, repeat the process for the next CVE.
+
+## Step 10: Review Existing In Progress CVEs
+
+After all new CVEs from Step 1 have been triaged, automatically check
+whether any existing In Progress CVEs can be unblocked.
+
+Search for open In Progress CVE issues:
+
+```
+project = OSSM AND component = Kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
+```
+
+Also run the secondary query:
+
+```
+project = OSSM AND summary ~ kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
+```
+
+Deduplicate and group by CVE.
+
+### 10a. Identify blockers for each CVE
+
+For each In Progress CVE group, **independently** determine the fix
+version required for that specific CVE. Do NOT assume that multiple
+CVEs share the same blocker — each CVE may require a different
+dependency version. Look up each CVE (web search or issue description)
+to find the exact fix version before checking whether it is available
+downstream.
+
+Common blockers include:
+
+- **Downstream builder not updated**: A Go stdlib CVE fix requires a
+  newer Go version that was not yet available in the downstream
+  `openshift-golang-builder` image. First, look up which Go version
+  fixes this specific CVE, then check the builder registry (see
+  "Supported branches (backports)" in Step 7) to see if that version
+  is available.
+- **Upstream PR not yet merged**: The master/main PR was created but
+  has not been merged yet. Check the PR status on GitHub.
+- **Backport PRs pending**: The master fix was merged but backport PRs
+  for release branches have not been created yet.
+- **Fix version / Release Pending transition pending**: The fix is
+  merged but Jira issues have not been moved to Release Pending with
+  fix versions set (Step 9).
+
+### 10b. Present findings
+
+Present a summary for each In Progress CVE:
+
+- The CVE identifier, description, and issue count
+- Current assignee and age (days in progress)
+- **Blocker status**: what was blocking, and whether it is now resolved
+- **Recommended action**: what can be done now (e.g. "Downstream Go
+  1.25.9 is now available — backports can proceed", or "Still blocked —
+  Go 1.25.9 not yet in builder")
+
+### 10c. Act on unblocked CVEs
+
+For any CVE where the blocker has been resolved:
+
+**If the CVE is assigned to the current user**, ask whether to proceed.
+Then resume from the appropriate step:
+
+- If backports were blocked by the downstream builder: resume from
+  Step 7 (backporting section)
+- If the master PR needs to be merged: inform the user
+- If fix versions / Release Pending are pending: resume from Step 9
+- If qualification was incomplete: resume from Step 6
+
+**If the CVE is assigned to a different user**, ask the current user
+which action to take:
+
+1. **Take over the fix**: Reassign the issues to the current user and
+   resume from the appropriate step above.
+2. **Notify the assignee**: Add a comment to the Jira issue(s)
+   informing the assignee that the blocker is resolved (e.g. "The Go
+   version required to fix this CVE is now available in the downstream
+   builder. Backports can proceed."). Use `jira_add_comment` for this.
