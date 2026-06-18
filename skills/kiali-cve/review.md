@@ -228,9 +228,9 @@ For each PR:
 
 ### After all PRs merged
 
-Remove `backport needed` label from master/main PR:
+Add `backport completed` label to master/main PR:
 ```bash
-gh pr edit <PR_NUMBER> --repo <owner>/<repo> --remove-label "backport needed"
+gh pr edit <PR_NUMBER> --repo <owner>/<repo> --add-label "backport completed"
 ```
 
 ## Step R7: Update Jira
