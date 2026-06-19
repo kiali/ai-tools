@@ -5,6 +5,14 @@ qualify vulnerabilities, and create fix PRs for master and supported branches.
 
 Prerequisites: Tool access verified per SKILL.md.
 
+## Output Formatting
+
+- Always present PR references as clickable links:
+  `https://github.com/<owner>/<repo>/pull/<number>` (not just `#123`)
+- Keep output concise — prefer tables over verbose prose
+- Jira issue keys should link to the issue:
+  `https://issues.redhat.com/browse/<KEY>`
+
 ## Step 1: Identify New CVE Issues
 
 ### JQL Queries
@@ -351,8 +359,8 @@ Present a table for user approval:
 
 | Issue | OSSM | Image | PR URL |
 |-------|------|-------|--------|
-| OSSM-12345 | 3.3 | kiali-rhel9 | kiali/kiali#101 |
-| OSSM-12346 | 2.6 | kiali-ossmc-rhel9 | kiali/openshift-servicemesh-plugin#21 |
+| [OSSM-12345](https://issues.redhat.com/browse/OSSM-12345) | 3.3 | kiali-rhel9 | [kiali/kiali#101](https://github.com/kiali/kiali/pull/101) |
+| [OSSM-12346](https://issues.redhat.com/browse/OSSM-12346) | 2.6 | kiali-ossmc-rhel9 | [kiali/openshift-servicemesh-plugin#21](https://github.com/kiali/openshift-servicemesh-plugin/pull/21) |
 
 After approval, set each issue:
 `jira_update_issue` with `{"customfield_10875": "<PR_URL>"}`

@@ -7,11 +7,16 @@ This feature solves the problem of reviewing N near-identical PRs per CVE
 (one per supported branch). Instead of manually reviewing each PR, the
 agent summarizes the fix once and verifies consistency across branches.
 
-Prerequisites: Tool access verified per SKILL.md. Additionally, review
-uses the GitHub MCP server for PR operations (`get_pull_request`,
-`get_pull_request_files`, `get_pull_request_status`,
-`create_pull_request_review`, `merge_pull_request`). Verify the GitHub
-MCP server is connected before proceeding.
+Prerequisites: Tool access verified per SKILL.md (Jira MCP, GitHub CLI,
+GitLab CLI). All GitHub operations use the `gh` CLI.
+
+## Output Formatting
+
+- Always present PR references as clickable links:
+  `https://github.com/<owner>/<repo>/pull/<number>` (not just `#123`)
+- Keep output concise — prefer tables over verbose prose
+- Jira issue keys should link to the issue:
+  `https://issues.redhat.com/browse/<KEY>`
 
 ## Step R1: Find CVEs Pending Review
 
@@ -74,22 +79,37 @@ as the starting point and find all related PRs and issues.
 
 ### Present overview
 
+Use full PR links so they are clickable. Example table:
+
 | CVE | Library | PRs (kiali) | PRs (OSSMC) | PRs (operator) | Jira Issues (status) |
 |-----|---------|-------------|-------------|----------------|----------------------|
-| CVE-YYYY-NNNNN | library-name | #101, #102, #103 | #21, #22 | — | 8 issues (Code Review) |
-| CVE-YYYY-MMMMM | other-lib | #201, #202 | — | #51 | 4 issues (In Progress) |
+| CVE-YYYY-NNNNN | library-name | [#101](https://github.com/kiali/kiali/pull/101), [#102](https://github.com/kiali/kiali/pull/102) | [#21](https://github.com/kiali/openshift-servicemesh-plugin/pull/21) | — | [OSSM-12345](https://issues.redhat.com/browse/OSSM-12345) +7 (Code Review) |
+| CVE-YYYY-MMMMM | other-lib | [#201](https://github.com/kiali/kiali/pull/201) | — | [#51](https://github.com/kiali/kiali-operator/pull/51) | 4 issues (In Progress) |
 
 ## Step R2: Gather PR Details
 
-For each PR in the group, collect in parallel:
+For each PR in the group, collect in parallel using `gh` CLI:
 
-1. **PR metadata**: `get_pull_request` (GitHub MCP) — title, description,
-   base branch, state, mergeable status
-2. **Changed files**: `get_pull_request_files` (GitHub MCP) — file list
-   with additions/deletions
-3. **CI status**: `get_pull_request_status` (GitHub MCP) — combined check
-   status
-4. **Diff**: `gh pr diff <number> --repo <owner>/<repo>` — actual changes
+1. **PR metadata** (title, description, base branch, state, mergeable):
+   ```bash
+   gh pr view <number> --repo <owner>/<repo> \
+     --json title,body,baseRefName,state,mergeable,url
+   ```
+
+2. **Changed files** (file list with additions/deletions):
+   ```bash
+   gh pr diff <number> --repo <owner>/<repo> --name-only
+   ```
+
+3. **CI status** (combined check status):
+   ```bash
+   gh pr checks <number> --repo <owner>/<repo> --json name,state,conclusion
+   ```
+
+4. **Diff** (actual changes):
+   ```bash
+   gh pr diff <number> --repo <owner>/<repo>
+   ```
 
 For lockfile-only changes (yarn.lock, go.sum), reading the full diff is
 unnecessary. Focus on source file diffs (package.json, go.mod).
@@ -155,9 +175,9 @@ Verify all PRs for the same CVE+repo make equivalent changes.
 
 | PR | Branch | Target version | Files | Extra changes | Mergeable |
 |----|--------|---------------|-------|---------------|-----------|
-| #101 | master | 1.15.2 | 2 | None | Yes |
-| #102 | v2.22 | 1.15.2 | 2 | None | Yes |
-| #103 | v1.73 | 1.15.2 | 2 | None | Yes |
+| [#101](https://github.com/kiali/kiali/pull/101) | master | 1.15.2 | 2 | None | Yes |
+| [#102](https://github.com/kiali/kiali/pull/102) | v2.22 | 1.15.2 | 2 | None | Yes |
+| [#103](https://github.com/kiali/kiali/pull/103) | v1.73 | 1.15.2 | 2 | None | Yes |
 
 Result: ✅ All PRs consistent
 ```
@@ -166,7 +186,11 @@ If inconsistencies are found, detail them and ask the user how to proceed.
 
 ## Step R5: Check CI Status
 
-For each PR, check CI using `get_pull_request_status` (GitHub MCP).
+For each PR, check CI:
+
+```bash
+gh pr checks <number> --repo <owner>/<repo> --json name,state,conclusion
+```
 
 ### Possible states
 
@@ -272,8 +296,8 @@ Present a table for user approval:
 
 | Issue | OSSM | Image | Fix Version | PR URL (already set) |
 |-------|------|-------|-------------|----------------------|
-| OSSM-12345 | 3.3 | kiali-rhel9 | OSSM 3.3.1 | kiali/kiali#101 |
-| OSSM-12346 | 2.6 | kiali-rhel9 | OSSM 2.6.5 | kiali/kiali#103 |
+| [OSSM-12345](https://issues.redhat.com/browse/OSSM-12345) | 3.3 | kiali-rhel9 | OSSM 3.3.1 | [kiali/kiali#101](https://github.com/kiali/kiali/pull/101) |
+| [OSSM-12346](https://issues.redhat.com/browse/OSSM-12346) | 2.6 | kiali-rhel9 | OSSM 2.6.5 | [kiali/kiali#103](https://github.com/kiali/kiali/pull/103) |
 
 After approval, execute updates via `jira_update_issue`.
 
@@ -289,7 +313,7 @@ Present list for user approval before executing.
 
 ### 7e. Summary
 
-After all updates, present final summary:
+After all updates, present final summary (with clickable links):
 
 ```
 ## CVE-YYYY-NNNNN — Complete
@@ -297,12 +321,12 @@ After all updates, present final summary:
 ### PRs merged
 | Repo | PR | Branch | Merged |
 |------|-----|--------|--------|
-| kiali/kiali | #101 | master | ✅ |
-| kiali/kiali | #102 | v2.22 | ✅ |
+| kiali/kiali | [#101](https://github.com/kiali/kiali/pull/101) | master | ✅ |
+| kiali/kiali | [#102](https://github.com/kiali/kiali/pull/102) | v2.22 | ✅ |
 
 ### Jira issues updated
 | Issue | Status | Fix Version |
 |-------|--------|-------------|
-| OSSM-12345 | Release Pending | OSSM 3.3.1 |
-| OSSM-12346 | Release Pending | OSSM 2.6.5 |
+| [OSSM-12345](https://issues.redhat.com/browse/OSSM-12345) | Release Pending | OSSM 3.3.1 |
+| [OSSM-12346](https://issues.redhat.com/browse/OSSM-12346) | Release Pending | OSSM 2.6.5 |
 ```

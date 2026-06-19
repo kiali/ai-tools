@@ -245,8 +245,12 @@ glab api --hostname gitlab.cee.redhat.com \
   "projects/istio%2Fkonflux%2Fkiali-fbc/repository/files/renovate.json/raw?ref=main"
 ```
 
-If `"automerge": false` in `packageRules`, code freeze is enabled.
-Warn the user and ask whether to proceed with "Do Not Merge" labels or skip.
+**Interpreting the result:** Parse `packageRules` and check whether any
+rule with `"automerge": false` matches the **target branch** (the branch
+the backport PR targets). If so, code freeze is active for that branch.
+
+If code freeze is active for the target branch, warn the user and ask
+whether to proceed with "Do Not Merge" labels or skip that branch.
 
 ## Version Mapping
 
