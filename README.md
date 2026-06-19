@@ -26,6 +26,15 @@ ai-tools/
 
 Agnostic rules live in [`rules/`](./rules/). Each file uses dual frontmatter compatible with both Cursor (`alwaysApply`, `globs`) and Claude Code (`paths`).
 
+| Rule | Scope | Description |
+|------|-------|-------------|
+| `build-test-commands` | Always | Standard build and test commands for the Kiali project |
+| `code-quality` | Always | Code quality guidelines |
+| `comments` | Always | Comment style guidance for generated code |
+| `file-protection` | Always | Files and directories that should not be modified |
+| `go` | `*.go` | Go-specific conventions |
+| `lint-gherkin` | `*.feature` | Run Gherkin linting on feature files |
+
 To use them in a Kiali repo, symlink or copy into the tool-specific directory:
 
 ```bash
@@ -48,3 +57,6 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | `kiali-delete` | Delete Kiali, Bookinfo, and Istio from Minikube |
 | `kiali-start` | Start Kiali in Minikube with Istio and Bookinfo (sidecar or ambient mode) |
 | `progress-report` | Generate a progress report for the current task |
+| `regression-triage` | Analyze Jenkins nightly CI failures, classify them, and produce triage handoff blocks |
+| `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
+| `regression-fix` | Investigate and fix a failing Cypress test from a GitHub issue |
