@@ -135,6 +135,19 @@ Close ALL.
 
 Skip — proceed to Steps 4–5 for manual handling.
 
+### 3f. End-of-Life (EOL) OSSM Version Issues
+
+Issues for OSSM versions no longer in the Supported Branches table
+(see `AGENTS.md`) should be closed regardless of CVE type.
+
+Identify EOL issues by the `[ossm-X.Y]` suffix in the summary or by
+the image name (e.g. `kiali-rhel8` and `kiali-ossmc-rhel8` are
+OSSM 2.6 only).
+
+- Resolution: "Won't Do"
+- Comment: "OSSM X.Y is out of support."
+- No VEX for Won't Do.
+
 Present all proposed closures in a single table for user approval.
 Use closure sequences from SKILL.md.
 
