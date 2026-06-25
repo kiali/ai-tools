@@ -111,8 +111,8 @@ Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
 |---|---|---|
 | Operator | `kiali-rhel9-operator` | Python/Ansible |
 | Bundle | `kiali-operator-bundle` | OLM metadata (no code) |
-| Server | `kiali-rhel9`, `kiali-rhel8` | Go + JS frontend |
-| OSSMC | `kiali-ossmc-rhel9`, `kiali-ossmc-rhel8` | JS |
+| Server | `kiali-rhel9`, `kiali-rhel8` (OSSM 2.6 EOL) | Go + JS frontend |
+| OSSMC | `kiali-ossmc-rhel9`, `kiali-ossmc-rhel8` (OSSM 2.6 EOL) | JS |
 | Konflux | `redhat-user-workloads/kiali-X-Y` | Varies |
 | Konflux OSSMC | `kiali-X-Y-ossmc` | JS |
 
