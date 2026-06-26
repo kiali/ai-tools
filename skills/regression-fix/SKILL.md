@@ -9,8 +9,6 @@ allowed-tools: Bash(grep *), Bash(find *), Bash(cat *), Bash(git *), Bash(yarn *
 
 Read a GitHub issue filed by `/regression-report` → investigate root cause → fix the test code → **run the test locally and confirm it passes** → commit.
 
-> Field contract and vocabulary: `.claude/docs/regression-contract.md`
-
 > **Never commit without running the test first.** Static analysis alone (lint, tsc) is not sufficient — the fix must be verified with Cypress executing against a live cluster.
 
 ## Prerequisites — cluster and Kiali must be running

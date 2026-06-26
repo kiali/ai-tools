@@ -9,8 +9,6 @@ allowed-tools: Bash(gh *), Bash(oc *), Bash(kubectl *), Bash(grep *), Bash(curl 
 
 Create a GitHub issue for a confirmed Cypress test failure on kiali/kiali.
 
-> Field contract and vocabulary: `.claude/docs/regression-contract.md`
-
 ## Primary input — handoff block from `/regression-triage`
 
 If the user pastes a handoff block, extract all fields from it directly. Do not re-ask for fields already present.
@@ -80,7 +78,10 @@ Apply labels exactly as the table specifies. `test-bug` does **not** get `bug`; 
 
 ### Reproduce command
 
-Always include. User must first tag the failing scenario with `@selected` in the `.feature` file, then:
+Always include. Remind users to tag the failing scenario with `@selected` before running:
+
+1. Add `@selected` tag above the failing scenario in `frontend/cypress/integration/featureFiles/<feature-file>`
+2. Run:
 
 ```bash
 cd frontend

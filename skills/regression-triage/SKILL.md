@@ -9,8 +9,6 @@ allowed-tools: Bash(awk *), Bash(grep *), Bash(find *), Bash(cat *), Bash(git *)
 
 Analyze Jenkins failure output → identify tests → classify → emit handoff block for `/regression-report`.
 
-> Field contract and vocabulary: `.claude/docs/regression-contract.md`
-
 ## What you need from the user
 
 Ask for:
@@ -36,7 +34,7 @@ If URL has no numeric build segment, stop and ask for a specific build URL.
 curl -s -o /dev/null -w "%{http_code}" "<build-url>"
 ```
 
-Non-`200` or HTTP 000 (DNS failure / connection refused) → the Jenkins instance is not accesible on public network and requires VPN.
+Non-`200` or HTTP 000 (DNS failure / connection refused) → the Jenkins instance is not accessible on public network and requires VPN.
 
 **Fallback when Jenkins is unreachable:**
 
@@ -115,8 +113,6 @@ Extract the step text from the filename and use it as the `Failing step` field i
 
 ## Step 4 — Classify each failure
 
-> Canonical rubric and vocabulary contract: `.claude/docs/regression-contract.md`
-
 ### Signal vs Classification
 
 `REGRESSION` from Jenkins `testReport` = detection signal (`jenkins-regression`). It means the test passed last run and failed now — it does **not** determine classification. Triage still assigns `flake | ui-bug | test-bug` from error shape + user input.
@@ -179,8 +175,8 @@ Classification: <shared classification>
 ## Handoff Block — Group: <root cause summary>
 
 - Scenarios:
-  - <scenario 1> (feature: <file1>.feature, tags: @tag1)
-  - <scenario 2> (feature: <file2>.feature, tags: @tag2)
+  - <scenario 1> (feature: <file1>.feature, tags: @tag1, failing step: <step text>)
+  - <scenario 2> (feature: <file2>.feature, tags: @tag2, failing step: <step text>)
 - Common error: <shared error pattern>
 - Signal: <if shared>
 - Classification: <shared classification>

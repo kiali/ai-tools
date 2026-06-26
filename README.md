@@ -52,11 +52,11 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | Skill | Description |
 |-------|-------------|
 | `kiali-backstage-validate-deps` | Validate dependency update PRs for the Kiali Backstage workspace |
-| `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-check-syntax` | Validate syntax of uncommitted files in the kiali.io repository |
+| `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-delete` | Delete Kiali, Bookinfo, and Istio from Minikube |
 | `kiali-start` | Start Kiali in Minikube with Istio and Bookinfo (sidecar or ambient mode) |
 | `progress-report` | Generate a progress report for the current task |
-| `regression-triage` | Analyze Jenkins nightly CI failures, classify them, and produce triage handoff blocks |
-| `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
 | `regression-fix` | Investigate and fix a failing Cypress test from a GitHub issue |
+| `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
+| `regression-triage` | Analyze Jenkins nightly CI failures, classify them, and produce triage handoff blocks |
