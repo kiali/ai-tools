@@ -26,6 +26,15 @@ ai-tools/
 
 Agnostic rules live in [`rules/`](./rules/). Each file uses dual frontmatter compatible with both Cursor (`alwaysApply`, `globs`) and Claude Code (`paths`).
 
+| Rule | Scope | Description |
+|------|-------|-------------|
+| `build-test-commands` | Always | Standard build and test commands for the Kiali project |
+| `code-quality` | Always | Code quality guidelines |
+| `comments` | Always | Comment style guidance for generated code |
+| `file-protection` | Always | Files and directories that should not be modified |
+| `go` | `*.go` | Go-specific conventions |
+| `lint-gherkin` | `*.feature` | Run Gherkin linting on feature files |
+
 To use them in a Kiali repo, symlink or copy into the tool-specific directory:
 
 ```bash
@@ -43,8 +52,11 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | Skill | Description |
 |-------|-------------|
 | `kiali-backstage-validate-deps` | Validate dependency update PRs for the Kiali Backstage workspace |
-| `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-check-syntax` | Validate syntax of uncommitted files in the kiali.io repository |
+| `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-delete` | Delete Kiali, Bookinfo, and Istio from Minikube |
 | `kiali-start` | Start Kiali in Minikube with Istio and Bookinfo (sidecar or ambient mode) |
 | `progress-report` | Generate a progress report for the current task |
+| `regression-fix` | Investigate and fix a failing Cypress test from a GitHub issue |
+| `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
+| `regression-triage` | Analyze Jenkins nightly CI failures, classify them, and produce triage handoff blocks |
