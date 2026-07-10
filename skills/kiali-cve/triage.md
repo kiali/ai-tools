@@ -388,9 +388,44 @@ with the discovered transition ID.
 
 Present list for user approval before executing.
 
-### 9c. Handoff to review
+### 9c. Final triage verification
 
-After transitioning, inform the user:
+Before handing off, run a full verification of all triage outputs.
+
+**GitHub PRs** — for each repo involved (kiali/kiali and/or
+kiali/openshift-servicemesh-plugin), list open CVE PRs:
+
+```bash
+gh pr list --repo <owner>/<repo> --search "CVE-YYYY-NNNNN in:title state:open" \
+  --json number,title,baseRefName,url
+```
+
+Verify:
+- One PR per supported branch (master/main + all backports from the
+  Supported Branches table in `AGENTS.md`)
+- Each PR has the `backport needed` label (master/main only)
+- Each PR has an assignee and reviewer set
+- No PR has merge conflicts (check `mergeable` field if needed)
+
+**Jira issues** — fetch all issues for this CVE (batch of 3–4 at a time
+with `jira_get_issue`) and verify each has:
+
+- `status` = "Code Review"
+- `assignee` = current user
+- `customfield_10875` (Git Pull Request) is set and contains a valid
+  GitHub PR URL matching the issue's OSSM version and image
+
+Present a combined summary table:
+
+| Issue | OSSM | Image | Status | Assignee | PR Field | Matching GH PR |
+|-------|------|-------|--------|----------|----------|----------------|
+| OSSM-XXXXX | 3.3 | kiali-rhel9 | Code Review | user | set | kiali/kiali#NNN |
+
+If any item is missing or incorrect, fix it before proceeding.
+
+### 9d. Handoff to review
+
+After verification passes, inform the user:
 "All PRs for CVE-YYYY-NNNNN are created and Jira issues are in Code Review.
 The reviewer can use `kiali-cve:review` to review, merge PRs, and close
 the issues."

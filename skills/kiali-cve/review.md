@@ -311,9 +311,35 @@ the verified transition ID.
 
 Present list for user approval before executing.
 
-### 7e. Summary
+### 7e. Final review verification
 
-After all updates, present final summary (with clickable links):
+Before presenting the summary, run a full verification of all review
+outputs.
+
+**GitHub PRs** — for each repo involved, verify all CVE PRs are merged:
+
+```bash
+gh pr list --repo <owner>/<repo> --search "CVE-YYYY-NNNNN in:title state:merged" \
+  --json number,title,baseRefName,mergedAt
+```
+
+Verify:
+- All PRs (master/main + backports) are in merged state
+- Master/main PR has `backport completed` label
+- No open PRs remain for this CVE
+
+**Jira issues** — fetch all issues for this CVE (batch of 3–4 at a time
+with `jira_get_issue`) and verify each has:
+
+- `status` = "Release Pending"
+- `fixVersions` is set and matches the expected OSSM patch version
+- `customfield_10875` (Git Pull Request) is set
+
+If any item is missing or incorrect, fix it before presenting the summary.
+
+### 7f. Summary
+
+After verification passes, present final summary (with clickable links):
 
 ```
 ## CVE-YYYY-NNNNN — Complete
