@@ -126,7 +126,7 @@ the fix without reading each PR individually.
 
 **Type**: NPM/JS direct dependency | NPM/JS transitive | Go third-party | Go stdlib
 **Library**: <name>
-**Version change**: <old> → <new>
+**Version change**: <old> → <new> (list each major line separately if multiple)
 **Fix mechanism**: package.json update | yarn.lock regeneration | go.mod update | Go version bump
 
 ### What changed
@@ -139,6 +139,11 @@ the fix without reading each PR individually.
 - package.json (version bump)
 - yarn.lock (regenerated)
 ```
+
+**Multiple major version lines (NPM/JS):** If the CVE affects more than
+one major version (e.g. library 1.x and 2.x), list each version change
+separately and note which lockfile entries correspond to each. Web-search
+the CVE record to confirm the fix version for every affected range.
 
 For Go stdlib CVEs, also note:
 - Which Go version fixes the CVE
@@ -167,6 +172,15 @@ Verify all PRs for the same CVE+repo make equivalent changes.
 5. **PR descriptions**: Backport PRs reference the master/main PR number.
 
 6. **No merge conflicts**: All PRs are in a mergeable state.
+
+7. **No remaining vulnerable versions in lockfile (NPM/JS)**: For each
+   PR, search the lockfile diff (or the post-merge lockfile on the target
+   branch) for ALL entries of the vulnerable library. Web-search the CVE
+   record to find fix versions for every affected major range. Verify
+   that every resolved version meets or exceeds the fix for its range.
+   Example: if the CVE has separate fix versions for the 1.x and 2.x
+   lines, a lockfile entry still on an older patch of either line is
+   vulnerable and must be flagged.
 
 ### Report format
 

@@ -169,8 +169,14 @@ transition_id `"41"`. Present list for approval first.
 
 Use `jira_get_issue` (fields `"description"`) and extract:
 - Library name
-- Fixed version
+- Fixed version(s) — **for every affected major version line**
 - Vulnerability type
+
+**Multiple major version lines:** Many CVEs affect more than one major
+version of a library (e.g. both the 1.x and 2.x lines). Web-search the
+CVE record to identify ALL affected version ranges and their respective
+fix versions. Record each range separately. Every range present in the
+lockfile must be upgraded.
 
 ### 6b. Check current dependency version
 
@@ -184,7 +190,11 @@ Use `git show upstream/<branch>:<file>` to check all supported branches.
 
 **NPM/JS dependencies:**
 1. Search `frontend/package.json` for the library
-2. If not found, search `frontend/yarn.lock` (transitive)
+2. **Always** also search the lockfile (`frontend/yarn.lock` or
+   `plugin/yarn.lock`) for ALL entries of the library — there may be
+   multiple major version lines (e.g. `lib@1.x` as a transitive dep
+   alongside `lib@2.x` as a direct dep). Each entry must be
+   checked against the fix version for its major range (from Step 6a).
 
 **Go third-party dependencies:**
 1. Search `go.mod` for the module
@@ -251,7 +261,16 @@ Do NOT add `resolutions` unless absolutely necessary.
 **Verify:**
 4. `make build-ui`
 5. `make build-ui-test`
-6. Present diff to user
+6. **Lockfile audit** — grep the lockfile for ALL remaining entries of
+   the vulnerable library and verify every resolved version meets or
+   exceeds the fix version for its major range (from Step 6a):
+   ```bash
+   rg '"<library>@npm:' <lockfile>
+   ```
+   If any entry is still below its fix version, upgrade the parent
+   dependency that pins it (see "Transitive dependencies" above) or add
+   a `resolutions` entry as a last resort.
+7. Present diff to user
 
 ### Go third-party module upgrade
 
