@@ -244,8 +244,6 @@ Create PR against master first. If CI passes, create backport PRs.
 
 ### NPM/JS upgrade
 
-Do NOT add `resolutions` unless absolutely necessary.
-
 **Common first step:**
 1. Create branch from master (e.g. `CVE-YYYY-NNNNN-library-upgrade`)
 
@@ -261,16 +259,52 @@ Do NOT add `resolutions` unless absolutely necessary.
 **Verify:**
 4. `make build-ui`
 5. `make build-ui-test`
-6. **Lockfile audit** — grep the lockfile for ALL remaining entries of
-   the vulnerable library and verify every resolved version meets or
-   exceeds the fix version for its major range (from Step 6a):
+6. **Lockfile audit** — after install, run `yarn dedupe <library>` to
+   consolidate caret-range entries. Then grep the lockfile for ALL
+   remaining entries of the vulnerable library and verify every resolved
+   version meets or exceeds the fix version for its major range
+   (from Step 6a):
    ```bash
+   yarn dedupe <library>
    rg '"<library>@npm:' <lockfile>
    ```
-   If any entry is still below its fix version, upgrade the parent
-   dependency that pins it (see "Transitive dependencies" above) or add
-   a `resolutions` entry as a last resort.
+   If any entry is still below its fix version, follow the
+   "Handling vulnerable transitive dependencies" section below.
 7. Present diff to user
+
+#### Handling vulnerable transitive dependencies
+
+Keep the `resolutions` section in `package.json` as small as possible.
+Do NOT add `resolutions` entries unless absolutely necessary — they are
+overrides that mask the real dependency tree and add maintenance burden.
+
+When a transitive dependency brings in a vulnerable version, follow
+the same approach on all branches (master/main and backports):
+
+1. Run `yarn dedupe <library>` — it handles caret-range entries by
+   consolidating to the highest compatible version already in the
+   lockfile. Never add resolutions for caret ranges.
+
+2. For remaining vulnerable entries, evaluate both options:
+   - **Bump the parent package** to a version whose transitive tree
+     no longer pulls in the vulnerable version.
+   - **Add a resolution** to force the fixed version for that major
+     line. This covers exact-version pins that `yarn dedupe` cannot
+     override, and older major versions pulled in transitively that
+     are not at the CVE fix version.
+
+3. Present both options to the user with preference for bumping the
+   parent package. Include: which package, from which version to which
+   version, whether it is a major version bump, and the potential
+   consequences. **Wait for explicit user approval** before proceeding.
+
+   **Backport consistency:** If the vulnerable transitive dependency
+   only exists on backport branches (not on master), prefer the
+   resolution entry. If master used the bump parent approach, use the
+   same approach on backports for consistency.
+
+4. After applying the chosen fix, run `yarn install --no-immutable` and
+   `yarn dedupe <library>`, then re-audit the lockfile.
 
 ### Go third-party module upgrade
 
@@ -341,9 +375,11 @@ For each backport branch:
      `yarn install --no-immutable`
    - **Go**: `go get <module>@latest`, `go mod tidy`
 3. Commit, push, create PR targeting release branch
-4. PR description **must** reference master PR number
+4. PR title **must** start with the branch version prefix
+   (e.g. `[vX.Y] CVE-YYYY-NNNNN: ...`)
+5. PR description **must** reference master PR number
    (e.g. "Backport of #<NUMBER> to <branch>.")
-5. Assign to user, request reviewer; add to the GitHub project only if
+6. Assign to user, request reviewer; add to the GitHub project only if
    the user has approved project tracking (see GitHub Project Setup in
    SKILL.md)
 
