@@ -169,11 +169,13 @@ Verify all PRs for the same CVE+repo make equivalent changes.
 4. **Correct target branches**: Each PR targets the expected release
    branch per the Supported Branches table in `AGENTS.md`.
 
-5. **PR descriptions**: Backport PRs reference the master/main PR number.
+5. **PR titles**: Backport PR titles start with `[vX.Y]` version prefix.
 
-6. **No merge conflicts**: All PRs are in a mergeable state.
+6. **PR descriptions**: Backport PRs reference the master/main PR number.
 
-7. **No remaining vulnerable versions in lockfile (NPM/JS)**: For each
+7. **No merge conflicts**: All PRs are in a mergeable state.
+
+8. **No remaining vulnerable versions in lockfile (NPM/JS)**: For each
    PR, search the lockfile diff (or the post-merge lockfile on the target
    branch) for ALL entries of the vulnerable library. Web-search the CVE
    record to find fix versions for every affected major range. Verify
@@ -181,6 +183,14 @@ Verify all PRs for the same CVE+repo make equivalent changes.
    Example: if the CVE has separate fix versions for the 1.x and 2.x
    lines, a lockfile entry still on an older patch of either line is
    vulnerable and must be flagged.
+
+9. **Minimal resolutions (NPM/JS)**: Review any `resolutions` entries
+   added to `package.json`. The `resolutions` section should be kept as
+   small as possible on all branches. Resolutions are only acceptable
+   for exact-version pins that `yarn dedupe` cannot override.
+   Caret-range entries should NOT be in resolutions — `yarn dedupe`
+   handles those. Flag any unnecessary resolutions and present to the
+   user (see triage.md "Handling vulnerable transitive dependencies").
 
 ### Report format
 
