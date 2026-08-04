@@ -68,13 +68,7 @@ Examples:
 
 ### Labels
 
-| Classification | Labels |
-|---------------|--------|
-| `flake` | `bug`, `flake` |
-| `ui-bug` | `bug` |
-| `test-bug` | `test-bug` |
-
-Apply labels exactly as the table specifies. `test-bug` does **not** get `bug`; `ui-bug` does **not** get `flake` or `test-bug`.
+Apply single label `regression report` to all issues regardless of classification.
 
 ### Reproduce command
 
