@@ -103,7 +103,7 @@ Environment-specific notes:
    gh issue create \
      --repo kiali/kiali \
      --title "[Test] <scenario> — <feature-file-basename> / <environment>" \
-     --label "<labels>" \
+     --label "regression report" \
      --body "$(cat <<'BODY'
    <filled-body>
    BODY
