@@ -20,32 +20,58 @@ Prerequisites: Tool access verified per SKILL.md.
 The combined `status = New AND summary ~ CVE` JQL does not work reliably.
 Use this multi-step approach:
 
-1. Primary query (component-based):
+1. Primary query (component-based, New only):
 
 ```
-project = OSSM AND component = Kiali AND status != Closed ORDER BY created DESC
+project = OSSM AND component = Kiali AND status = New ORDER BY created DESC
 ```
 
-2. Filter client-side: **status** is `New` AND **summary** contains `CVE`.
+2. Filter client-side: **summary** contains `CVE`.
 
-3. Secondary query (catches issues under other components like "Istio", "Maistra"):
+3. Image-specific queries (catches issues missed by component/summary
+   tokenization — Jira may not tokenize "kiali" from paths like
+   "openshift-service-mesh/kiali-rhel9"):
 
 ```
-project = OSSM AND summary ~ kiali AND status != Closed ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-rhel9" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-ossmc-rhel9" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-rhel9-operator" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-operator-bundle" AND status = New ORDER BY created DESC
+```
+
+   Filter client-side for `CVE` in summary. Deduplicate with step 1.
+
+4. Secondary query (catches issues under other components like "Istio",
+   "Maistra" that mention kiali in the summary):
+
+```
+project = OSSM AND summary ~ kiali AND status = New ORDER BY created DESC
 ```
 
    Filter same way. Deduplicate.
 
-4. Konflux image queries — run one per active OSSM version:
+5. Konflux image queries — run one per active OSSM version:
 
 ```
-project = OSSM AND summary ~ "kiali-X-Y" AND status != Closed ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-X-Y" AND status = New ORDER BY created DESC
 ```
 
    Derive `X-Y` from Supported Branches table in `AGENTS.md` (dots → hyphens).
 
 Use `jira_search` with fields `summary,status,components,priority,assignee,created`
 and `limit` of 50. Set `projects_filter` to `OSSM`.
+
+### Per-CVE Verification
+
+After initial discovery, for each unique CVE identifier found, run a
+verification query to ensure ALL issues for that CVE are captured:
+
+```
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND status = New ORDER BY created DESC
+```
+
+This catches issues that slipped through tokenization or result-count
+limits in the broader queries. Merge results into the main set.
 
 ### User-Provided Issues
 
