@@ -295,6 +295,24 @@ If Kiali is not affected:
 
 Use "Not a Bug" closure from SKILL.md. Steps 7–9 do not apply.
 
+### 6e. Direct to Release Pending (no PR needed)
+
+Some CVEs are resolved without PRs — e.g. Go stdlib CVEs fixed
+automatically by the downstream Go builder image update. In this case,
+skip Steps 7–9 and transition directly to Release Pending.
+
+**IMPORTANT**: Follow the Release Pending Sequence in SKILL.md. This
+requires setting `fixVersions` on every issue before transitioning.
+Never transition to Release Pending without a fix version.
+
+1. Determine fix versions per OSSM minor version (see SKILL.md)
+2. Set fix versions via `jira_update_issue`
+3. Transition to Release Pending (ID `"131"`)
+4. Add comment explaining why no PR is needed (e.g. "Fixed automatically
+   by downstream Go builder update to Go X.Y.Z.")
+
+Present all proposed updates in a table for user approval before executing.
+
 ### Go CVEs: operator vs server
 
 Operator fixes are manual (depends on ansible-operator upstream).
