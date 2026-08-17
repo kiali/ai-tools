@@ -327,6 +327,9 @@ After approval, execute updates via `jira_update_issue`.
 
 ### 7d. Transition to Release Pending
 
+**Pre-condition**: Every issue MUST have `fixVersions` set (Step 7c)
+before transitioning. Never transition without a fix version.
+
 Verify the Release Pending transition ID using `jira_get_transitions`
 on one of the Code Review issues (expected ID `"131"` but always confirm).
 

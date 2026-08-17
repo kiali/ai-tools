@@ -103,6 +103,21 @@ New → In Progress → [create PRs] → Code Review → [merge PRs] → Release
 2. `jira_add_comment` — comment text
 3. No VEX for Won't Do.
 
+### Release Pending Sequence
+
+**MANDATORY**: `fixVersions` MUST be set on every issue transitioned to
+Release Pending. Without it, we cannot determine which release resolves
+the CVE.
+
+1. Determine fix version: Use `jira_get_project_versions` with
+   `project_key` `"OSSM"`. For each issue's OSSM minor version
+   (`[ossm-X.Y]` in summary), pick the lowest unreleased, unarchived
+   patch version. If none exists, ask the user.
+2. `jira_update_issue` — set fix version and PR field (if applicable):
+   `{"fixVersions": [{"name": "<version>"}], "customfield_10875": "<PR_URL>"}`
+3. `jira_transition_issue` — transition_id `"131"`
+4. `jira_add_comment` — comment text (if needed)
+
 ## Issue Naming and Image Classification
 
 Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]`
