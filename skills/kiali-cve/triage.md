@@ -202,10 +202,66 @@ Use `git show upstream/<branch>:<file>` to check all supported branches.
 
 **Go standard library vulnerabilities** (CVE references stdlib package like
 `crypto/x509`, `os`, `net/http`):
-1. Check Go version in `go.mod` (`go X.Y.Z` directive)
-2. Web search the CVE for affected/fixed Go versions
-3. Determine if Kiali's Go version is in the affected range
-4. If affected, search codebase for usage of the vulnerable function
+
+Do **not** use upstream `go.mod` alone to decide whether the **released
+product** is affected. The Go toolchain linked into `kiali-rhel9` comes
+from the `openshift-golang-builder` image, which may differ
+from the `go` directive in `go.mod`.
+
+**Product Go version (required for server image CVEs)** — for every
+supported OSSM version, obtain the Go version used to build the latest
+released `kiali-rhel9` image (`skopeo inspect --no-tags` → `GO_VERSION` env):
+
+1. Map OSSM → Kiali image tag from the Supported Branches table /
+   midstream (`tags.yaml` pattern): e.g. OSSM 3.0→`v2.4`, 3.1→`v2.11`,
+   3.2→`v2.17`, 3.3→`v2.22`, 3.4→`v2.27`.
+2. Inspect the released product image (use `--no-tags`):
+
+```bash
+skopeo inspect --no-tags \
+  docker://registry.redhat.io/openshift-service-mesh/kiali-rhel9:<tag>
+```
+
+   Record `Labels.version`, `Created`, and
+   `Labels.org.opencontainers.image.revision` (midstream git SHA).
+
+   If auth fails for `registry.redhat.io`, ask the user to run
+   `skopeo login registry.redhat.io` (or `podman login registry.redhat.io`).
+
+3. From that midstream revision, read the golang-builder pin in
+   `kiali.Containerfile` on `istio/konflux/kiali`:
+
+```bash
+glab api --hostname gitlab.cee.redhat.com \
+  "projects/istio%2Fkonflux%2Fkiali/repository/files/kiali.Containerfile/raw?ref=<revision>"
+```
+
+   Extract the `FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:...`
+   line (tag + digest).
+
+4. Inspect that **exact** builder digest and read `GO_VERSION` from Env:
+
+```bash
+skopeo inspect --no-tags \
+  docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder@sha256:<digest>
+```
+
+   Prefer `Env` entry `GO_VERSION=vX.Y.Z`. Optional: `podman run --rm
+   --pull=always <builder-ref> go version` if Env is missing.
+
+   If brew auth fails, ask the user to run
+   `skopeo login brew.registry.redhat.io`.
+
+5. Web-search the CVE for affected/fixed Go versions. Compare each
+   OSSM version's product `GO_VERSION` to the affected ranges.
+6. Also note upstream `go.mod` on the corresponding Kiali branch for
+   community/backport planning — but **product vulnerability status
+   follows the builder `GO_VERSION`**, not `go.mod`.
+7. If the product Go version is affected, search the codebase for usage
+   of the vulnerable function / API.
+
+Present a table: OSSM | image tag | product version | builder ref |
+`GO_VERSION` | affected?
 
 ### 6c. Present findings
 
@@ -214,6 +270,8 @@ Summarize:
 - Direct or transitive dependency
 - Fixed version from CVE description
 - Whether already at or above the fix
+- For Go stdlib: product `GO_VERSION` per OSSM (from Step 6b), not only
+  upstream `go.mod`
 
 Ask how to proceed.
 
@@ -221,10 +279,14 @@ Ask how to proceed.
 
 If Kiali is not affected:
 
-1. **Go version not in affected range**:
+1. **Product Go version not in affected range** (builder `GO_VERSION`
+   outside the CVE range):
    - VEX: `"Vulnerable Code not Present"`
-   - Comment: "CVE-YYYY-NNNNN only affects Go X.Y (fixed in X.Y.Z).
-     Kiali uses Go A.B.C, which is not vulnerable."
+   - Comment: "CVE-YYYY-NNNNN only affects Go <A.B.C / other ranges
+     (fixed in …). The released openshift-service-mesh/kiali-rhel9 image
+     for this OSSM version is built with
+     openshift-golang-builder (GO_VERSION=vX.Y.Z), which is not
+     vulnerable."
 
 2. **Vulnerable function never called**:
    - VEX: `"Vulnerable Code not in Execute Path"`
@@ -506,7 +568,10 @@ For each CVE group, **independently** determine the fix version required.
 Look up each CVE to find the exact fix version before checking availability.
 
 Common blockers:
-- **Downstream builder not updated**: Check builder registry
+- **Downstream builder not updated**: For Go stdlib CVEs, re-run the
+  product `GO_VERSION` method in Step 6b (released `kiali-rhel9` →
+  midstream `kiali.Containerfile` builder pin → builder `GO_VERSION`).
+  Also check whether a newer fixed builder tag exists on brew.
 - **Upstream PR not merged**: Check PR status on GitHub
 - **Backport PRs pending**: Master merged but backports not created
 - **Transition to Code Review pending**: PRs exist but Jira not updated
