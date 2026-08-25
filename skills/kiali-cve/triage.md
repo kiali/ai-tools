@@ -303,23 +303,45 @@ Ask how to proceed.
 
 ### 6d. Early closure (not affected)
 
-If Kiali is not affected:
+If Kiali is not affected, close with "Not a Bug" from SKILL.md. Steps
+7–9 do not apply. **Fix versions are not required** for 6d.1 and 6d.2.
 
-1. **Product Go version not in affected range** (builder `GO_VERSION`
-   outside the CVE range):
+1. **Dependency or product version not in affected range** (never
+   shipped a vulnerable version for this OSSM stream — e.g. js-yaml 4.x
+   when CVE only affects 5.x; or builder `GO_VERSION` outside CVE range):
    - VEX: `"Vulnerable Code not Present"`
-   - Comment: "CVE-YYYY-NNNNN only affects Go <A.B.C / other ranges
-     (fixed in …). The released openshift-service-mesh/kiali-rhel9 image
-     for this OSSM version is built with
-     openshift-golang-builder (GO_VERSION=vX.Y.Z), which is not
-     vulnerable."
+   - Comment: state why the version/range does not apply (e.g. "Kiali
+     uses js-yaml 4.3.0, not in vulnerable range 5.0.0–5.2.1" or
+     "GO_VERSION=vX.Y.Z is not vulnerable").
+   - **No fix version.**
 
-2. **Vulnerable function never called**:
+2. **Vulnerable function never called** (or dev-only transitive dep never
+   executed in production):
    - VEX: `"Vulnerable Code not in Execute Path"`
-   - Comment: "CVE-YYYY-NNNNN affects Go's PACKAGE.FUNCTION. Kiali does
-     not use PACKAGE.FUNCTION anywhere in its codebase."
+   - Comment: "CVE-YYYY-NNNNN affects … Kiali does not use …" (or
+     "library is dev-only via …").
+   - **No fix version.**
 
-Use "Not a Bug" closure from SKILL.md. Steps 7–9 do not apply.
+3. **Already fixed — no new PR needed** (patched dependency version is
+   already on the branch, fix landed in a **prior merged PR** or
+   lockfile regeneration; older OSSM patches may have shipped vulnerable
+   versions):
+   - VEX: `"Vulnerable Code not Present"` (unfixed vulnerable version
+     is not what we ship at the fix-version release)
+   - **MANDATORY** for server/OSSMC issues: set `fixVersions` and
+     `customfield_10875` to the release/PR that introduced the fix
+     (see "When fixVersions Are Required" in SKILL.md). Use the OSSM
+     patch version where the fix first appears, not merely "current
+     HEAD is safe."
+   - Comment: must state that resolution is via an existing merged PR
+     (e.g. "nanoid 3.3.17 via postcss lockfile update in #10162; no
+     separate PR required").
+   - Status: **Closed** (Not a Bug) or **Release Pending** — either is
+     acceptable; fix version is required in both cases.
+
+Present fix version + PR mapping in a table for user approval before
+executing. Operator/bundle issues for this CVE still use Step 3 (Component
+not Present) with no fix version.
 
 ### 6e. Direct to Release Pending (no PR needed)
 

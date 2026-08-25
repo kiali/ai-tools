@@ -97,11 +97,29 @@ New → In Progress → [create PRs] → Code Review → [merge PRs] → Release
 3. `jira_update_issue` —
    `{"customfield_10873": {"value": "<VEX value>"}}`
 
+For cases where a fix version is required on closed server/OSSMC issues
+(see triage.md Step 6d.3), also set `fixVersions` and `customfield_10875`
+via `jira_update_issue` (before or after the transition).
+
 **"Won't Do"** (Go older operator versions):
 1. `jira_transition_issue` — transition_id `"61"`,
    fields `{"resolution": {"name": "Won't Do"}}`
 2. `jira_add_comment` — comment text
 3. No VEX for Won't Do.
+
+### When fixVersions Are Required
+
+Set `fixVersions` (and `customfield_10875` when a PR exists) when we
+need to record **which OSSM release resolves the CVE** for a given
+`[ossm-X.Y]` issue. This applies to:
+
+- Every issue transitioned to **Release Pending** (see below).
+- Server/OSSMC issues **closed as Not a Bug** when the fix is already
+  merged (triage.md Step 6d.3) — even if status stays Closed.
+
+Do **not** set fix versions for: operator/bundle Component not Present
+closures, dependency version never in the vulnerable range (Step 6d.1),
+or vulnerable code not in execute path (Step 6d.2).
 
 ### Release Pending Sequence
 
