@@ -299,10 +299,14 @@ available transitions with `jira_get_transitions` first.
 
 Use `jira_get_project_versions` with `project_key` `"OSSM"`.
 
-For each issue's OSSM minor version (`[ossm-X.Y]` in summary), pick the
-lowest unreleased, unarchived patch version.
+For each issue's OSSM minor version (`[ossm-X.Y]` in summary), follow
+the fix-version rules in SKILL.md (Release Pending Sequence):
 
-If no unreleased version exists, ask the user.
+- **Kiali in imminent z-stream:** lowest unreleased patch.
+- **Kiali excluded from imminent z-stream:** next higher unreleased
+  patch after the imminent one.
+
+If no suitable unreleased version exists, ask the user.
 
 ### 7c. Set fix versions
 

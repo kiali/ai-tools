@@ -404,8 +404,10 @@ Ask whether to:
 
 - **Release Pending** (typical): Follow Release Pending Sequence in
   SKILL.md. Set `fixVersions` to the OSSM patch that will ship the
-  rebuilt image. Comment: released Go X.Y.Z vulnerable; builder at
-  A.B.C; fix expected in next product rebuild (no Kiali PR).
+  rebuilt image. If Kiali is **not** in the imminent z-stream release,
+  use the **next higher** unreleased patch (not the lowest unreleased).
+  Comment: released Go X.Y.Z vulnerable; builder at A.B.C; fix expected
+  in OSSM N.N.N product rebuild (no Kiali PR).
 - **In Progress**: Builder looks sufficient but next release timing is
   uncertain. Re-check before transitioning.
 
@@ -431,7 +433,9 @@ Skip Steps 7–9 when no Kiali code change is required.
 requires setting `fixVersions` on every issue before transitioning.
 Never transition to Release Pending without a fix version.
 
-1. Determine fix versions per OSSM minor version (see SKILL.md)
+1. Determine fix versions per OSSM minor version (see SKILL.md Release
+   Pending Sequence — account for z-stream exclusion when Kiali is not
+   in the imminent OSSM patch)
 2. Set fix versions via `jira_update_issue`
 3. Transition to Release Pending (ID `"131"`)
 4. Add comment explaining why no PR is needed (e.g. "Released kiali-rhel9

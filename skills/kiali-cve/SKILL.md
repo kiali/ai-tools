@@ -84,7 +84,7 @@ New → In Progress → [create PRs] → Code Review → [merge PRs] → Release
 
 - `jira_transition_issue`: `fields` is an **object**
   (e.g. `{"resolution": {"name": "Not a Bug"}}`)
-- `jira_add_comment`: comment text parameter is **`comment`**
+- `jira_add_comment`: comment text parameter is **`body`**
 - `jira_update_issue`: `fields` is an **object**; for assignee use flat email
   string (e.g. `{"assignee": "user@example.com"}`)
 - Comments cannot be included in `jira_transition_issue` (ADF format error).
@@ -132,8 +132,18 @@ the CVE.
 
 1. Determine fix version: Use `jira_get_project_versions` with
    `project_key` `"OSSM"`. For each issue's OSSM minor version
-   (`[ossm-X.Y]` in summary), pick the lowest unreleased, unarchived
-   patch version. If none exists, ask the user.
+   (`[ossm-X.Y]` in summary), list unreleased, unarchived patch
+   versions for that stream (e.g. `OSSM 3.3.7`, `OSSM 3.3.8`) sorted
+   by patch number.
+
+   - **Kiali in imminent z-stream:** Use the **lowest** unreleased
+     patch (the next OSSM release).
+   - **Kiali excluded from imminent z-stream:** Use the **next higher**
+     unreleased patch (e.g. imminent is `OSSM 3.3.7` but Kiali is not
+     in that build → set `OSSM 3.3.8`). Confirm with the user when
+     unsure.
+
+   If no suitable unreleased version exists, ask the user.
 2. `jira_update_issue` — set fix version and PR field (if applicable):
    `{"fixVersions": [{"name": "<version>"}], "customfield_10875": "<PR_URL>"}`
 3. `jira_transition_issue` — transition_id `"131"`

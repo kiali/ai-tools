@@ -37,7 +37,8 @@ if ! podman cp "$CID:$BIN_PATH" "$TMP" 2>/dev/null; then
   exit 1
 fi
 
-OUTPUT=$(go version -m "$TMP" | head -1)
+# sed -n '1p' avoids SIGPIPE from head -1 under set -o pipefail
+OUTPUT=$(go version -m "$TMP" 2>&1 | sed -n '1p')
 # e.g. /tmp/tmp.abc: go1.23.3
 GO_VERSION=$(echo "$OUTPUT" | sed -n 's/.*: go\([0-9][0-9.]*\).*/\1/p')
 
