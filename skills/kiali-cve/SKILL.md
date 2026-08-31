@@ -21,7 +21,9 @@ The same approval rule applies to adding CVE PRs to the Kiali GitHub Project
 
 ## Tool Access Verification
 
-Before either feature, verify all tools in parallel:
+### All features
+
+Before triage or review, verify in parallel:
 
 1. **Jira MCP**: `jira_search` with query
    `project = OSSM AND summary ~ CVE ORDER BY created DESC` (limit 1)
@@ -30,9 +32,6 @@ Before either feature, verify all tools in parallel:
    adding PRs to the project (see GitHub Project Setup). Do not block
    triage on project scopes at Step 0.
 3. **GitLab CLI**: `glab auth status --hostname gitlab.cee.redhat.com`
-4. **Go stdlib CVE triage** (when qualifying server images): local `go`
-   CLI and `podman` for `skills/kiali-cve/check-go-version.sh`; `skopeo`
-   for builder inspection (Step 6b.2)
 
 If any fails, report and stop:
 - Jira: "The Jira MCP server is not connected. Check MCP configuration."
@@ -42,6 +41,76 @@ If any fails, report and stop:
   complete the browser/device authorization. Verify with
   `gh project list --owner kiali`."
 - GitLab: "Run: `glab auth login --hostname gitlab.cee.redhat.com`"
+
+### Triage: Go stdlib and container images
+
+Before triage (or before qualifying Go stdlib CVEs), also verify local
+CLIs and Red Hat registry authentication:
+
+1. **Local CLIs** — all must be on `PATH`:
+
+```bash
+command -v go podman skopeo
+```
+
+   - `go` and `podman` — `skills/kiali-cve/check-go-version.sh` (released
+     product Go version, Step 6b.1)
+   - `skopeo` — builder image inspection (Step 6b.2)
+
+2. **Red Hat registry auth** — test both registries (shared credentials
+   via `podman login`; `skopeo` uses the same config):
+
+```bash
+skopeo inspect --no-tags \
+  docker://registry.redhat.io/openshift-service-mesh/kiali-rhel9:v2.27 \
+  >/dev/null 2>&1
+
+skopeo inspect --no-tags \
+  docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder \
+  >/dev/null 2>&1
+```
+
+   Both commands must succeed (exit 0). If either fails with
+   `unauthorized` or similar, stop and ask the user to log in — do not
+   proceed with Go stdlib qualification until auth works.
+
+#### Red Hat registry login (user setup)
+
+Go stdlib triage needs **two** registries:
+
+| Registry | Purpose |
+|----------|---------|
+| `registry.redhat.io` | Released `kiali-rhel9` product images |
+| `brew.registry.redhat.io` | `openshift-golang-builder` pipeline images |
+
+Use a **Terms-Based Registry service account** (recommended for
+automation and shared team use):
+
+1. Sign in to the [Red Hat Customer Portal](https://access.redhat.com/).
+2. Open [Terms-Based Registry — Service Accounts](https://access.redhat.com/terms-based-registry/accounts).
+3. Create a service account (or select an existing one).
+4. Generate or copy the **token** for that account (treat it like a
+   password; it is shown only when created/regenerated).
+5. Log in to **both** registries with the service account **username**
+   and **token**:
+
+```bash
+podman login registry.redhat.io -u '<service-account-name>' -p '<token>'
+podman login brew.registry.redhat.io -u '<service-account-name>' -p '<token>'
+```
+
+   `skopeo login` works too; `podman login` is sufficient for both
+   `podman` and `skopeo`.
+
+6. Re-run the `skopeo inspect` checks above to confirm access.
+
+If the user prefers not to pass the token on the command line, they can
+run `podman login <registry>` interactively and enter the username and
+token when prompted.
+
+Customer Portal username/password may work for `registry.redhat.io`, but
+the Terms-Based Registry service account is required for
+`brew.registry.redhat.io` and is the supported path for CVE triage.
 
 ## Jira API Reference
 

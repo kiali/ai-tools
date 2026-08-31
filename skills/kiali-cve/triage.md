@@ -3,7 +3,8 @@
 Identify new OSSM Jira CVE issues for Kiali, close inapplicable issues,
 qualify vulnerabilities, and create fix PRs for master and supported branches.
 
-Prerequisites: Tool access verified per SKILL.md.
+Prerequisites: Tool access verified per SKILL.md (including Red Hat
+registry auth for Go stdlib CVEs).
 
 ## Output Formatting
 
@@ -259,11 +260,11 @@ automation (prints `X.Y.Z` only).
 2. Run `check-go-version.sh` on the **latest released** `kiali-rhel9:<tag>`
    image for that OSSM stream.
 
-   If auth fails for `registry.redhat.io`, ask the user to run
-   `podman login registry.redhat.io`.
+   If auth fails for `registry.redhat.io`, see **Red Hat registry login**
+   in SKILL.md (Terms-Based Registry service account).
 
    Requires local `podman` and `go` (for `go version -m` on the extracted
-   binary).
+   binary) — verified at triage start per SKILL.md.
 
 3. Web-search the CVE for affected/fixed Go versions. Compare the **released**
    Go version to the CVE ranges.
@@ -295,8 +296,7 @@ skopeo inspect --no-tags \
 
    Prefer `Env` entry `GO_VERSION=vX.Y.Z`.
 
-   If brew auth fails, ask the user to run
-   `skopeo login brew.registry.redhat.io`.
+   If brew auth fails, see **Red Hat registry login** in SKILL.md.
 
 4. Compare the **builder** `GO_VERSION` to the CVE fix version.
 
@@ -538,12 +538,14 @@ the same approach on all branches (master/main and backports):
 
 **Supported branches:** Verify Go version is available downstream first.
 
-Check `skopeo` access:
+Check `skopeo` access (or rely on triage-start verification in SKILL.md):
 ```bash
-skopeo inspect docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder 2>&1 | head -5
+skopeo inspect --no-tags \
+  docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder \
+  >/dev/null 2>&1
 ```
 
-If auth fails, ask user to run `podman login brew.registry.redhat.io`.
+If auth fails, see **Red Hat registry login** in SKILL.md.
 
 List available tags:
 ```bash

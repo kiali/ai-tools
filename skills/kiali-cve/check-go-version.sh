@@ -15,7 +15,7 @@
 #
 # Prerequisites:
 #   podman, go (local CLI for "go version -m")
-#   podman login registry.redhat.io  (for Red Hat product images)
+#   Red Hat registry auth — see SKILL.md (Terms-Based Registry service account)
 
 set -euo pipefail
 
