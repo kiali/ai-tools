@@ -30,6 +30,9 @@ Before either feature, verify all tools in parallel:
    adding PRs to the project (see GitHub Project Setup). Do not block
    triage on project scopes at Step 0.
 3. **GitLab CLI**: `glab auth status --hostname gitlab.cee.redhat.com`
+4. **Go stdlib CVE triage** (when qualifying server images): local `go`
+   CLI and `podman` for `skills/kiali-cve/check-go-version.sh`; `skopeo`
+   for builder inspection (Step 6b.2)
 
 If any fails, report and stop:
 - Jira: "The Jira MCP server is not connected. Check MCP configuration."
@@ -135,6 +138,25 @@ the CVE.
    `{"fixVersions": [{"name": "<version>"}], "customfield_10875": "<PR_URL>"}`
 3. `jira_transition_issue` — transition_id `"131"`
 4. `jira_add_comment` — comment text (if needed)
+
+### Go stdlib CVE disposition (summary)
+
+Always check **two** versions per OSSM stream (see triage.md Step 6b):
+
+- **Released** — `check-go-version.sh` on shipped `kiali-rhel9` (binary
+  `go version -m`). Only this justifies closing as not affected.
+- **Builder** — current midstream `kiali.Containerfile` builder pin.
+  Indicates whether the **next** rebuild is expected to be fixed.
+
+| Released | Builder | Action |
+|----------|---------|--------|
+| Fixed | (any) | Close (Not a Bug) |
+| Vulnerable | (any), API not used | Close (not in execute path) |
+| Vulnerable | Fixed | Ask: Release Pending (typical) or In Progress |
+| Vulnerable | Not fixed | In Progress (blocked on builder) |
+
+Never close based on builder version when the released binary is still
+vulnerable.
 
 ## Issue Naming and Image Classification
 

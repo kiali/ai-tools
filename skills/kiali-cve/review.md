@@ -358,10 +358,11 @@ Verify:
 **Jira issues** — fetch all issues for this CVE (batch of 3–4 at a time
 with `jira_get_issue`) and verify each has:
 
-- `status` = "Release Pending" (or **Closed** if triage Step 6d.3 —
-  already fixed, no new PR)
+- `status` = "Release Pending" (or **Closed** if triage Step 6d.1, 6d.2,
+  or 6d.3)
 - `fixVersions` is set and matches the expected OSSM patch version
-  (required for Release Pending and for 6d.3 Closed server/OSSMC issues)
+  (required for Release Pending and for 6d.3 Closed server/OSSMC issues;
+  **not** required for 6d.1/6d.2 Go stdlib closures)
 - `customfield_10875` (Git Pull Request) is set when a merged PR
   introduced the fix
 
