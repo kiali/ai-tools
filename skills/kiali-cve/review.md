@@ -311,11 +311,14 @@ If no suitable unreleased version exists, ask the user.
 ### 7c. Set fix versions
 
 The Git Pull Request field (`customfield_10875`) was already set by
-triage in Step 9a. Review only needs to set fix versions.
+triage in Step 9a when a Kiali PR exists. Review only needs to set fix
+versions.
 
-If any issue is missing the PR field, set it now by mapping the issue
-to its PR URL based on the OSSM version → Kiali branch mapping
-(from Supported Branches table in `AGENTS.md`).
+If any issue is missing the PR field and a merged Kiali PR introduced
+the fix, set it now by mapping the issue to its PR URL based on the
+OSSM version → Kiali branch mapping (from Supported Branches table in
+`AGENTS.md`). Omit `customfield_10875` for no-PR resolutions (e.g. Go
+stdlib builder rebuild).
 
 For each issue, prepare:
 - Fix version: `{"fixVersions": [{"name": "<version>"}]}`
@@ -362,13 +365,13 @@ Verify:
 **Jira issues** — fetch all issues for this CVE (batch of 3–4 at a time
 with `jira_get_issue`) and verify each has:
 
-- `status` = "Release Pending" (or **Closed** if triage Step 6d.1, 6d.2,
-  or 6d.3)
+- `status` = "Release Pending" (or **Closed** for triage Step 6d.1, 6d.2,
+  or 6d.3 early closures)
 - `fixVersions` is set and matches the expected OSSM patch version
-  (required for Release Pending and for 6d.3 Closed server/OSSMC issues;
-  **not** required for 6d.1/6d.2 Go stdlib closures)
-- `customfield_10875` (Git Pull Request) is set when a merged PR
-  introduced the fix
+  (**required for Release Pending only**; not required for Closed
+  6d.1/6d.2/6d.3 issues)
+- `customfield_10875` (Git Pull Request) is set when a merged Kiali PR
+  introduced the fix (omit when resolved without a Kiali PR)
 
 If any item is missing or incorrect, fix it before presenting the summary.
 

@@ -258,7 +258,8 @@ automation (prints `X.Y.Z` only).
    midstream (`tags.yaml` pattern): e.g. OSSM 3.0→`v2.4`, 3.1→`v2.11`,
    3.2→`v2.17`, 3.3→`v2.22`, 3.4→`v2.27`.
 2. Run `check-go-version.sh` on the **latest released** `kiali-rhel9:<tag>`
-   image for that OSSM stream.
+   image for that OSSM stream. The script uses `podman run --pull=always`
+   so a stale local image cannot report an old Go toolchain.
 
    If auth fails for `registry.redhat.io`, see **Red Hat registry login**
    in SKILL.md (Terms-Based Registry service account).
@@ -355,24 +356,42 @@ If Kiali is not affected, close with "Not a Bug" from SKILL.md. Steps
 
 3. **Already fixed — no new PR needed** (patched dependency version is
    already on the branch, fix landed in a **prior merged PR** or
-   lockfile regeneration; older OSSM patches may have shipped vulnerable
-   versions):
-   - VEX: `"Vulnerable Code not Present"` (unfixed vulnerable version
-     is not what we ship at the fix-version release)
-   - **MANDATORY** for server/OSSMC issues: set `fixVersions` and
-     `customfield_10875` to the release/PR that introduced the fix
-     (see "When fixVersions Are Required" in SKILL.md). Use the OSSM
-     patch version where the fix first appears, not merely "current
-     HEAD is safe."
-   - Comment: must state that resolution is via an existing merged PR
-     (e.g. "nanoid 3.3.17 via postcss lockfile update in #10162; no
-     separate PR required").
-   - Status: **Closed** (Not a Bug) or **Release Pending** — either is
-     acceptable; fix version is required in both cases.
+   lockfile regeneration):
+   - VEX: `"Vulnerable Code not Present"`
+   - Comment: state that resolution is via an existing merged PR (e.g.
+     "nanoid 3.3.17 via postcss lockfile update in #10162; no separate
+     PR required").
+   - Status: **Closed** (Not a Bug)
+   - **No fix version** — customers on current z-stream are protected.
 
-Present fix version + PR mapping in a table for user approval before
-executing. Operator/bundle issues for this CVE still use Step 3 (Component
-not Present) with no fix version.
+Present proposed closures in a table for user approval before executing.
+Operator/bundle issues for this CVE still use Step 3 (Component not
+Present) with no fix version.
+
+### 6e. Direct to Release Pending (no PR needed)
+
+Some CVEs are resolved without Kiali PRs — e.g. Go stdlib CVEs fixed
+by a downstream builder image update and product rebuild (Step 6f
+disposition matrix, Release Pending row). NPM/lockfile cases may also
+apply.
+
+Skip Steps 7–9 when no Kiali code change is required.
+
+**IMPORTANT**: Follow the Release Pending Sequence in SKILL.md. This
+requires setting `fixVersions` on every issue before transitioning.
+Never transition to Release Pending without a fix version. Do **not**
+set `customfield_10875` when no Kiali PR exists.
+
+1. Determine fix versions per OSSM minor version (see SKILL.md Release
+   Pending Sequence — account for z-stream exclusion when Kiali is not
+   in the imminent OSSM patch)
+2. Set fix versions via `jira_update_issue`
+3. Transition to Release Pending (ID `"131"`)
+4. Add comment explaining why no PR is needed (e.g. "Released kiali-rhel9
+   built with Go X.Y.Z (vulnerable). Midstream builder pin at Go A.B.C.
+   Fix expected in OSSM N.N.N product rebuild.")
+
+Present all proposed updates in a table for user approval before executing.
 
 ### 6f. Go stdlib — Jira disposition
 
@@ -402,12 +421,12 @@ may still not consume the updated builder pin.
 
 Ask whether to:
 
-- **Release Pending** (typical): Follow Release Pending Sequence in
-  SKILL.md. Set `fixVersions` to the OSSM patch that will ship the
-  rebuilt image. If Kiali is **not** in the imminent z-stream release,
-  use the **next higher** unreleased patch (not the lowest unreleased).
-  Comment: released Go X.Y.Z vulnerable; builder at A.B.C; fix expected
-  in OSSM N.N.N product rebuild (no Kiali PR).
+- **Release Pending** (typical): Follow Step 6e and the Release Pending
+  Sequence in SKILL.md. Set `fixVersions` to the OSSM patch that will
+  ship the rebuilt image. If Kiali is **not** in the imminent z-stream
+  release, use the **next higher** unreleased patch (not the lowest
+  unreleased). Comment: released Go X.Y.Z vulnerable; builder at A.B.C;
+  fix expected in OSSM N.N.N product rebuild (no Kiali PR).
 - **In Progress**: Builder looks sufficient but next release timing is
   uncertain. Re-check before transitioning.
 
@@ -420,29 +439,6 @@ builder versions and that we are blocked on downstream builder.
 
 Present the recommended disposition table for user approval before
 executing Jira updates.
-
-### 6e. Direct to Release Pending (no PR needed)
-
-Some CVEs are resolved without Kiali PRs — e.g. Go stdlib CVEs fixed
-by a downstream builder image update and product rebuild (Step 6f row 3,
-Release Pending choice). NPM/lockfile cases may also apply.
-
-Skip Steps 7–9 when no Kiali code change is required.
-
-**IMPORTANT**: Follow the Release Pending Sequence in SKILL.md. This
-requires setting `fixVersions` on every issue before transitioning.
-Never transition to Release Pending without a fix version.
-
-1. Determine fix versions per OSSM minor version (see SKILL.md Release
-   Pending Sequence — account for z-stream exclusion when Kiali is not
-   in the imminent OSSM patch)
-2. Set fix versions via `jira_update_issue`
-3. Transition to Release Pending (ID `"131"`)
-4. Add comment explaining why no PR is needed (e.g. "Released kiali-rhel9
-   built with Go X.Y.Z (vulnerable). Midstream builder pin at Go A.B.C.
-   Fix expected in OSSM N.N.N product rebuild.")
-
-Present all proposed updates in a table for user approval before executing.
 
 ### Go CVEs: operator vs server
 

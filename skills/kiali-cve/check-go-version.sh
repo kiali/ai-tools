@@ -16,6 +16,9 @@
 # Prerequisites:
 #   podman, go (local CLI for "go version -m")
 #   Red Hat registry auth — see SKILL.md (Terms-Based Registry service account)
+#
+# Uses podman run --pull=always so a stale local image cannot report an
+# old Go toolchain (matches triage.md Step 6b.1 latest-released requirement).
 
 set -euo pipefail
 
@@ -28,7 +31,7 @@ fi
 IMAGE="${1:?Usage: $0 [--version-only] <image> [binary-path]}"
 BIN_PATH="${2:-/opt/kiali/kiali}"
 
-CID=$(podman run -d --entrypoint sleep "$IMAGE" infinity)
+CID=$(podman run -d --pull=always --entrypoint sleep "$IMAGE" infinity)
 TMP=$(mktemp)
 trap 'rm -f "$TMP"; podman rm -f "$CID" >/dev/null 2>&1' EXIT
 

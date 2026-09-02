@@ -153,7 +153,8 @@ New → In Progress → [create PRs] → Code Review → [merge PRs] → Release
 
 - `jira_transition_issue`: `fields` is an **object**
   (e.g. `{"resolution": {"name": "Not a Bug"}}`)
-- `jira_add_comment`: comment text parameter is **`body`**
+- `jira_add_comment`: comment text parameter is **`body`** (per MCP tool
+  schema — not `comment`)
 - `jira_update_issue`: `fields` is an **object**; for assignee use flat email
   string (e.g. `{"assignee": "user@example.com"}`)
 - Comments cannot be included in `jira_transition_issue` (ADF format error).
@@ -169,10 +170,6 @@ New → In Progress → [create PRs] → Code Review → [merge PRs] → Release
 3. `jira_update_issue` —
    `{"customfield_10873": {"value": "<VEX value>"}}`
 
-For cases where a fix version is required on closed server/OSSMC issues
-(see triage.md Step 6d.3), also set `fixVersions` and `customfield_10875`
-via `jira_update_issue` (before or after the transition).
-
 **"Won't Do"** (Go older operator versions):
 1. `jira_transition_issue` — transition_id `"61"`,
    fields `{"resolution": {"name": "Won't Do"}}`
@@ -181,17 +178,18 @@ via `jira_update_issue` (before or after the transition).
 
 ### When fixVersions Are Required
 
-Set `fixVersions` (and `customfield_10875` when a PR exists) when we
-need to record **which OSSM release resolves the CVE** for a given
-`[ossm-X.Y]` issue. This applies to:
+Set `fixVersions` when we need to record **which OSSM release resolves
+the CVE** for a given `[ossm-X.Y]` issue. This applies to every issue
+transitioned to **Release Pending** (see below).
 
-- Every issue transitioned to **Release Pending** (see below).
-- Server/OSSMC issues **closed as Not a Bug** when the fix is already
-  merged (triage.md Step 6d.3) — even if status stays Closed.
+Set `customfield_10875` (Git Pull Request) when a Kiali PR introduced
+the fix. Omit it when the CVE is resolved without a Kiali PR (e.g. Go
+stdlib fixed by downstream builder rebuild — triage.md Step 6e).
 
 Do **not** set fix versions for: operator/bundle Component not Present
 closures, dependency version never in the vulnerable range (Step 6d.1),
-or vulnerable code not in execute path (Step 6d.2).
+vulnerable code not in execute path (Step 6d.2), or already-fixed
+closures with no new PR (Step 6d.3).
 
 ### Release Pending Sequence
 
@@ -213,8 +211,14 @@ the CVE.
      unsure.
 
    If no suitable unreleased version exists, ask the user.
-2. `jira_update_issue` — set fix version and PR field (if applicable):
-   `{"fixVersions": [{"name": "<version>"}], "customfield_10875": "<PR_URL>"}`
+2. `jira_update_issue` — set fix version (required). Set the PR field
+   only when a Kiali PR introduced the fix:
+
+   `{"fixVersions": [{"name": "<version>"}]}`
+
+   When applicable, also set `"customfield_10875": "<PR_URL>"`. Omit
+   `customfield_10875` for no-PR resolutions (e.g. Go stdlib builder
+   rebuild — Step 6e).
 3. `jira_transition_issue` — transition_id `"131"`
 4. `jira_add_comment` — comment text (if needed)
 
@@ -223,7 +227,8 @@ the CVE.
 Always check **two** versions per OSSM stream (see triage.md Step 6b):
 
 - **Released** — `check-go-version.sh` on shipped `kiali-rhel9` (binary
-  `go version -m`). Only this justifies closing as not affected.
+  `go version -m`; uses `podman run --pull=always` so stale local images
+  are not used). Only this justifies closing as not affected.
 - **Builder** — current midstream `kiali.Containerfile` builder pin.
   Indicates whether the **next** rebuild is expected to be fixed.
 
