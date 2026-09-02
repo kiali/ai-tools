@@ -3,7 +3,8 @@
 Identify new OSSM Jira CVE issues for Kiali, close inapplicable issues,
 qualify vulnerabilities, and create fix PRs for master and supported branches.
 
-Prerequisites: Tool access verified per SKILL.md.
+Prerequisites: Tool access verified per SKILL.md (including Red Hat
+registry auth for Go stdlib CVEs).
 
 ## Output Formatting
 
@@ -20,26 +21,40 @@ Prerequisites: Tool access verified per SKILL.md.
 The combined `status = New AND summary ~ CVE` JQL does not work reliably.
 Use this multi-step approach:
 
-1. Primary query (component-based):
+1. Primary query (component-based, New only):
 
 ```
-project = OSSM AND component = Kiali AND status != Closed ORDER BY created DESC
+project = OSSM AND component = Kiali AND status = New ORDER BY created DESC
 ```
 
-2. Filter client-side: **status** is `New` AND **summary** contains `CVE`.
+2. Filter client-side: **summary** contains `CVE`.
 
-3. Secondary query (catches issues under other components like "Istio", "Maistra"):
+3. Image-specific queries (catches issues missed by component/summary
+   tokenization — Jira may not tokenize "kiali" from paths like
+   "openshift-service-mesh/kiali-rhel9"):
 
 ```
-project = OSSM AND summary ~ kiali AND status != Closed ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-rhel9" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-ossmc-rhel9" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-rhel9-operator" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-operator-bundle" AND status = New ORDER BY created DESC
+```
+
+   Filter client-side for `CVE` in summary. Deduplicate with step 1.
+
+4. Secondary query (catches issues under other components like "Istio",
+   "Maistra" that mention kiali in the summary):
+
+```
+project = OSSM AND summary ~ kiali AND status = New ORDER BY created DESC
 ```
 
    Filter same way. Deduplicate.
 
-4. Konflux image queries — run one per active OSSM version:
+5. Konflux image queries — run one per active OSSM version:
 
 ```
-project = OSSM AND summary ~ "kiali-X-Y" AND status != Closed ORDER BY created DESC
+project = OSSM AND summary ~ "kiali-X-Y" AND status = New ORDER BY created DESC
 ```
 
    Derive `X-Y` from Supported Branches table in `AGENTS.md` (dots → hyphens).
@@ -47,14 +62,33 @@ project = OSSM AND summary ~ "kiali-X-Y" AND status != Closed ORDER BY created D
 Use `jira_search` with fields `summary,status,components,priority,assignee,created`
 and `limit` of 50. Set `projects_filter` to `OSSM`.
 
+### Per-CVE Verification
+
+After initial discovery, for each unique CVE identifier found, run a
+verification query to ensure ALL issues for that CVE are captured
+(**any status**). Do **not** add `summary ~ kiali` — Jira tokenization
+misses `kiali-rhel9` and `kiali-rhel9-operator` in paths:
+
+```
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" ORDER BY created DESC
+```
+
+Filter client-side: keep issues whose summary mentions a Kiali image
+(`kiali-rhel9`, `kiali-ossmc`, `kiali-rhel9-operator`,
+`kiali-operator-bundle`, or `kiali-X-Y` Konflux paths). Merge results
+into the main set.
+
 ### User-Provided Issues
 
 If the user provides a Jira issue URL or key, fetch with `jira_get_issue`,
-extract the CVE ID, then search:
+extract the CVE ID, then search (same as per-CVE verification — no
+`summary ~ kiali` filter):
 
 ```
-project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND summary ~ kiali ORDER BY created DESC
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" ORDER BY created DESC
 ```
+
+Filter client-side for Kiali images as above.
 
 ### Presenting Results
 
@@ -70,7 +104,9 @@ Group issues by CVE identifier. Process each CVE independently through
 the applicable steps:
 
 - **JavaScript/NPM CVEs**: Steps 2–9 (including OSSMC in Step 8)
-- **Go CVEs**: Steps 2–7, 9 (Step 8 does not apply)
+- **Go stdlib CVEs**: Steps 2–3, 6b–6f (6e for Release Pending without
+  PR; 6d for early closure). Skip Steps 7–9 when no Kiali PR is needed.
+- **Go third-party module CVEs**: Steps 2–7, 9 (Step 8 does not apply)
 - **Python CVEs**: Steps 2–3, then 4–5 for remaining issues
 - **Other**: Steps 2, 4–5 (remaining handled manually)
 
@@ -203,65 +239,88 @@ Use `git show upstream/<branch>:<file>` to check all supported branches.
 **Go standard library vulnerabilities** (CVE references stdlib package like
 `crypto/x509`, `os`, `net/http`):
 
-Do **not** use upstream `go.mod` alone to decide whether the **released
-product** is affected. The Go toolchain linked into `kiali-rhel9` comes
-from the `openshift-golang-builder` image, which may differ
-from the `go` directive in `go.mod`.
+Do **not** use upstream `go.mod` or the **latest** `openshift-golang-builder`
+tag to decide whether the **released product** is affected. The builder may
+have been updated **after** the most recent production image was built.
 
-**Product Go version (required for server image CVEs)** — for every
-supported OSSM version, obtain the Go version used to build the latest
-released `kiali-rhel9` image (`skopeo inspect --no-tags` → `GO_VERSION` env):
+For each supported OSSM version, obtain **two** Go versions:
+
+| Check | What it answers | Source |
+|-------|-----------------|--------|
+| **Released** | Is production **shipping** a fixed binary today? | Binary build metadata in the shipped image |
+| **Builder** | Will the **next** product rebuild pick up a fixed toolchain? | Current midstream `kiali.Containerfile` builder pin |
+
+#### 6b.1 Released product Go version (required)
+
+This is the **only** version that justifies closing a CVE as "not affected"
+(Step 6d.1). Use `check-go-version.sh` in this skill directory:
+
+```bash
+./skills/kiali-cve/check-go-version.sh \
+  registry.redhat.io/openshift-service-mesh/kiali-rhel9:<tag>
+```
+
+Default binary path is `/opt/kiali/kiali`. Use `--version-only` for
+automation (prints `X.Y.Z` only).
 
 1. Map OSSM → Kiali image tag from the Supported Branches table /
    midstream (`tags.yaml` pattern): e.g. OSSM 3.0→`v2.4`, 3.1→`v2.11`,
    3.2→`v2.17`, 3.3→`v2.22`, 3.4→`v2.27`.
-2. Inspect the released product image (use `--no-tags`):
+2. Run `check-go-version.sh` on the **latest released** `kiali-rhel9:<tag>`
+   image for that OSSM stream. The script uses `podman run --pull=always`
+   so a stale local image cannot report an old Go toolchain.
 
-```bash
-skopeo inspect --no-tags \
-  docker://registry.redhat.io/openshift-service-mesh/kiali-rhel9:<tag>
-```
+   If auth fails for `registry.redhat.io`, see **Red Hat registry login**
+   in SKILL.md (Terms-Based Registry service account).
 
-   Record `Labels.version`, `Created`, and
-   `Labels.org.opencontainers.image.revision` (midstream git SHA).
+   Requires local `podman` and `go` (for `go version -m` on the extracted
+   binary) — verified at triage start per SKILL.md.
 
-   If auth fails for `registry.redhat.io`, ask the user to run
-   `skopeo login registry.redhat.io` (or `podman login registry.redhat.io`).
+3. Web-search the CVE for affected/fixed Go versions. Compare the **released**
+   Go version to the CVE ranges.
 
-3. From that midstream revision, read the golang-builder pin in
-   `kiali.Containerfile` on `istio/konflux/kiali`:
+#### 6b.2 Pipeline builder Go version (required)
+
+This answers whether the **next** OSSM patch rebuild is expected to ship a
+fixed binary. Do **not** use this alone to close issues — the builder may
+already be fixed while production still ships an older Go toolchain.
+
+1. Read the **current** `kiali.Containerfile` on `istio/konflux/kiali` for
+   the OSSM stream's active build ref (main / release branch — not the git
+   SHA from an old shipped image):
 
 ```bash
 glab api --hostname gitlab.cee.redhat.com \
-  "projects/istio%2Fkonflux%2Fkiali/repository/files/kiali.Containerfile/raw?ref=<revision>"
+  "projects/istio%2Fkonflux%2Fkiali/repository/files/kiali.Containerfile/raw?ref=<ref>"
 ```
 
-   Extract the `FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:...`
-   line (tag + digest).
+2. Extract the `FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:...`
+   line (prefer digest pin).
 
-4. Inspect that **exact** builder digest and read `GO_VERSION` from Env:
+3. Inspect that builder image and read `GO_VERSION` from Env:
 
 ```bash
 skopeo inspect --no-tags \
   docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder@sha256:<digest>
 ```
 
-   Prefer `Env` entry `GO_VERSION=vX.Y.Z`. Optional: `podman run --rm
-   --pull=always <builder-ref> go version` if Env is missing.
+   Prefer `Env` entry `GO_VERSION=vX.Y.Z`.
 
-   If brew auth fails, ask the user to run
-   `skopeo login brew.registry.redhat.io`.
+   If brew auth fails, see **Red Hat registry login** in SKILL.md.
 
-5. Web-search the CVE for affected/fixed Go versions. Compare each
-   OSSM version's product `GO_VERSION` to the affected ranges.
-6. Also note upstream `go.mod` on the corresponding Kiali branch for
-   community/backport planning — but **product vulnerability status
-   follows the builder `GO_VERSION`**, not `go.mod`.
-7. If the product Go version is affected, search the codebase for usage
-   of the vulnerable function / API.
+4. Compare the **builder** `GO_VERSION` to the CVE fix version.
 
-Present a table: OSSM | image tag | product version | builder ref |
-`GO_VERSION` | affected?
+5. Also note upstream `go.mod` on the corresponding Kiali branch for
+   community/backport planning — but **released-product status follows
+   Step 6b.1**, not `go.mod`.
+
+6. If the **released** Go version is in the affected range, search the
+   codebase for usage of the vulnerable function / API (needed for
+   Step 6d.2 and Step 6f).
+
+Present a table per OSSM version:
+
+| OSSM | image tag | released Go | builder ref | builder Go | CVE fix Go | disposition |
 
 ### 6c. Present findings
 
@@ -270,30 +329,124 @@ Summarize:
 - Direct or transitive dependency
 - Fixed version from CVE description
 - Whether already at or above the fix
-- For Go stdlib: product `GO_VERSION` per OSSM (from Step 6b), not only
-  upstream `go.mod`
+- For Go stdlib: **released** Go (Step 6b.1) and **builder** Go (Step 6b.2)
+  per OSSM, plus recommended disposition (Step 6f)
 
 Ask how to proceed.
 
 ### 6d. Early closure (not affected)
 
-If Kiali is not affected:
+If Kiali is not affected, close with "Not a Bug" from SKILL.md. Steps
+7–9 do not apply. **Fix versions are not required** for 6d.1 and 6d.2.
 
-1. **Product Go version not in affected range** (builder `GO_VERSION`
-   outside the CVE range):
+1. **Not in affected range** — dependency or released product never shipped
+   a vulnerable version for this OSSM stream:
+   - **Go stdlib:** confirmed by Step 6b.1 `check-go-version.sh` on the
+     **shipped** `kiali-rhel9` image (not builder version alone).
+   - **NPM/JS or Go modules:** e.g. js-yaml 4.3.0 when CVE only affects
+     5.x; or `go.mod` / lockfile version outside CVE range.
    - VEX: `"Vulnerable Code not Present"`
-   - Comment: "CVE-YYYY-NNNNN only affects Go <A.B.C / other ranges
-     (fixed in …). The released openshift-service-mesh/kiali-rhel9 image
-     for this OSSM version is built with
-     openshift-golang-builder (GO_VERSION=vX.Y.Z), which is not
-     vulnerable."
+   - Comment: state why the version/range does not apply.
+   - **No fix version.**
 
-2. **Vulnerable function never called**:
+2. **In affected range, but vulnerable code not in execute path** (must
+   prove via codebase search — dev-only transitive dep or unreachable
+   stdlib API):
+   - **Go stdlib:** released Go is vulnerable but Kiali does not call the
+     affected API (name package.function).
+   - **NPM/JS:** library is dev-only or never executed in production.
    - VEX: `"Vulnerable Code not in Execute Path"`
-   - Comment: "CVE-YYYY-NNNNN affects Go's PACKAGE.FUNCTION. Kiali does
-     not use PACKAGE.FUNCTION anywhere in its codebase."
+   - Comment: explain why the vulnerable code is not executed.
+   - **No fix version.**
 
-Use "Not a Bug" closure from SKILL.md. Steps 7–9 do not apply.
+   **Do not** use Step 6d.1 or 6d.2 based on the **builder** version
+   alone when the **released** Go binary is still on a vulnerable
+   toolchain.
+
+3. **Already fixed — no new PR needed** (patched dependency version is
+   already on the branch, fix landed in a **prior merged PR** or
+   lockfile regeneration):
+   - VEX: `"Vulnerable Code not Present"`
+   - Comment: state that resolution is via an existing merged PR (e.g.
+     "nanoid 3.3.17 via postcss lockfile update in #10162; no separate
+     PR required").
+   - Status: **Closed** (Not a Bug)
+   - **No fix version** — customers on current z-stream are protected.
+
+Present proposed closures in a table for user approval before executing.
+Operator/bundle issues for this CVE still use Step 3 (Component not
+Present) with no fix version.
+
+### 6e. Direct to Release Pending (no PR needed)
+
+Some CVEs are resolved without Kiali PRs — e.g. Go stdlib CVEs fixed
+by a downstream builder image update and product rebuild (Step 6f
+disposition matrix, Release Pending row). NPM/lockfile cases may also
+apply.
+
+Skip Steps 7–9 when no Kiali code change is required.
+
+**IMPORTANT**: Follow the Release Pending Sequence in SKILL.md. This
+requires setting `fixVersions` on every issue before transitioning.
+Never transition to Release Pending without a fix version. Do **not**
+set `customfield_10875` when no Kiali PR exists.
+
+1. Determine fix versions per OSSM minor version (see SKILL.md **Fix
+   Version Selection** — ask the user when lowest and highest unreleased
+   patches differ)
+2. Set fix versions via `jira_update_issue`
+3. Transition to Release Pending (ID `"131"`)
+4. Add comment explaining why no PR is needed (e.g. "Released kiali-rhel9
+   built with Go X.Y.Z (vulnerable). Midstream builder pin at Go A.B.C.
+   Fix expected in OSSM N.N.N product rebuild.")
+
+Present all proposed updates in a table for user approval before executing.
+
+### 6f. Go stdlib — Jira disposition
+
+After Step 6b, apply this matrix **per OSSM version** for server
+(`kiali-rhel9`) issues. Operator/bundle issues still follow Step 3.
+
+Compare released Go (6b.1) and builder Go (6b.2) to the CVE fix version.
+
+| Released Go | Builder Go | Vulnerable API used? | Action |
+|-------------|------------|----------------------|--------|
+| At/above fix | (any) | (any) | **Close** — Step 6d.1 |
+| Below fix | (any) | **No** (proven) | **Close** — Step 6d.2 |
+| Below fix | At/above fix | Yes (or not proven) | **Ask user** — Release Pending (typical) or In Progress |
+| Below fix | Below fix | Yes (or not proven) | **In Progress** — wait for builder update |
+
+**Released sufficient → Close (6d.1):** Production already ships a fixed
+Go toolchain. Use closure sequence from SKILL.md.
+
+**Released insufficient, not in execute path → Close (6d.2):** Only when
+codebase search proves Kiali does not call the vulnerable stdlib API.
+
+**Released insufficient, builder sufficient → Ask user:**
+
+The next rebuild is **expected** to pick up a fixed builder, but production
+has not shipped it yet. There are small windows where the next OSSM patch
+may still not consume the updated builder pin.
+
+Ask whether to:
+
+- **Release Pending** (typical): Follow Step 6e and **Fix Version
+  Selection** in SKILL.md. Ask the user when lowest and highest
+  unreleased patches differ. Comment: released Go X.Y.Z vulnerable;
+  builder at A.B.C; fix expected in OSSM N.N.N product rebuild (no
+  Kiali PR).
+- **In Progress**: Builder looks sufficient but next release timing is
+  uncertain. Re-check before transitioning.
+
+**Builder insufficient → In Progress:**
+
+Downstream `openshift-golang-builder` has not reached the CVE fix Go
+version yet (or midstream has not picked up a fixed builder). No Kiali
+PR will help until the builder is updated. Comment with both released and
+builder versions and that we are blocked on downstream builder.
+
+Present the recommended disposition table for user approval before
+executing Jira updates.
 
 ### Go CVEs: operator vs server
 
@@ -389,12 +542,14 @@ the same approach on all branches (master/main and backports):
 
 **Supported branches:** Verify Go version is available downstream first.
 
-Check `skopeo` access:
+Check `skopeo` access (or rely on triage-start verification in SKILL.md):
 ```bash
-skopeo inspect docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder 2>&1 | head -5
+skopeo inspect --no-tags \
+  docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder \
+  >/dev/null 2>&1
 ```
 
-If auth fails, ask user to run `podman login brew.registry.redhat.io`.
+If auth fails, see **Red Hat registry login** in SKILL.md.
 
 List available tags:
 ```bash
@@ -411,9 +566,11 @@ reviewer" in SKILL.md, exclude PR assignee).
 
 PR description must reference CVE but **not** OSSM Jira keys.
 
-After creating **every** CVE PR, assign it to the user (use
-`issue_write` with `method: "update"` and the PR number, since
-`create_pull_request` does not support assignees).
+After creating **every** CVE PR, assign it to the user:
+
+```bash
+gh pr edit <PR_NUMBER> --repo <owner>/<repo> --add-assignee <GITHUB_USER>
+```
 
 Adding PRs to the Kiali GitHub Project is a **separate step that
 requires user approval** — see GitHub Project Setup in SKILL.md.
@@ -426,9 +583,13 @@ After creating master PR:
 
 ### Backporting
 
-Check code freeze first (see SKILL.md).
+Check code freeze first (see SKILL.md). If GitLab is unreachable, stop
+and ask the user before creating backport PRs.
 
-Ask which branches to backport to. Use Supported Branches table in `AGENTS.md`.
+Ask which branches to backport to. Use Supported Branches table in
+`AGENTS.md`. **Skip branches** where the vulnerable dependency does not
+exist or is already fixed (see **Backport branch selection** in
+SKILL.md). Present skipped branches in the summary.
 
 For each backport branch:
 1. Create branch from `origin/<version>` (e.g. `CVE-YYYY-NNNNN-library-vX.Y`)
@@ -518,8 +679,8 @@ gh pr list --repo <owner>/<repo> --search "CVE-YYYY-NNNNN in:title state:open" \
 ```
 
 Verify:
-- One PR per supported branch (master/main + all backports from the
-  Supported Branches table in `AGENTS.md`)
+- One PR per branch where the fix applies (master/main + applicable
+  backports — skip branches without the vulnerable dependency)
 - Each PR has the `backport needed` label (master/main only)
 - Each PR has an assignee and reviewer set
 - No PR has merge conflicts (check `mergeable` field if needed)
@@ -547,36 +708,63 @@ After verification passes, inform the user:
 The reviewer can use `kiali-cve:review` to review, merge PRs, and close
 the issues."
 
-## Step 10: Review Existing In Progress CVEs
+## Step 10: Review Stale and In-Progress CVEs
 
-After new CVEs are triaged, check for unblocked In Progress CVEs.
+After new CVEs are triaged, audit Jira hygiene and check for unblocked
+In Progress CVEs.
+
+### 10a. Release Pending without fix version
+
+Find issues already in Release Pending but missing a fix version:
+
+```
+project = OSSM AND component = Kiali AND status = "Release Pending" AND fixVersion is EMPTY ORDER BY created DESC
+```
+
+Also:
+
+```
+project = OSSM AND summary ~ kiali AND status = "Release Pending" AND fixVersion is EMPTY AND summary ~ CVE ORDER BY created DESC
+```
+
+For each hit, set `fixVersions` using SKILL.md **Fix Version Selection**
+(ask the user when lowest and highest unreleased patches differ). Present
+a table for approval before updating.
+
+### 10b. In Progress CVEs
 
 ```
 project = OSSM AND component = Kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
 ```
 
 Also:
+
 ```
 project = OSSM AND summary ~ kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
 ```
 
 Deduplicate and group by CVE.
 
-### 10a. Identify blockers
+### 10c. Identify blockers
 
 For each CVE group, **independently** determine the fix version required.
 Look up each CVE to find the exact fix version before checking availability.
 
 Common blockers:
-- **Downstream builder not updated**: For Go stdlib CVEs, re-run the
-  product `GO_VERSION` method in Step 6b (released `kiali-rhel9` →
-  midstream `kiali.Containerfile` builder pin → builder `GO_VERSION`).
-  Also check whether a newer fixed builder tag exists on brew.
+- **Released product still vulnerable**: Re-run `check-go-version.sh` on
+  the latest `kiali-rhel9` image (Step 6b.1). Do not close based on
+  builder version alone.
+- **Downstream builder not updated**: Re-run Step 6b.2 (current midstream
+  `kiali.Containerfile` builder pin → `GO_VERSION`). Stay In Progress
+  until builder reaches the CVE fix Go version.
+- **Builder sufficient, product not rebuilt**: Typical path is Release
+  Pending with fix version on the next OSSM patch; confirm with user if
+  timing is uncertain (Step 6f).
 - **Upstream PR not merged**: Check PR status on GitHub
 - **Backport PRs pending**: Master merged but backports not created
 - **Transition to Code Review pending**: PRs exist but Jira not updated
 
-### 10b. Present findings
+### 10d. Present findings
 
 Per CVE:
 - CVE identifier, description, issue count
@@ -584,7 +772,7 @@ Per CVE:
 - Blocker status and whether resolved
 - Recommended action
 
-### 10c. Act on unblocked CVEs
+### 10e. Act on unblocked CVEs
 
 **Assigned to current user**: Ask whether to proceed, then resume from
 appropriate step.
