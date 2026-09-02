@@ -65,23 +65,30 @@ and `limit` of 50. Set `projects_filter` to `OSSM`.
 ### Per-CVE Verification
 
 After initial discovery, for each unique CVE identifier found, run a
-verification query to ensure ALL issues for that CVE are captured:
+verification query to ensure ALL issues for that CVE are captured
+(**any status**). Do **not** add `summary ~ kiali` — Jira tokenization
+misses `kiali-rhel9` and `kiali-rhel9-operator` in paths:
 
 ```
-project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND status = New ORDER BY created DESC
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" ORDER BY created DESC
 ```
 
-This catches issues that slipped through tokenization or result-count
-limits in the broader queries. Merge results into the main set.
+Filter client-side: keep issues whose summary mentions a Kiali image
+(`kiali-rhel9`, `kiali-ossmc`, `kiali-rhel9-operator`,
+`kiali-operator-bundle`, or `kiali-X-Y` Konflux paths). Merge results
+into the main set.
 
 ### User-Provided Issues
 
 If the user provides a Jira issue URL or key, fetch with `jira_get_issue`,
-extract the CVE ID, then search:
+extract the CVE ID, then search (same as per-CVE verification — no
+`summary ~ kiali` filter):
 
 ```
-project = OSSM AND summary ~ "CVE-YYYY-NNNNN" AND summary ~ kiali ORDER BY created DESC
+project = OSSM AND summary ~ "CVE-YYYY-NNNNN" ORDER BY created DESC
 ```
+
+Filter client-side for Kiali images as above.
 
 ### Presenting Results
 
@@ -97,7 +104,9 @@ Group issues by CVE identifier. Process each CVE independently through
 the applicable steps:
 
 - **JavaScript/NPM CVEs**: Steps 2–9 (including OSSMC in Step 8)
-- **Go CVEs**: Steps 2–7, 9 (Step 8 does not apply)
+- **Go stdlib CVEs**: Steps 2–3, 6b–6f (6e for Release Pending without
+  PR; 6d for early closure). Skip Steps 7–9 when no Kiali PR is needed.
+- **Go third-party module CVEs**: Steps 2–7, 9 (Step 8 does not apply)
 - **Python CVEs**: Steps 2–3, then 4–5 for remaining issues
 - **Other**: Steps 2, 4–5 (remaining handled manually)
 
@@ -382,9 +391,9 @@ requires setting `fixVersions` on every issue before transitioning.
 Never transition to Release Pending without a fix version. Do **not**
 set `customfield_10875` when no Kiali PR exists.
 
-1. Determine fix versions per OSSM minor version (see SKILL.md Release
-   Pending Sequence — account for z-stream exclusion when Kiali is not
-   in the imminent OSSM patch)
+1. Determine fix versions per OSSM minor version (see SKILL.md **Fix
+   Version Selection** — ask the user when lowest and highest unreleased
+   patches differ)
 2. Set fix versions via `jira_update_issue`
 3. Transition to Release Pending (ID `"131"`)
 4. Add comment explaining why no PR is needed (e.g. "Released kiali-rhel9
@@ -421,12 +430,11 @@ may still not consume the updated builder pin.
 
 Ask whether to:
 
-- **Release Pending** (typical): Follow Step 6e and the Release Pending
-  Sequence in SKILL.md. Set `fixVersions` to the OSSM patch that will
-  ship the rebuilt image. If Kiali is **not** in the imminent z-stream
-  release, use the **next higher** unreleased patch (not the lowest
-  unreleased). Comment: released Go X.Y.Z vulnerable; builder at A.B.C;
-  fix expected in OSSM N.N.N product rebuild (no Kiali PR).
+- **Release Pending** (typical): Follow Step 6e and **Fix Version
+  Selection** in SKILL.md. Ask the user when lowest and highest
+  unreleased patches differ. Comment: released Go X.Y.Z vulnerable;
+  builder at A.B.C; fix expected in OSSM N.N.N product rebuild (no
+  Kiali PR).
 - **In Progress**: Builder looks sufficient but next release timing is
   uncertain. Re-check before transitioning.
 
@@ -558,9 +566,11 @@ reviewer" in SKILL.md, exclude PR assignee).
 
 PR description must reference CVE but **not** OSSM Jira keys.
 
-After creating **every** CVE PR, assign it to the user (use
-`issue_write` with `method: "update"` and the PR number, since
-`create_pull_request` does not support assignees).
+After creating **every** CVE PR, assign it to the user:
+
+```bash
+gh pr edit <PR_NUMBER> --repo <owner>/<repo> --add-assignee <GITHUB_USER>
+```
 
 Adding PRs to the Kiali GitHub Project is a **separate step that
 requires user approval** — see GitHub Project Setup in SKILL.md.
@@ -573,9 +583,13 @@ After creating master PR:
 
 ### Backporting
 
-Check code freeze first (see SKILL.md).
+Check code freeze first (see SKILL.md). If GitLab is unreachable, stop
+and ask the user before creating backport PRs.
 
-Ask which branches to backport to. Use Supported Branches table in `AGENTS.md`.
+Ask which branches to backport to. Use Supported Branches table in
+`AGENTS.md`. **Skip branches** where the vulnerable dependency does not
+exist or is already fixed (see **Backport branch selection** in
+SKILL.md). Present skipped branches in the summary.
 
 For each backport branch:
 1. Create branch from `origin/<version>` (e.g. `CVE-YYYY-NNNNN-library-vX.Y`)
@@ -665,8 +679,8 @@ gh pr list --repo <owner>/<repo> --search "CVE-YYYY-NNNNN in:title state:open" \
 ```
 
 Verify:
-- One PR per supported branch (master/main + all backports from the
-  Supported Branches table in `AGENTS.md`)
+- One PR per branch where the fix applies (master/main + applicable
+  backports — skip branches without the vulnerable dependency)
 - Each PR has the `backport needed` label (master/main only)
 - Each PR has an assignee and reviewer set
 - No PR has merge conflicts (check `mergeable` field if needed)
@@ -694,22 +708,44 @@ After verification passes, inform the user:
 The reviewer can use `kiali-cve:review` to review, merge PRs, and close
 the issues."
 
-## Step 10: Review Existing In Progress CVEs
+## Step 10: Review Stale and In-Progress CVEs
 
-After new CVEs are triaged, check for unblocked In Progress CVEs.
+After new CVEs are triaged, audit Jira hygiene and check for unblocked
+In Progress CVEs.
+
+### 10a. Release Pending without fix version
+
+Find issues already in Release Pending but missing a fix version:
+
+```
+project = OSSM AND component = Kiali AND status = "Release Pending" AND fixVersion is EMPTY ORDER BY created DESC
+```
+
+Also:
+
+```
+project = OSSM AND summary ~ kiali AND status = "Release Pending" AND fixVersion is EMPTY AND summary ~ CVE ORDER BY created DESC
+```
+
+For each hit, set `fixVersions` using SKILL.md **Fix Version Selection**
+(ask the user when lowest and highest unreleased patches differ). Present
+a table for approval before updating.
+
+### 10b. In Progress CVEs
 
 ```
 project = OSSM AND component = Kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
 ```
 
 Also:
+
 ```
 project = OSSM AND summary ~ kiali AND status = "In Progress" AND summary ~ CVE ORDER BY created DESC
 ```
 
 Deduplicate and group by CVE.
 
-### 10a. Identify blockers
+### 10c. Identify blockers
 
 For each CVE group, **independently** determine the fix version required.
 Look up each CVE to find the exact fix version before checking availability.
@@ -728,7 +764,7 @@ Common blockers:
 - **Backport PRs pending**: Master merged but backports not created
 - **Transition to Code Review pending**: PRs exist but Jira not updated
 
-### 10b. Present findings
+### 10d. Present findings
 
 Per CVE:
 - CVE identifier, description, issue count
@@ -736,7 +772,7 @@ Per CVE:
 - Blocker status and whether resolved
 - Recommended action
 
-### 10c. Act on unblocked CVEs
+### 10e. Act on unblocked CVEs
 
 **Assigned to current user**: Ask whether to proceed, then resume from
 appropriate step.

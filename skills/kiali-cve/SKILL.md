@@ -131,10 +131,16 @@ for the session. Always verify transition IDs before transitioning.
 ### CVE Lifecycle
 
 ```
-New → In Progress → [create PRs] → Code Review → [merge PRs] → Release Pending
-                                    ^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                    triage sets    review sets
+New → In Progress ─┬→ [6d close] → Closed (Not a Bug)     — no fix version
+                   ├→ [6e no PR]  → Release Pending       — fix version required
+                   ├→ [create PRs] → Code Review → [merge] → Release Pending
+                   │                  ^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^
+                   │                  triage Step 9   review Step R7
+                   └→ [6d.3 already fixed] → Closed     — no fix version
 ```
+
+Go stdlib CVEs may skip Code Review (6e). NPM/Go-module CVEs with no code
+change may also use 6e or 6d.3.
 
 ### Custom Fields
 
@@ -191,26 +197,49 @@ closures, dependency version never in the vulnerable range (Step 6d.1),
 vulnerable code not in execute path (Step 6d.2), or already-fixed
 closures with no new PR (Step 6d.3).
 
+### Fix Version Selection
+
+Use `jira_get_project_versions` with `project_key` `"OSSM"`. For each
+issue's OSSM minor version (`[ossm-X.Y]` in summary), list unreleased,
+unarchived patch versions for that stream (e.g. `OSSM 3.3.7`, `OSSM 3.3.8`)
+sorted by patch number.
+
+| Term | Meaning |
+|------|---------|
+| **Lowest unreleased** | First patch in the sorted list (next OSSM release) |
+| **Highest unreleased** | Last patch in the sorted list |
+
+**Selection rules:**
+
+1. **Only one unreleased patch** — use it.
+2. **Multiple unreleased patches, lowest ≠ highest** — present both
+   options to the user with a recommendation (see z-stream below) and
+   **ask which to assign**. Do not pick silently.
+3. **No unreleased version exists** — ask the user.
+
+**Z-stream guidance** (for the recommendation in rule 2):
+
+- **Kiali in imminent z-stream** — recommend **lowest** unreleased
+  (the next OSSM release that includes Kiali).
+- **Kiali excluded from imminent z-stream** — recommend the **second**
+  unreleased patch (lowest + 1), not the highest. Example: imminent is
+  `OSSM 3.3.7` but Kiali is not in that build → recommend `OSSM 3.3.8`.
+
+**Determining z-stream inclusion** — when unsure, ask the user. Useful
+signals (any may apply):
+
+- Whether the imminent OSSM z-stream build already includes merged Kiali
+  CVE PRs for this stream.
+- Konflux snapshot / release candidate status for the OSSM patch.
+- Release manager or team confirmation.
+
 ### Release Pending Sequence
 
 **MANDATORY**: `fixVersions` MUST be set on every issue transitioned to
 Release Pending. Without it, we cannot determine which release resolves
 the CVE.
 
-1. Determine fix version: Use `jira_get_project_versions` with
-   `project_key` `"OSSM"`. For each issue's OSSM minor version
-   (`[ossm-X.Y]` in summary), list unreleased, unarchived patch
-   versions for that stream (e.g. `OSSM 3.3.7`, `OSSM 3.3.8`) sorted
-   by patch number.
-
-   - **Kiali in imminent z-stream:** Use the **lowest** unreleased
-     patch (the next OSSM release).
-   - **Kiali excluded from imminent z-stream:** Use the **next higher**
-     unreleased patch (e.g. imminent is `OSSM 3.3.7` but Kiali is not
-     in that build → set `OSSM 3.3.8`). Confirm with the user when
-     unsure.
-
-   If no suitable unreleased version exists, ask the user.
+1. Determine fix version per issue using **Fix Version Selection** above.
 2. `jira_update_issue` — set fix version (required). Set the PR field
    only when a Kiali PR introduced the fix:
 
@@ -293,14 +322,17 @@ This label is only added to the master/main PR, not to backport PRs.
 
 ### Setting the Git Pull Request field on Jira issues
 
-Before transitioning issues to Code Review or Release Pending, set
-the "Git Pull Request" custom field (`customfield_10875`) on each
-issue with the PR URL for the branch that corresponds to the issue's
-OSSM version. Kiali server issues and OSSMC issues are separate Jira
-tickets, so each issue maps to exactly one PR URL.
+Set `customfield_10875` (Git Pull Request) **only when a Kiali PR
+introduced the fix**. Omit it for no-PR resolutions (Go stdlib builder
+rebuild, Step 6e).
 
-`jira_update_issue` with fields
-`{"customfield_10875": "<PR_URL>"}`
+When applicable — before transitioning to **Code Review** (triage
+Step 9a) or when backfilling during **review** (Step R7c) — map each
+issue to the PR URL for the branch that corresponds to the issue's OSSM
+version. Kiali server issues and OSSMC issues are separate Jira tickets,
+so each issue maps to exactly one PR URL.
+
+`jira_update_issue` with fields `{"customfield_10875": "<PR_URL>"}`
 
 ### GitHub Project Setup
 
@@ -391,11 +423,27 @@ the backport PR targets). If so, code freeze is active for that branch.
 If code freeze is active for the target branch, warn the user and ask
 whether to proceed with "Do Not Merge" labels or skip that branch.
 
+**GitLab unavailable** (DNS failure, auth error, timeout): **do not merge
+backport PRs** until the check succeeds or the user explicitly waives the
+check. Report the failure and ask how to proceed. Master/main PR merges
+are not subject to this freeze file but still require user approval.
+
 ## Version Mapping
 
 The OSSM-to-Kiali branch mapping is in the "Supported Branches" table in
 `AGENTS.md`. Always read it before creating or reviewing backport PRs.
 `master` maps to the next unreleased OSSM version (not a backport target).
+Jira issues for that OSSM version may not exist yet — ask the user whether
+to create a master PR without a matching Jira issue, or skip master until
+issues are filed.
+
+### Backport branch selection
+
+Create backport PRs only for branches where the vulnerable dependency
+exists. Before backporting, verify the library is present on each branch
+(`git show upstream/<branch>:<file>`). **Skip branches** where the
+dependency is absent or already at/above the fix version. Document skipped
+branches in the triage summary.
 
 ## Repos
 

@@ -48,8 +48,25 @@ gh pr list --repo kiali/kiali-operator \
   --limit 50
 ```
 
+Operator CVE PRs are rare — triage Step 3 closes most operator issues.
+An empty result here is normal.
+
 Group results by CVE identifier (extracted from PR title). Each CVE
 will have a master/main PR plus backport PRs across supported branches.
+
+### 1a-alt. Jira-only CVEs (no open PRs)
+
+Some CVEs are resolved without Kiali PRs (Go stdlib builder rebuild —
+triage Step 6e). These will not appear in GitHub search. Also check Jira
+for Code Review or Release Pending issues without matching open PRs:
+
+```
+project = OSSM AND component = Kiali AND status in ("Code Review", "Release Pending") AND summary ~ CVE ORDER BY created DESC
+```
+
+Report these separately. For Release Pending issues missing fix versions,
+run the audit in Step R7e. For Go stdlib issues awaiting rebuild, no
+merge step is needed — verify Jira state only.
 
 ### 1b. Find corresponding Jira issues
 
@@ -247,8 +264,12 @@ Present to user:
 - [ ] All CI checks pass (Step R5)
 - [ ] Code freeze status checked (see SKILL.md)
 
-If code freeze is active, warn and ask whether to proceed (PRs would need
+If code freeze is active for the target branch, warn and ask whether to proceed (PRs would need
 "Do Not Merge" label removed first, or freeze must be lifted).
+
+If the GitLab code-freeze check fails (unreachable host, auth error),
+**do not merge backport PRs** until the check succeeds or the user
+explicitly waives it (see SKILL.md).
 
 ### Merge order
 
@@ -259,16 +280,33 @@ Process repos separately. Within each repo:
 
 For each PR:
 
-1. **Approve**:
+1. **Approve** (when the current user is not the PR author):
+
    ```bash
    gh pr review <PR_NUMBER> --repo <owner>/<repo> --approve \
      --body "CVE-YYYY-NNNNN fix reviewed. Dependency upgraded from X to Y. Cross-branch consistency verified. CI passing."
    ```
 
+   The PR assignee **cannot approve their own PR**. Skip approval when
+   the current user is the author — proceed to merge only after the
+   designated reviewer has approved, or use admin merge (below).
+
 2. **Merge** (squash — kiali repos only allow squash merge):
+
    ```bash
    gh pr merge <PR_NUMBER> --repo <owner>/<repo> --squash
    ```
+
+   **Admin merge exception:** When the designated reviewer is
+   unavailable and the user explicitly approves proceeding, merge with
+   admin override (bypasses review requirement):
+
+   ```bash
+   gh pr merge <PR_NUMBER> --repo <owner>/<repo> --squash --admin
+   ```
+
+   Document in the merge summary that approval was bypassed. This is an
+   exception — default path is reviewer approval then merge.
 
 3. **Verify merge succeeded**: Check exit code. If merge fails
    (conflicts, branch protection), report and skip. Continue with
@@ -300,13 +338,14 @@ available transitions with `jira_get_transitions` first.
 Use `jira_get_project_versions` with `project_key` `"OSSM"`.
 
 For each issue's OSSM minor version (`[ossm-X.Y]` in summary), follow
-the fix-version rules in SKILL.md (Release Pending Sequence):
+**Fix Version Selection** in SKILL.md:
 
-- **Kiali in imminent z-stream:** lowest unreleased patch.
-- **Kiali excluded from imminent z-stream:** next higher unreleased
-  patch after the imminent one.
+- One unreleased patch → use it.
+- Multiple unreleased patches where **lowest ≠ highest** → present both
+  with a z-stream recommendation and **ask the user which to assign**.
+- No unreleased version → ask the user.
 
-If no suitable unreleased version exists, ask the user.
+Confirm z-stream inclusion with the user when unsure (see SKILL.md).
 
 ### 7c. Set fix versions
 
@@ -349,6 +388,16 @@ Present list for user approval before executing.
 
 Before presenting the summary, run a full verification of all review
 outputs.
+
+**Release Pending hygiene** — find any Kiali CVE issues in Release
+Pending without a fix version (catches gaps like triage Step 10a):
+
+```
+project = OSSM AND component = Kiali AND status = "Release Pending" AND fixVersion is EMPTY AND summary ~ CVE ORDER BY created DESC
+```
+
+If any are found for the CVE under review (or globally during a full
+audit), set fix versions before presenting the summary.
 
 **GitHub PRs** — for each repo involved, verify all CVE PRs are merged:
 
