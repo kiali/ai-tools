@@ -60,3 +60,4 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | `regression-fix` | Investigate and fix a failing Cypress test from a GitHub issue |
 | `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
 | `regression-triage` | Analyze Jenkins nightly CI failures, classify them, and produce triage handoff blocks |
+| `sprint-demo` | Prepare upstream Kiali community meeting sprint demo slides from release activity |
