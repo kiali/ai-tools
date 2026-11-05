@@ -1,18 +1,32 @@
 ---
 name: kiali-cve
-description: Triage and review OSSM Jira CVE issues for the Kiali component. Two features - triage (find new CVEs, close inapplicable issues, create fix PRs for master and supported branches) and review (review fix PRs across branches, verify consistency and CI, approve, merge, update Jira). Use when the user mentions CVE triage, CVE review, OSSM CVE, or kiali-cve.
+description: Triage and review OSSM Jira CVE issues for the Kiali component, and harden upstream via GitHub Dependabot on master. Three features - triage (OSSM Jira, fix PRs for master and supported branches), review (merge CVE PRs across branches, update Jira), dependabot (evaluate and fix open Dependabot alerts on kiali/kiali master only). Use when the user mentions CVE triage, CVE review, OSSM CVE, Dependabot alerts, upstream CVE hardening, or kiali-cve.
 ---
 
 # Kiali CVE Management
 
-Two features: **triage** and **review**.
+Three features: **triage**, **review**, and **dependabot** (upstream master).
 
 | Trigger | Feature | Action |
 |---------|---------|--------|
 | "triage", "kiali-cve:triage", "new CVEs" | Triage | Read [triage.md](triage.md) and follow its steps |
 | "review", "kiali-cve:review", "review CVE PRs" | Review | Read [review.md](review.md) and follow its steps |
+| "dependabot", "kiali-cve:dependabot", "upstream alerts", "Dependabot alerts" | Dependabot | Read [dependabot.md](dependabot.md) and follow its steps |
 
 If intent is unclear, ask the user which feature they want.
+
+### Dependabot scope (v1)
+
+- Repository: **`kiali/kiali`** only
+- Branch: **`master`** only (no release-branch backports in this feature yet)
+- Always qualify alerts and read dependency versions against **updated `master`**
+- Fix PRs: sync `master`, branch off current `master`, open with **`--base master`**
+- Session: walk the prioritized queue with the operator; each item ends in
+  **Fix (PR)**, **Pass**, **Close** (dismiss), or **Stop session**
+- **One normal (non-draft) PR per queue item** by default; policy **B** for
+  `fix_started` dismiss when each PR is opened
+- Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
+  downstream OSSM CVE filing
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
@@ -21,7 +35,21 @@ The same approval rule applies to adding CVE PRs to the Kiali GitHub Project
 
 ## Tool Access Verification
 
-### All features
+### Dependabot feature
+
+Before any other dependabot step (Jira and GitLab not required):
+
+1. **Updated `master`** in the local `kiali/kiali` clone — follow [dependabot.md](dependabot.md)
+   **Step D0.1** first; stop if sync fails
+2. **In-flight PRs** — **Step D0.4**: report open `[dependabot/master]` PRs to the operator
+   (review/merge may be needed) before collecting new alerts
+3. **GitHub CLI**: `gh auth status` (`repo` scope minimum)
+4. **Dependabot alerts**: `gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1'`
+
+If dismissals are planned, refresh token scopes per [dependabot.md](dependabot.md)
+Step D0.3.
+
+### Triage and review
 
 Before triage or review, verify in parallel:
 
