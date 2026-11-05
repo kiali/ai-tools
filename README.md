@@ -56,6 +56,7 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-delete` | Delete Kiali, Bookinfo, and Istio from Minikube |
 | `kiali-start` | Start Kiali in Minikube with Istio and Bookinfo (sidecar or ambient mode) |
+| `kiali-translate` | Audit Kiali UI localization catalogs, suggest translations, and fill confirmed gaps |
 | `progress-report` | Generate a progress report for the current task |
 | `regression-fix` | Investigate and fix a failing Cypress test from a GitHub issue |
 | `regression-report` | Create a structured GitHub issue for a confirmed Cypress test failure |
