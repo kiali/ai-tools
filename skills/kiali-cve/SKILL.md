@@ -15,6 +15,11 @@ Three features: **triage**, **review**, and **dependabot** (upstream master).
 
 If intent is unclear, ask the user which feature they want.
 
+**Shared dependency fixes:** NPM/Yarn and `go.mod` implementation steps for
+`kiali/kiali` (and OSSMC `plugin/`) live in [remediation.md](remediation.md).
+[triage.md](triage.md) and [dependabot.md](dependabot.md) add intake, branches,
+and ticket/alert handling on top.
+
 ### Dependabot scope (v1)
 
 - Repository: **`kiali/kiali`** only
@@ -23,8 +28,9 @@ If intent is unclear, ask the user which feature they want.
 - Fix PRs: sync `master`, branch off current `master`, open with **`--base master`**
 - Session: walk the prioritized queue with the operator; each item ends in
   **Fix (PR)**, **Pass**, **Close** (dismiss), or **Stop session**
-- **One normal (non-draft) PR per queue item** by default; policy **B** for
-  `fix_started` dismiss when each PR is opened
+- **One normal (non-draft) PR per queue item** by default; **do not** PATCH alerts
+  on PR open — alerts clear after merge + rescan; PATCH only for **Close**
+  (inapplicable/stale) per [dependabot.md](dependabot.md)
 - Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
   downstream OSSM CVE filing
 
@@ -41,7 +47,7 @@ Before any other dependabot step (Jira and GitLab not required):
 
 1. **Updated `master`** in the local `kiali/kiali` clone — follow [dependabot.md](dependabot.md)
    **Step D0.1** first; stop if sync fails
-2. **In-flight PRs** — **Step D0.4**: report open `[dependabot/master]` PRs to the operator
+2. **In-flight PRs** — **Step D0.4**: report open **`[dependabot]`** PRs to the operator
    (review/merge may be needed) before collecting new alerts
 3. **GitHub CLI**: `gh auth status` (`repo` scope minimum)
 4. **Dependabot alerts**: `gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1'`
