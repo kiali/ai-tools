@@ -26,18 +26,24 @@ and ticket/alert handling on top.
 - Branch: **`master`** only (no release-branch backports in this feature yet)
 - Always qualify alerts and read dependency versions against **updated `master`**
 - Fix PRs: sync `master`, branch off current `master`, open with **`--base master`**
-- Session: walk the prioritized queue with the operator; each item ends in
-  **Fix (PR)**, **Pass**, **Close** (dismiss), or **Stop session**
+- Session: after D1, show the **prioritized queue table**; walk it one item at a
+  time — recommend, then **wait** for **Fix (PR)**, **Pass**, **Close**
+  (dismiss), or **Stop session** before any branch/commits/PRs
 - **One normal (non-draft) PR per queue item** by default; **do not** PATCH alerts
   on PR open — alerts clear after merge + rescan; PATCH only for **Close**
   (inapplicable/stale) per [dependabot.md](dependabot.md)
+- **After each Fix PR:** assign to the current GitHub user and add to the Kiali
+  GitHub Project (**In review**) — mandatory; see dependabot.md **PR tracking**
 - Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
   downstream OSSM CVE filing
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
-The same approval rule applies to adding CVE PRs to the Kiali GitHub Project
-— ask first, then act only after the user confirms.
+For **triage** and **review**, adding CVE PRs to the Kiali GitHub Project
+requires user approval first (see GitHub Project Setup below). The
+**dependabot** feature is the exception: assign the PR to the current GitHub
+user and add it to the project with **In review** immediately after create
+(see [dependabot.md](dependabot.md)).
 
 ## Tool Access Verification
 
@@ -51,6 +57,9 @@ Before any other dependabot step (Jira and GitLab not required):
    (review/merge may be needed) before collecting new alerts
 3. **GitHub CLI**: `gh auth status` (`repo` scope minimum)
 4. **Dependabot alerts**: `gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1'`
+5. **GitHub Project** (for Fix PRs): `gh project list --owner kiali` — if this
+   fails, refresh scopes before creating PRs:
+   `gh auth refresh -h github.com -s read:org,read:project,project`
 
 If dismissals are planned, refresh token scopes per [dependabot.md](dependabot.md)
 Step D0.3.
@@ -376,9 +385,11 @@ all repositories and branches:
 - `kiali/kiali` — master and backport PRs
 - `kiali/openshift-servicemesh-plugin` — main and backport PRs
 
-**Do not execute project updates without explicit user approval**, the
-same as Jira changes. When PRs are ready (after creating the master/main
-PR, after creating backports, or when backfilling an existing batch):
+**Do not execute project updates without explicit user approval** for
+**triage** and **review** — the same as Jira changes. **Dependabot** Fix PRs
+are added automatically per [dependabot.md](dependabot.md) (no prompt). When
+CVE PRs are ready (after creating the master/main PR, after creating
+backports, or when backfilling an existing batch):
 
 1. **Ask the user** whether to add the PR(s) to the project and set
    status to "In review". Present a list of PR URLs that would be updated.

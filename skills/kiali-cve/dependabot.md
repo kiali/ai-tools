@@ -64,6 +64,14 @@ Details below (D0–D3) spell out commands and approvals.
 Walk the queue **one item at a time** (see [Workflow overview](#workflow-overview)): present,
 get a decision, execute — no batch dismissals or PRs without operator approval.
 
+**Hard stop before implementation:** After Step D1, present the **full prioritized
+queue** (table with positions `1…N`). For each item, present **that item’s**
+detail and **wait** for **Fix** | **Pass** | **Close** | **Stop session** before
+any `git checkout -b`, manifest/lockfile edit, commit, push, or `gh pr create`.
+Recommendations (including “prefer grpc while a `yarn.lock` PR is in flight”) are
+fine; they are **not** permission to start the fix. The operator may also choose
+a **different queue number** than `k` (e.g. skip item 1 until another PR merges).
+
 ### Work queue unit
 
 Build queue entries from open alerts (D1). Prefer **one queue item per
@@ -105,13 +113,75 @@ Do **not** add GitHub labels for this workflow unless the operator asks.
    Title **must** begin with **`[dependabot]`**.
 4. Ask who should **review**; link all Dependabot alert URLs for that item in the
    PR description.
-5. **Do not** dismiss or PATCH alerts when the PR opens — wait for merge + rescan
+5. **Assign** the PR to the **current GitHub user** (operator running the skill) and
+   **add it to the Kiali GitHub Project** with status **In review** — see
+   [PR tracking (required)](#pr-tracking-required). Do this for every Fix PR
+   immediately after `gh pr create` (do not wait for operator approval; unlike
+   Jira/CVE triage).
+6. **Do not** dismiss or PATCH alerts when the PR opens — wait for merge + rescan
    (see [GitHub alert handling](#github-alert-handling-when-fixing-default)).
-6. Continue to the next queue item on a **new** branch (merge or rebase from
+7. Continue to the next queue item on a **new** branch (merge or rebase from
    updated `master` after prior PRs merge when possible).
 
 **Optional batching:** only when the operator explicitly requests one PR for
 multiple queue items (same branch, multiple commits). Default is **separate PRs**.
+
+### PR tracking (required)
+
+After each **`gh pr create`** for a Fix item:
+
+1. **Assignee** — the GitHub login of the user executing the skill (same as
+   `gh auth status` / `gh api user`):
+
+```bash
+GITHUB_USER="$(gh api user --jq .login)"
+gh pr edit <PR_NUMBER> --repo kiali/kiali --add-assignee "${GITHUB_USER}"
+```
+
+2. **Kiali GitHub Project** — add the PR and set **In review**. Unlike CVE
+   triage ([SKILL.md](SKILL.md) GitHub Project Setup), **do not ask** for
+   approval; this is mandatory for every Dependabot Fix PR.
+
+   Verify project token scopes once per session (extend D0.2 if not already done):
+
+```bash
+gh auth refresh -h github.com -s read:org,read:project,project
+gh project list --owner kiali --format json
+```
+
+   Add the PR (use the single active Kiali project number from the list):
+
+```bash
+PR_URL="https://github.com/kiali/kiali/pull/<PR_NUMBER>"
+gh project item-add <PROJECT_NUMBER> --owner kiali --url "${PR_URL}"
+```
+
+   Set status to **In review** (field/option IDs vary; look up each session or
+   after add):
+
+```bash
+gh project field-list <PROJECT_NUMBER> --owner kiali --format json \
+  --jq '.fields[] | select(.name=="Status") | {id, options: [.options[] | select(.name | test("In review"; "i"))]}'
+```
+
+```bash
+ITEM_ID="$(gh project item-list <PROJECT_NUMBER> --owner kiali --format json --limit 200 \
+  --jq '.items[] | select(.content.url=="'"${PR_URL}"'") | .id')"
+gh project item-edit \
+  --project-id <PROJECT_ID> \
+  --id "${ITEM_ID}" \
+  --field-id <STATUS_FIELD_ID> \
+  --single-select-option-id <IN_REVIEW_OPTION_ID>
+```
+
+   If `gh project` fails (scopes, item not found), report the error and give the
+   operator the commands to run manually; **do not** treat the Fix item as
+   complete until assignee + project are confirmed or the operator waives tracking.
+
+3. **Reviewer** — after assignee/project, `gh pr edit ... --add-reviewer` per
+   operator choice (see [SKILL.md](SKILL.md)).
+
+Record assignee and project status in the session log (Step D3).
 
 **`frontend/yarn.lock`:** parallel open PRs that both touch the lockfile conflict
 easily — prefer **one frontend fix PR in flight** or merge/rebase before starting
@@ -287,8 +357,10 @@ Repeat for queue item `k = 1…N` until the operator **stops the session** or
    vulnerable vs **current on synced `master`**, patched version(s), whether the
    package appears in `frontend/package.json` **`resolutions`** / **`overrides`**,
    whether Kiali **directly imports** the package (see D2a), brief recommendation
-2. **Operator chooses**: **Fix** | **Pass** | **Close** | **Stop session**
-3. Execute the choice (D2a / D2b / D2c / exit to Step D3).
+2. **Operator chooses**: **Fix** | **Pass** | **Close** | **Stop session** (or
+   “work item `m` instead” — then present item `m` and get a fresh choice).
+   **Do not** implement on **maybe**, **test remediation**, or session goals alone.
+3. Execute the choice (D2a / D2b / D2c / exit to Step D3) — only after step 2.
 4. Record outcome in the running **session log** (Step D3 table).
 5. Continue to item `k+1` unless the session stopped.
 
@@ -334,7 +406,8 @@ cd frontend && yarn test   # when frontend lockfile changed
 Push to fork; create PR (`--base master`; **not** draft unless operator asks).
 PR conventions: [SKILL.md](SKILL.md) except **no `backport needed`**. No OSSM
 Jira keys in the description. Link every Dependabot alert URL for **this queue
-item**. Request reviewer per operator choice.
+item**. Then [PR tracking (required)](#pr-tracking-required): assignee,
+project **In review**, reviewer per operator choice.
 
 **Do not** PATCH alerts when the PR opens — see [GitHub alert handling when fixing](#github-alert-handling-when-fixing-default).
 
