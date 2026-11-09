@@ -34,6 +34,8 @@ and ticket/alert handling on top.
   (inapplicable/stale) per [dependabot.md](dependabot.md)
 - **After each Fix PR:** assign to the current GitHub user and add to the Kiali
   GitHub Project (**In review**) — mandatory; see dependabot.md **PR tracking**
+- **PR body:** include **How this PR was built** (commands + why lockfile / `x/*`
+  may move) — see dependabot.md **PR description**
 - Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
   downstream OSSM CVE filing
 

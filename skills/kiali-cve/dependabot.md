@@ -102,6 +102,38 @@ unless the operator asks — open normal, reviewable PRs (request reviewer per
 **PR title:** must start with **`[dependabot]`** then a short description,
 e.g. `[dependabot] Bump dompurify to 3.4.17 (GHSA-…)`.
 
+**PR description:** every Fix PR must include a **### How this PR was built**
+subsection (after **Summary**) so reviewers see intentional scope. Use the
+commands actually run — do not paraphrase.
+
+| Ecosystem | Document in the PR |
+|-----------|-------------------|
+| **Go** | `go get <module>@<patched-version>` and `go mod tidy`. State that only the CVE module was targeted explicitly; explain that **`go mod tidy` may bump `golang.org/x/*`** (and other shared modules) because the patched module’s `go.mod` requires newer versions — not manual drive-by upgrades. |
+| **npm (direct)** | `package.json` version change + `cd frontend && yarn install`. Note if **`resolutions`** were **not** added. Call out expected transitive lockfile moves (e.g. `follow-redirects` with `axios`). |
+| **npm (lockfile-only / transitive)** | `yarn install` or `yarn up` path used; **no new `resolutions`** unless required (say why). |
+
+Copy-paste templates (include in the PR body under **Summary**):
+
+**Go example:**
+
+    ### How this PR was built
+
+    go get google.golang.org/grpc@v1.83.2
+    go mod tidy
+
+    Only the **CVE target** was chosen explicitly (`google.golang.org/grpc` **v1.83.2**).
+
+    `go mod tidy` also updates some `golang.org/x/*` modules because the patched module requires newer versions than the previous release. Those lines are Go toolchain resolution across the full module graph, not separate manual bumps.
+
+**npm (direct) example:**
+
+    ### How this PR was built
+
+    - Updated direct dependency in `frontend/package.json`: `<pkg>` …
+    - Regenerated lockfile: `cd frontend && yarn install`
+
+    No new `package.json` `resolutions`. …
+
 Do **not** add GitHub labels for this workflow unless the operator asks.
 
 **Per Fix workflow:**

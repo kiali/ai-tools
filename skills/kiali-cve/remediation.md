@@ -144,6 +144,12 @@ rg "from ['\"]${PACKAGE}['\"]|require\\(['\"]${PACKAGE}['\"]\\)" \
 2. `go get <module>@latest` (or a specific patched version when required)
 3. `go mod tidy`
 
+**Diff scope:** Expect the CVE module plus possible **`golang.org/x/*`** (and
+occasionally other shared) bumps in `go.mod` / `go.sum`. That is normal: the
+patched module’s requirements and MVS across Kiali’s graph — not extra manual
+`go get -u`. Document this in the PR **How this PR was built** section per
+[dependabot.md](dependabot.md).
+
 **Verify:**
 4. `make build`
 5. `make test`
