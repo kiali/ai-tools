@@ -104,6 +104,13 @@ Existing target-only keys are informational and must not be deleted.
 Existing surplus plural forms are also inspected when an English reference can
 be resolved, without making those forms mandatory for that locale.
 
+Candidates include `sourceKey` (the base key used in `t()`) and, for plural
+families, `pluralCategory`. For example, `{{count}} App involved_one` comes from
+`t('{{count}} App involved', { count: ... })`; `_one` is generated, not part of
+the source call. Group variants under that base key and its actual source link in
+reports, showing each proposed form and counting entries separately from messages.
+Do not strip suffixes from unrelated literal keys such as `step_one`.
+
 Check that a candidate comes from production UI text. The parser may also scan
 tests or extract an identifier instead of a message. Report confirmed test-only
 entries and extraction artifacts separately, exclude them from confirmed gap
@@ -195,10 +202,34 @@ The helper rejects removed keys, edits to existing translations, unexpected new
 keys, blank new values, and changed interpolation or rich-text tokens. It checks
 new/changed values only, so old structural issues do not trigger a rewrite of
 existing translations. Reordering whole rich-text elements is allowed when tokens
-and nesting are preserved. It does not validate meaning, arbitrary technical
+and nesting are preserved. It does not validate meaning, unlisted technical
 tokens, layout, or grammatical correctness; inspect these in the actual diff.
 Verify parser-created entries, selected locales, and unrelated user changes too.
 Run the checkout's relevant formatting checks and report what actually ran.
+
+For changed values, the helper also checks inline ASCII URLs and reports
+`changed_boundary_whitespace` warnings. Review those warnings in the composed UI
+sentence: preserve spacing needed for concatenation; a language-specific spacing
+change can be valid. Warnings do not make `valid` false. Unchanged legacy entries
+remain outside validation.
+
+For literal identifiers, units, paths, or URLs needing explicit protection, pass
+`--tokens <tokens.json>` to `validate`. The JSON object maps exact catalog keys
+(including plural suffixes) to arrays of literal fragments, for example
+`{"key": ["meshConfig.outboundTrafficPolicy.mode", "ALLOW_ANY", "RPS"]}`.
+Choose fragments from the English value and the checkout's conventions; include
+code delimiters when needed to distinguish a field name from ordinary prose.
+The helper requires each fragment's exact spelling and occurrence count. Do not
+protect human-readable captions that should be translated, or copy a language's
+glossary into the helper. Checks apply only to new/changed entries.
+
+Exercise changed plural families with the checkout's installed i18next and
+representative counts (0, 1, 2, plus a count for other locale categories when
+applicable; French 1,000,000 exercises `_many`). Verify natural singular/plural
+wording even when a word is shared with English, such as `version` / `versions`.
+Also check complete sentences with representative interpolation values and any
+help text quoting changed captions. Use temporary checks; do not change accepted
+translations, add dependencies, or add UI tests just to exercise catalog data.
 
 Summarize locale and scope, confirmed gaps, translations applied, intentionally
 unchanged terms, unresolved items, and validation results. Distinguish candidates

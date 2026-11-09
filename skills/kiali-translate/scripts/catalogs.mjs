@@ -33,7 +33,7 @@ export function references(english, locale) {
       if (!families.has(match[1])) families.set(match[1], new Set());
       families.get(match[1]).add(match[2]);
     } else {
-      result.set(key, { englishKey: key, english: value });
+      result.set(key, { sourceKey: key, englishKey: key, english: value });
     }
   }
   for (const [base, sourceCategories] of families) {
@@ -42,7 +42,7 @@ export function references(english, locale) {
     for (const category of required) {
       const key = `${base}_${category}`;
       const englishKey = owns(english, key) ? key : `${base}_other`;
-      result.set(key, { englishKey, english: english[englishKey] });
+      result.set(key, { sourceKey: base, pluralCategory: category, englishKey, english: english[englishKey] });
     }
   }
   return result;
@@ -51,12 +51,13 @@ export function references(english, locale) {
 // Resolve existing surplus forms too, without requiring or removing them.
 function referenceFor(key, english, expected) {
   if (expected.has(key)) return expected.get(key);
-  if (owns(english, key)) return { englishKey: key, english: english[key] };
   const match = key.match(pluralSuffix);
   const fallback = match && `${match[1]}_other`;
   if (fallback && owns(english, fallback)) {
-    return { englishKey: fallback, english: english[fallback] };
+    const englishKey = owns(english, key) ? key : fallback;
+    return { sourceKey: match[1], pluralCategory: match[2], englishKey, english: english[englishKey] };
   }
+  if (owns(english, key)) return { sourceKey: key, englishKey: key, english: english[key] };
   return undefined;
 }
 
@@ -115,10 +116,43 @@ function literalAngleNames(source) {
     .filter(name => !source.includes(`</${name}>`)));
 }
 
-export function validate(english, target, locale, before) {
+export function readTokenMap(path) {
+  const map = JSON.parse(readFileSync(path, 'utf8'));
+  if (!map || Array.isArray(map) || typeof map !== 'object' ||
+      Object.values(map).some(value => !Array.isArray(value) ||
+        value.some(token => typeof token !== 'string' || blank(token)))) {
+    throw new Error(`${path}: expected an object mapping catalog keys to arrays of nonblank literal tokens`);
+  }
+  return map;
+}
+
+function urls(text) {
+  // ASCII URLs in prose; protect non-ASCII URLs explicitly with a token map.
+  return (text.match(/https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&()*+,;=%]+/g) ?? [])
+    .map(url => {
+      url = url.replace(/[.,;:!?]+$/, '');
+      for (const [open, close] of [['(', ')'], ['[', ']']]) {
+        while (url.endsWith(close) && occurrences(url, close) > occurrences(url, open)) url = url.slice(0, -1);
+      }
+      return url;
+    }).sort();
+}
+
+const boundaryWhitespace = text => [text.match(/^\s*/)[0], text.match(/\s*$/)[0]];
+const occurrences = (text, fragment) => text.split(fragment).length - 1;
+
+function literalOccurrences(text, fragment) {
+  const escaped = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const start = /^[A-Za-z0-9_]/.test(fragment) ? '(?<![A-Za-z0-9_])' : '';
+  const end = /[A-Za-z0-9_]$/.test(fragment) ? '(?![A-Za-z0-9_]|[./-][A-Za-z0-9_])' : '';
+  return (text.match(new RegExp(`${start}${escaped}${end}`, 'g')) ?? []).length;
+}
+
+export function validate(english, target, locale, before, protectedTokens = {}) {
   const expected = references(english, locale);
   const errors = [];
   const changedKeys = [];
+  const warnings = [];
   for (const [key, value] of Object.entries(before)) {
     if (!owns(target, key)) {
       errors.push({ key, reason: 'removed_existing_key' });
@@ -138,6 +172,20 @@ export function validate(english, target, locale, before) {
       continue;
     }
     if (blank(value)) errors.push({ key, reason: 'blank_changed_value' });
+    if (JSON.stringify(urls(reference.english)) !== JSON.stringify(urls(value))) {
+      errors.push({ key, reason: 'changed_url' });
+    }
+    if (JSON.stringify(boundaryWhitespace(reference.english)) !== JSON.stringify(boundaryWhitespace(value))) {
+      warnings.push({ key, reason: 'changed_boundary_whitespace' });
+    }
+    for (const token of new Set(owns(protectedTokens, key) ? protectedTokens[key] : [])) {
+      const count = literalOccurrences(reference.english, token);
+      if (!count) {
+        errors.push({ key, reason: 'protected_token_not_in_english', token });
+      } else if (count !== literalOccurrences(value, token)) {
+        errors.push({ key, reason: 'changed_protected_token', token });
+      }
+    }
     try {
       const literalNames = literalAngleNames(reference.english);
       const source = tokens(reference.english, literalNames);
@@ -149,12 +197,12 @@ export function validate(english, target, locale, before) {
       errors.push({ key, reason: error.message });
     }
   }
-  return { locale, valid: errors.length === 0, changedKeys, errors };
+  return { locale, valid: errors.length === 0, changedKeys, errors, warnings };
 }
 
 function main(args) {
   if (args.length === 1 && args[0] === '--help') {
-    console.log('node catalogs.mjs <audit|validate> --english en.json --target locale.json --locale es [--before saved-locale.json]\nRead-only; JSON output. Exit 0: completed/passed; 1: validation failed; 2: input error.');
+    console.log('node catalogs.mjs <audit|validate> --english en.json --target locale.json --locale es [--before saved-locale.json] [--tokens tokens.json]\nRead-only; JSON output. Exit 0: completed/passed; 1: validation failed; 2: input error.');
     return;
   }
   const [mode, ...flags] = args;
@@ -162,7 +210,7 @@ function main(args) {
   const options = {};
   for (let index = 0; index < flags.length; index += 2) {
     const key = flags[index];
-    if (!['--english', '--target', '--locale', '--before'].includes(key) ||
+    if (!['--english', '--target', '--locale', '--before', '--tokens'].includes(key) ||
         !flags[index + 1] || flags[index + 1].startsWith('--') || owns(options, key)) {
       throw new Error(`Invalid or duplicate option: ${key}`);
     }
@@ -171,16 +219,19 @@ function main(args) {
   for (const key of ['--english', '--target', '--locale', ...(mode === 'validate' ? ['--before'] : [])]) {
     if (!options[key]) throw new Error(`Required option: ${key}`);
   }
-  if (mode === 'audit' && options['--before']) throw new Error('--before is only used by validate');
+  if (mode === 'audit' && (options['--before'] || options['--tokens'])) {
+    throw new Error('--before and --tokens are only used by validate');
+  }
   const english = readCatalog(options['--english']);
   const target = readCatalog(options['--target']);
   const report = mode === 'audit' ? audit(english, target, options['--locale']) :
-    validate(english, target, options['--locale'], readCatalog(options['--before']));
+    validate(english, target, options['--locale'], readCatalog(options['--before']),
+      options['--tokens'] ? readTokenMap(options['--tokens']) : {});
   console.log(JSON.stringify(report, null, 2));
   if (report.valid === false) process.exitCode = 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
+if (process.argv[1] && process.argv[1] !== '-' && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   try {
     main(process.argv.slice(2));
   } catch (error) {
