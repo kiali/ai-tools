@@ -67,7 +67,10 @@ The generated English catalog is the source of truth. **Compare values with the
 English file, not with the JSON keys.** Keys are often English UI text, but may
 have plural suffixes or an explicit default value. Completed Spanish supplies a
 trusted second reference for interpretation. Other languages can provide
-supporting evidence; none replaces the current English source message.
+supporting evidence; none replaces the current English source message. Prefer
+references relevant to the target language and UI domain. A reference locale's
+choices to retain ordinary terms in English are not global glossary rules;
+apply those choices only to that locale unless shared conventions say otherwise.
 
 The English file is normally generated locally and gitignored. Verify it matches
 the intended source revision and configuration, including relevant uncommitted
@@ -102,7 +105,10 @@ An English `_zero` override is also retained. Confirm plural conventions against
 the checkout's installed i18next/parser versions if they differ from this model.
 Existing target-only keys are informational and must not be deleted.
 Existing surplus plural forms are also inspected when an English reference can
-be resolved, without making those forms mandatory for that locale.
+be resolved, without making those forms mandatory for that locale. Distinguish
+runtime-selected forms from retained surplus variants in gap counts and reports.
+Verify which suffix the installed runtime selects before changing a plural
+candidate; do not fill an inactive variant merely to eliminate an English match.
 
 Candidates include `sourceKey` (the base key used in `t()`) and, for plural
 families, `pluralCategory`. For example, `{{count}} App involved_one` comes from
@@ -228,8 +234,13 @@ representative counts (0, 1, 2, plus a count for other locale categories when
 applicable; French 1,000,000 exercises `_many`). Verify natural singular/plural
 wording even when a word is shared with English, such as `version` / `versions`.
 Also check complete sentences with representative interpolation values and any
-help text quoting changed captions. Use temporary checks; do not change accepted
-translations, add dependencies, or add UI tests just to exercise catalog data.
+help text quoting changed captions. Inspect the caller's full composition,
+including count prefixes such as `1 / `, adjacent icons, optional fragments, and
+appended timestamps. Placeholder preservation alone cannot establish word order
+or meaning: a label followed by `Since` and a timestamp may describe the start of
+aggregated data rather than when calculation finished. Use temporary checks; do
+not change accepted translations, add dependencies, or add UI tests just to
+exercise catalog data.
 
 Summarize locale and scope, confirmed gaps, translations applied, intentionally
 unchanged terms, unresolved items, and validation results. Distinguish candidates
