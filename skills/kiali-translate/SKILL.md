@@ -246,7 +246,10 @@ wording even when a word is shared with English, such as `version` / `versions`.
 Also check complete sentences with representative interpolation values and any
 help text quoting changed captions. Inspect the caller's full composition,
 including count prefixes such as `1 / `, adjacent icons, optional fragments, and
-appended timestamps. Placeholder preservation alone cannot establish word order
+appended timestamps. When the caller supplies the number outside `t()`, a count
+fragment may need a classifier or other grammatical material that a standalone
+heading does not. Check each call site before reusing a translation.
+Placeholder preservation alone cannot establish word order
 or meaning: a label followed by `Since` and a timestamp may describe the start of
 aggregated data rather than when calculation finished. Use temporary checks and
 preserve translations outside the authorized scope; do not add dependencies or
