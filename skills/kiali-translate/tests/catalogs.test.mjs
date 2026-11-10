@@ -35,6 +35,24 @@ test('supports explicit zero overrides and does not treat a lone _one key as a f
   assert.equal(result.get('step_one').english, 'First step');
 });
 
+test('keeps a lone _other key literal without inventing plural gaps or surplus references', () => {
+  const english = { step_other: 'Other step' };
+  const missing = audit(english, {}, 'es');
+  assert.equal(missing.expectedEntries, 1);
+  assert.deepEqual(missing.candidates, [{
+    key: 'step_other', sourceKey: 'step_other', englishKey: 'step_other',
+    english: 'Other step', reason: 'missing', current: null
+  }]);
+  const before = { step_other: 'Otro paso', step_one: 'First step' };
+  const result = audit(english, before, 'es');
+  assert.equal(result.candidateCount, 0);
+  assert.equal(result.inspectedEntries, 1);
+  assert.deepEqual(result.targetOnlyKeys, ['step_one']);
+  assert.equal(validate(english, before, 'es', before).valid, true);
+  const changed = validate(english, { ...before, step_one: 'Primer paso' }, 'es', before);
+  assert.ok(changed.errors.some(error => error.reason === 'unexpected_key'));
+});
+
 test('inspects existing surplus forms but does not require or delete them', () => {
   const target = { '{{count}} item_one': '{{count}} item', '{{count}} item_other': '{{count}} 个项目', Old: '原有' };
   const result = audit(englishPlural, target, 'zh');
@@ -49,6 +67,14 @@ test('allows filling gaps with reordered placeholders and complete rich-text ele
   const before = { key, Save: '' };
   const target = { key: '使用 <4>{{args}}</4> 运行 <1>{{name}}</1>', Save: '保存' };
   assert.equal(validate(english, target, 'zh', before).valid, true);
+});
+
+test('validates partial updates while audit still reports unfilled gaps', () => {
+  const english = { Save: 'Save', Open: 'Open' };
+  const target = { Save: 'Guardar' };
+  assert.equal(validate(english, target, 'es', { Save: 'Save' }).valid, true);
+  assert.deepEqual(audit(english, target, 'es').candidates.map(({ key, reason }) => [key, reason]),
+    [['Open', 'missing']]);
 });
 
 test('rejects changes to existing translations even when new wording seems valid', () => {
@@ -237,6 +263,18 @@ test('imports from standard input without trying to run the CLI or resolving a f
     input: `import { audit } from ${JSON.stringify(script)};\nconsole.log(audit({ Save: 'Save' }, {}, 'es').candidateCount);`,
     encoding: 'utf8', env
   });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), '1');
+});
+
+test('imports from eval when the caller supplies a non-file argument', () => {
+  const script = new URL('../scripts/catalogs.mjs', import.meta.url).href;
+  const env = { ...process.env };
+  delete env.NODE_TEST_CONTEXT;
+  const result = spawnSync(process.execPath, ['--input-type=module', '--eval',
+    `import { audit } from ${JSON.stringify(script)}; console.log(audit({ Save: 'Save' }, {}, 'es').candidateCount);`,
+    'not-an-existing-entry.mjs'], { encoding: 'utf8', env });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), '1');

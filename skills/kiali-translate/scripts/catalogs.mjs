@@ -16,6 +16,11 @@ export function readCatalog(path) {
   return catalog;
 }
 
+function hasPluralFamily(english, base) {
+  return owns(english, `${base}_other`) &&
+    ['zero', 'one', 'two', 'few', 'many'].some(category => owns(english, `${base}_${category}`));
+}
+
 export function references(english, locale) {
   if (Object.keys(english).length === 0) throw new Error('English catalog is empty; verify generation and source coverage');
   const canonical = Intl.getCanonicalLocales(locale)[0];
@@ -28,8 +33,8 @@ export function references(english, locale) {
   const families = new Map();
   for (const [key, value] of Object.entries(english)) {
     const match = key.match(pluralSuffix);
-    // A suffix alone is not proof of pluralization: require an _other sibling.
-    if (match && owns(english, `${match[1]}_other`)) {
+    // Require _other and a distinct category; lone suffixes can be literal keys.
+    if (match && hasPluralFamily(english, match[1])) {
       if (!families.has(match[1])) families.set(match[1], new Set());
       families.get(match[1]).add(match[2]);
     } else {
@@ -53,7 +58,7 @@ function referenceFor(key, english, expected) {
   if (expected.has(key)) return expected.get(key);
   const match = key.match(pluralSuffix);
   const fallback = match && `${match[1]}_other`;
-  if (fallback && owns(english, fallback)) {
+  if (fallback && hasPluralFamily(english, match[1])) {
     const englishKey = owns(english, key) ? key : fallback;
     return { sourceKey: match[1], pluralCategory: match[2], englishKey, english: english[englishKey] };
   }
@@ -231,7 +236,17 @@ function main(args) {
   if (report.valid === false) process.exitCode = 1;
 }
 
-if (process.argv[1] && process.argv[1] !== '-' && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
+function isMain() {
+  if (!process.argv[1] || process.argv[1] === '-') return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    // Imported callers may supply an argument rather than an entry-point path.
+    return false;
+  }
+}
+
+if (isMain()) {
   try {
     main(process.argv.slice(2));
   } catch (error) {

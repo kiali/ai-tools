@@ -1,6 +1,6 @@
 ---
 name: kiali-translate
-description: Audit Kiali UI localization catalogs and fill translation gaps, completing Spanish first and then using completed Spanish alongside English as references for other languages. Use for localization coverage checks and completing translations; not for unrequested rewrites or adding new languages.
+description: Audit and complete existing Kiali UI localization catalogs. Use for translation coverage checks, gap filling, and explicitly requested translation corrections; not for adding languages.
 ---
 
 # Kiali Translation Maintenance
@@ -77,13 +77,12 @@ apply those choices only to that locale unless shared conventions say otherwise.
 The English file is normally generated locally and gitignored. Verify it matches
 the intended source revision and configuration, including relevant uncommitted
 source changes. If absent or stale, generate it with the checkout's `i18n` package
-script. For audit, use a disposable copy carrying that same source and parser
-configuration: the generator can rewrite every locale, so running it directly in
-the user's checkout would break read-only audit behavior. Copy the relevant
-frontend files for generation without creating another repository checkout, and
-include relevant uncommitted source changes. If generation is unavailable,
-report that limitation; do not silently invent an English catalog from keys or
-claim complete coverage.
+script in a disposable frontend copy for either mode: the generator can rewrite
+every locale. Carry the same source and parser configuration, including relevant
+uncommitted changes, without creating another repository checkout. This keeps
+reference generation from changing the user's catalogs before they are saved or
+audited. If generation is unavailable, report that limitation; do not silently
+invent an English catalog from keys or claim complete coverage.
 
 ## Find and interpret candidates
 
@@ -117,7 +116,9 @@ families, `pluralCategory`. For example, `{{count}} App involved_one` comes from
 `t('{{count}} App involved', { count: ... })`; `_one` is generated, not part of
 the source call. Group variants under that base key and its actual source link in
 reports, showing each proposed form and counting entries separately from messages.
-Do not strip suffixes from unrelated literal keys such as `step_one`.
+Do not strip suffixes from unrelated literal keys such as `step_one` or
+`step_other`. The helper recognizes a family only when English contains `_other`
+and another category for the same base; confirm ambiguous cases at the source call.
 
 Check that a candidate comes from production UI text. The parser may also scan
 tests or extract an identifier instead of a message. Report confirmed test-only
@@ -149,9 +150,11 @@ skill's default gap-completion scope; review them only when explicitly requested
 When requested, include an English/key and proposed target-language value for
 each confirmed gap in a report table, with a source link and any contextual review
 notes. State the catalog location once, rather than repeating it in every row.
-Label the suggestions as drafts and provide tentative terminology choices in the
-separate reviewer-question table. A key/value JSON map can also make the confirmed
-gap suggestions easier to apply later.
+Label the suggestions as drafts. Put genuinely unresolved terminology in the
+reviewer-question table; record supported working choices as notes rather than
+unanswered questions. Lack of a native reviewer alone does not make a supported
+translation uncertain. A key/value JSON map can make suggestions easier to apply
+later.
 
 Use the same translation principles as translate mode. Check composed sentences
 for grammatical dependencies, such as a fixed article surrounding an interpolated
@@ -168,7 +171,8 @@ linguistic correctness or rendered UI fit.
 ## Fill confirmed gaps
 
 In translate mode, record the working state and save an exact copy of each
-selected target catalog outside the repository **before any generation or edits**.
+selected target catalog outside the repository **before editing or generating
+catalogs in the checkout**.
 Keep those copies as the baseline for validation, including user changes already
 present. A missing target file is an empty baseline object; only create it for an
 already-configured locale. Do not add a new language as part of filling gaps.
@@ -215,6 +219,10 @@ and nesting are preserved. It does not validate meaning, unlisted technical
 tokens, layout, or grammatical correctness; inspect these in the actual diff.
 Verify parser-created entries, selected locales, and unrelated user changes too.
 Run the checkout's relevant formatting checks and report what actually ran.
+
+Validation permits partial updates: `valid: true` does not establish completeness.
+Rerun the audit after edits and account for remaining candidates within the
+requested scope before claiming completion.
 
 Authorized corrections still produce `changed_existing_translation` errors. Keep
 the original baseline and the helper's strict policy. Independently verify that
