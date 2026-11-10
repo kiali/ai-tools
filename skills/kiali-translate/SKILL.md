@@ -1,14 +1,14 @@
 ---
 name: kiali-translate
-description: Audit Kiali UI localization catalogs and fill translation gaps, completing Spanish first and then using completed Spanish alongside English as references for other languages. Use for localization coverage checks and completing translations; not for rewriting existing translations or adding new languages.
+description: Audit Kiali UI localization catalogs and fill translation gaps, completing Spanish first and then using completed Spanish alongside English as references for other languages. Use for localization coverage checks and completing translations; not for unrequested rewrites or adding new languages.
 ---
 
 # Kiali Translation Maintenance
 
 ## Scope and modes
 
-- **Audit:** inspect and report translation gaps without editing the Kiali checkout.
-- **Translate:** fill confirmed gaps in the requested locales and report unresolved items.
+- **Audit:** inspect and report translation gaps or explicitly requested quality issues without editing the Kiali checkout.
+- **Translate:** fill confirmed gaps or apply explicitly authorized corrections in the requested locales; report unresolved items.
 
 An audit can include proposed translations when requested; suggestions stay in
 the report and do not change the locale files. Keep uncertain recommendations
@@ -20,10 +20,12 @@ user specifies locales, start with Spanish (`es`). Honor any requested batch or 
 area; clearly label partial coverage. An explicit request for an audit of all
 locales still covers all configured non-English locales.
 
-Treat existing translations as correct. Do not review, rephrase, normalize, or
-replace nonempty values that differ from their English reference. This also
-applies when existing terminology differs from current guidance. Use conventions
-for the gaps being filled; report an actual conflict that prevents a decision.
+Treat existing translations as correct by default. Do not review, rephrase,
+normalize, or replace nonempty values that differ from English unless the user
+explicitly requests that scope. Terminology differing from current guidance does
+not authorize a rewrite. For authorized corrections, record an exact key/value
+plan and the UI evidence for each correction; preserve all other values. Use
+conventions for the gaps being filled and report conflicts that prevent a decision.
 
 ## Complete Spanish first
 
@@ -140,7 +142,7 @@ such as preserving Find operands after the translated `Abbreviate:` label.
 
 The detector does not prove completeness of UI instrumentation, detect every
 partially translated value, or assess translation quality. Those are outside this
-skill's existing-translations scope.
+skill's default gap-completion scope; review them only when explicitly requested.
 
 ## Suggest translations during an audit
 
@@ -177,9 +179,10 @@ Spanish, consult completed Spanish alongside English as needed for meaning and
 terminology. Other locales can supply additional context. Do not mechanically
 translate via another language or assume its grammar applies to the target.
 
-Translate only confirmed gaps. Keep keys, interpolation expressions (including
-formatters), rich-text markers, URLs, code, resource identifiers, units, and other
-protected tokens intact. Preserve meaningful spaces in composed fragments.
+Translate only confirmed gaps and explicitly authorized corrections. Keep keys,
+interpolation expressions (including formatters), rich-text markers, URLs, code,
+resource identifiers, units, and other protected tokens intact. Preserve meaningful
+spaces in composed fragments.
 Use the target language's plural forms and concise, natural UI wording.
 
 Leave uncertain values unchanged, including missing entries, and record the
@@ -213,6 +216,13 @@ tokens, layout, or grammatical correctness; inspect these in the actual diff.
 Verify parser-created entries, selected locales, and unrelated user changes too.
 Run the checkout's relevant formatting checks and report what actually ran.
 
+Authorized corrections still produce `changed_existing_translation` errors. Keep
+the original baseline and the helper's strict policy. Independently verify that
+changed keys and values match the correction plan plus confirmed gap fills, with
+all other values and existing keys preserved. Report the authorized exceptions;
+any other validation error remains a failure. The helper still checks corrected
+values for structural and token errors.
+
 For changed values, the helper also checks inline ASCII URLs and reports
 `changed_boundary_whitespace` warnings. Review those warnings in the composed UI
 sentence: preserve spacing needed for concatenation; a language-specific spacing
@@ -238,9 +248,9 @@ help text quoting changed captions. Inspect the caller's full composition,
 including count prefixes such as `1 / `, adjacent icons, optional fragments, and
 appended timestamps. Placeholder preservation alone cannot establish word order
 or meaning: a label followed by `Since` and a timestamp may describe the start of
-aggregated data rather than when calculation finished. Use temporary checks; do
-not change accepted translations, add dependencies, or add UI tests just to
-exercise catalog data.
+aggregated data rather than when calculation finished. Use temporary checks and
+preserve translations outside the authorized scope; do not add dependencies or
+UI tests just to exercise catalog data.
 
 Summarize locale and scope, confirmed gaps, translations applied, intentionally
 unchanged terms, unresolved items, and validation results. Distinguish candidates
