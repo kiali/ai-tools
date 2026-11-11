@@ -1,11 +1,11 @@
 ---
 name: kiali-cve
-description: Triage and review OSSM Jira CVE issues for the Kiali component, and harden upstream via GitHub Dependabot on master. Three features - triage (OSSM Jira, fix PRs for master and supported branches), review (merge CVE PRs across branches, update Jira), dependabot (evaluate and fix open Dependabot alerts on kiali/kiali master only). Use when the user mentions CVE triage, CVE review, OSSM CVE, Dependabot alerts, upstream CVE hardening, or kiali-cve.
+description: Triage and review OSSM Jira CVE issues for the Kiali component, and harden upstream via GitHub Dependabot on master. Three features - triage (OSSM Jira, fix PRs for master and supported branches), review (merge CVE PRs across branches, update Jira), dependabot (evaluate, dismiss inapplicable, and fix open Dependabot alerts on kiali/kiali master). Use when the user mentions CVE triage, CVE review, OSSM CVE, Dependabot alerts, upstream CVE hardening, or kiali-cve.
 ---
 
 # Kiali CVE Management
 
-Three features: **triage**, **review**, and **dependabot** (upstream master).
+Three features: **triage**, **review**, and **dependabot** (upstream `master`).
 
 | Trigger | Feature | Action |
 |---------|---------|--------|
@@ -20,6 +20,21 @@ If intent is unclear, ask the user which feature they want.
 [triage.md](triage.md) and [dependabot.md](dependabot.md) add intake, branches,
 and ticket/alert handling on top.
 
+## Scope: CVE vs Dependabot
+
+OSSM Jira **CVE triage/review** and **Dependabot** upstream dependency work are
+both security-related but **separate workflows**. Handle them in separate
+sessions and separate summaries unless the user explicitly asks to relate the two.
+
+- **CVE triage/review** — Jira (OSSM), Konflux/midstream fixes, product images,
+  supported-branch PRs. Do **not** report GitHub Dependabot alert counts, queues,
+  or dependabot PR status unless the user asks.
+- **Dependabot** — `kiali/kiali` (and related) `.github/dependabot.yml`, manual
+  `[dependabot]` PRs, GitHub security advisories. Do **not** run OSSM Jira triage
+  or propose Jira closures unless the user asks. Default dismiss policy: **medium/low**
+  severity **dev-only** (not user-facing) alerts → recommend **Close** (`not_used`)
+  after verification; see [dependabot.md](dependabot.md) D1.5.
+
 ### Dependabot scope (v1)
 
 - Repository: **`kiali/kiali`** only
@@ -31,7 +46,7 @@ and ticket/alert handling on top.
   (dismiss), or **Stop session** before any branch/commits/PRs
 - **One normal (non-draft) PR per queue item** by default; **do not** PATCH alerts
   on PR open — alerts clear after merge + rescan; PATCH only for **Close**
-  (inapplicable/stale) per [dependabot.md](dependabot.md)
+  (inapplicable/stale) per [dependabot.md](dependabot.md) D1.5–D2c
 - **After each Fix PR:** assign to the current GitHub user and add to the Kiali
   GitHub Project (**In review**) — mandatory; see dependabot.md **PR tracking**
 - **PR body:** include **How this PR was built** (commands + why lockfile / `x/*`
@@ -46,6 +61,10 @@ requires user approval first (see GitHub Project Setup below). The
 **dependabot** feature is the exception: assign the PR to the current GitHub
 user and add it to the project with **In review** immediately after create
 (see [dependabot.md](dependabot.md)).
+
+**Dependabot dismissals:** Never PATCH Dependabot alerts (`state=dismissed`) without
+explicit operator approval of the **Close candidates** table (see [dependabot.md](dependabot.md)
+D1.5–D2c). Count dismissals by **alert number**, not grouped package rows.
 
 ## Tool Access Verification
 

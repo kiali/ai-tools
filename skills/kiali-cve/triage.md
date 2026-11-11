@@ -8,6 +8,10 @@ registry auth for Go stdlib CVEs).
 
 ## Output Formatting
 
+- **CVE triage only** — summarize OSSM Jira discovery, classification, proposed
+  Jira actions, and fix PRs for supported branches. Do not include Dependabot
+  alert counts, dependabot PR merges, or upstream advisory queues unless the user
+  explicitly requests that context.
 - Always present PR references as clickable links:
   `https://github.com/<owner>/<repo>/pull/<number>` (not just `#123`)
 - Keep output concise — prefer tables over verbose prose
