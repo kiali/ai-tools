@@ -135,8 +135,27 @@ Requires:
 gh auth refresh -h github.com -s read:org -s read:project
 ```
 
-## Token scopes (MCP PAT or classic PAT)
+## Authentication and troubleshooting
 
-- `read:org`
-- `read:project`
-- `public_repo` (legacy script documented this; read paths use the first two)
+Required token scopes for **`gh`** or GitHub MCP:
+
+| Scope | Why |
+|-------|-----|
+| `read:org` | Org `kiali` and project boards |
+| `read:project` | `projectV2` GraphQL and `gh project list` |
+| `repo` | Fork PR workflow (`gh pr create`, push to personal fork) |
+
+```bash
+./skills/kiali-release-notes/scripts/preflight.sh
+gh auth status -h github.com
+gh auth refresh -h github.com -s read:org -s read:project
+```
+
+| Symptom | Fix |
+|---------|-----|
+| `INSUFFICIENT_SCOPES` / missing `read:project` | `gh auth refresh` as above |
+| `gh project list --owner kiali` fails | Same scopes; confirm org membership |
+| GitHub MCP 401 on project tools | Update PAT in Cursor MCP config; include `projects` toolset |
+| `project N not found` | Wrong board number or no access to that project |
+
+`preflight.sh` uses `KIALI_SPRINT_PROJECT_NUMBER` (default **67**).
