@@ -22,6 +22,10 @@
 
 set -euo pipefail
 
+# Read build metadata from the binary only; do not auto-download a newer toolchain
+# (go version -m may otherwise print "downloading goX.Y.Z" when local go is older).
+export GOTOOLCHAIN=local
+
 VERSION_ONLY=false
 if [[ "${1:-}" == "--version-only" ]]; then
   VERSION_ONLY=true
