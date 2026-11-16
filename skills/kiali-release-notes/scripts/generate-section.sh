@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build a release-notes.md section from a Kiali org GitHub Project (ProjectV2).
-# Uses gh GraphQL (same data as kiali.io/scripts/relnotes.py); no Python.
+# Uses gh GraphQL against Kiali sprint project 67; no Python.
 set -euo pipefail
 
 # Kiali sprint board (ProjectV2): https://github.com/orgs/kiali/projects/67

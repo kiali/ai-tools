@@ -15,8 +15,9 @@ Build release notes from the **Kiali sprint GitHub Project** ([project 67](https
 insert them into `content/en/news/release-notes.md`, and open a PR on
 `kiali/kiali.io`.
 
-Do **not** use `kiali.io/scripts/relnotes.py` unless the user explicitly asks
-for the legacy script. Prefer GitHub MCP (projects toolset) or `gh api graphql`.
+Use this skill and `skills/kiali-release-notes/scripts/*` (or GitHub MCP projects
+toolset / `gh api graphql` with the same rules). The old `relnotes.py` script
+was removed from `kiali.io`.
 
 ## Constants
 
@@ -233,11 +234,7 @@ Return the PR URL.
 |--------|------|
 | `collect-candidates.sh` | **Start here** — candidate `## version` block |
 | `list-standalone-prs.sh` | Orphan PRs only (debugging) |
-| `generate-section.sh` | Legacy issues-only draft |
-
-## Legacy Python script
-
-`kiali.io/scripts/relnotes.py` remains for manual use only.
+| `generate-section.sh` | Issues-only draft (no orphan PR merge) |
 
 ## Reference
 

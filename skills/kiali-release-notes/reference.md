@@ -33,7 +33,7 @@ label `✅ Done`). Scripts read `fieldValueByName(name: "Status")` on each proje
 
 For standalone PRs, also require **`merged: true`** on the pull request.
 
-### Item classification (same as legacy `relnotes.py`)
+### Item classification
 
 | Section | Rule |
 |---------|------|
