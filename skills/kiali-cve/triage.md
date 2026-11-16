@@ -8,6 +8,10 @@ registry auth for Go stdlib CVEs).
 
 ## Output Formatting
 
+- **CVE triage only** — summarize OSSM Jira discovery, classification, proposed
+  Jira actions, and fix PRs for supported branches. Do not include Dependabot
+  alert counts, dependabot PR merges, or upstream advisory queues unless the user
+  explicitly requests that context.
 - Always present PR references as clickable links:
   `https://github.com/<owner>/<repo>/pull/<number>` (not just `#123`)
 - Keep output concise — prefer tables over verbose prose
@@ -457,107 +461,15 @@ Server Go fixes proceed to Step 7.
 
 Create PR against master first. If CI passes, create backport PRs.
 
-### NPM/JS upgrade
+Implement NPM/JS and Go dependency fixes using [remediation.md](remediation.md):
 
-**Common first step:**
-1. Create branch from master (e.g. `CVE-YYYY-NNNNN-library-upgrade`)
+- **Kiali server** (`kiali/kiali`): use **`frontend/`** as `<js-root>` for Yarn/npm;
+  use **Go** sections at the repo root for modules and the standard library.
+- **Fix versions** and ranges come from Step **6a** (and lockfile / `go.mod`
+  checks in Step **6b**).
 
-**Direct dependencies** (in `frontend/package.json`):
-2. Update to **latest version within same major**. Use
-   `npm view <package> version` to find latest.
-3. `yarn install --no-immutable` in `frontend/`
-
-**Transitive dependencies** (only in `frontend/yarn.lock`):
-2. Remove old entry from `frontend/yarn.lock` (use script, not manual edit)
-3. `yarn install --no-immutable` in `frontend/`
-
-**Verify:**
-4. `make build-ui`
-5. `make build-ui-test`
-6. **Lockfile audit** — after install, run `yarn dedupe <library>` to
-   consolidate caret-range entries. Then grep the lockfile for ALL
-   remaining entries of the vulnerable library and verify every resolved
-   version meets or exceeds the fix version for its major range
-   (from Step 6a):
-   ```bash
-   yarn dedupe <library>
-   rg '"<library>@npm:' <lockfile>
-   ```
-   If any entry is still below its fix version, follow the
-   "Handling vulnerable transitive dependencies" section below.
-7. Present diff to user
-
-#### Handling vulnerable transitive dependencies
-
-Keep the `resolutions` section in `package.json` as small as possible.
-Do NOT add `resolutions` entries unless absolutely necessary — they are
-overrides that mask the real dependency tree and add maintenance burden.
-
-When a transitive dependency brings in a vulnerable version, follow
-the same approach on all branches (master/main and backports):
-
-1. Run `yarn dedupe <library>` — it handles caret-range entries by
-   consolidating to the highest compatible version already in the
-   lockfile. Never add resolutions for caret ranges.
-
-2. For remaining vulnerable entries, evaluate both options:
-   - **Bump the parent package** to a version whose transitive tree
-     no longer pulls in the vulnerable version.
-   - **Add a resolution** to force the fixed version for that major
-     line. This covers exact-version pins that `yarn dedupe` cannot
-     override, and older major versions pulled in transitively that
-     are not at the CVE fix version.
-
-3. Present both options to the user with preference for bumping the
-   parent package. Include: which package, from which version to which
-   version, whether it is a major version bump, and the potential
-   consequences. **Wait for explicit user approval** before proceeding.
-
-   **Backport consistency:** If the vulnerable transitive dependency
-   only exists on backport branches (not on master), prefer the
-   resolution entry. If master used the bump parent approach, use the
-   same approach on backports for consistency.
-
-4. After applying the chosen fix, run `yarn install --no-immutable` and
-   `yarn dedupe <library>`, then re-audit the lockfile.
-
-### Go third-party module upgrade
-
-1. Create branch from master
-2. `go get <module>@latest`
-3. `go mod tidy`
-
-**Verify:**
-4. `make build`
-5. `make test`
-6. Present diff to user
-
-### Go standard library upgrade
-
-**Master:**
-1. Create branch from master
-2. Update `go` directive in `go.mod`
-3. `go mod tidy`
-4. `make build` and `make test`
-
-**Supported branches:** Verify Go version is available downstream first.
-
-Check `skopeo` access (or rely on triage-start verification in SKILL.md):
-```bash
-skopeo inspect --no-tags \
-  docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder \
-  >/dev/null 2>&1
-```
-
-If auth fails, see **Red Hat registry login** in SKILL.md.
-
-List available tags:
-```bash
-skopeo inspect docker://brew.registry.redhat.io/rh-osbs/openshift-golang-builder 2>&1 \
-  | python3 -c "import sys,json; tags=json.load(sys.stdin)['RepoTags']; [print(t) for t in sorted(tags) if '1.XX' in t]"
-```
-
-Skip branches where the fixed Go version is not available.
+Branch naming and PR conventions for CVE work stay below (**After successful build**,
+**Backporting**).
 
 ### After successful build
 
@@ -593,10 +505,8 @@ SKILL.md). Present skipped branches in the summary.
 
 For each backport branch:
 1. Create branch from `origin/<version>` (e.g. `CVE-YYYY-NNNNN-library-vX.Y`)
-2. Apply same change:
-   - **NPM/JS**: update `package.json`, remove lockfile entries,
-     `yarn install --no-immutable`
-   - **Go**: `go get <module>@latest`, `go mod tidy`
+2. Apply the **same** dependency change as Step 7 on that branch using
+   [remediation.md](remediation.md) (`frontend/` for JS; root `go.mod` for Go).
 3. Commit, push, create PR targeting release branch
 4. PR title **must** start with the branch version prefix
    (e.g. `[vX.Y] CVE-YYYY-NNNNN: ...`)
@@ -621,9 +531,11 @@ OSSMC differences (see SKILL.md Repos table):
 
 Ask user for local OSSMC repo path.
 
-Same procedure as Step 7 but using OSSMC paths:
+Use [remediation.md](remediation.md) with **`plugin/`** as `<js-root>` (same NPM/Yarn
+mechanics as Step 7). OSSMC-specific branch and PR rules:
+
 1. Branch from `main`
-2. Update `plugin/package.json` or `plugin/yarn.lock`
+2. Update `plugin/package.json` / `plugin/yarn.lock` per remediation.md
 3. `yarn install --no-immutable` in `plugin/`
 4. Verify build
 5. Create PR against `main` and assign to the user; add `backport needed`
