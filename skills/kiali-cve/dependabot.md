@@ -1,45 +1,74 @@
-# Upstream Dependabot (master)
+# Upstream Dependabot (Kiali server + OSSMC)
 
 Reduce future downstream OSSM CVE noise by fixing vulnerable dependencies on
 **upstream default branches** before they appear in product scans.
 
-**Scope (v1):**
+**Scope:**
 
 | In scope | Out of scope (for now) |
 |----------|-------------------------|
-| Repository `kiali/kiali` | `kiali-operator`, plugin, helm-charts |
-| Target branch **`master`** only | Backport PRs to `v2.*` release branches |
-| Open Dependabot alerts via GitHub | OSSM Jira triage/closure (use [triage.md](triage.md)) |
+| `kiali/kiali` — branch **`master`** (Go + `frontend/` npm) | `kiali-operator`, `helm-charts` |
+| `kiali/openshift-servicemesh-plugin` — branch **`main`** (`plugin/` npm) | Release-branch backports (`v2.*`) |
+| Open Dependabot alerts via GitHub (both repos) | OSSM Jira triage/closure (use [triage.md](triage.md)) |
 | Fix PRs and optional alert dismiss | Konflux / `kiali-rhel9` qualification |
 
-When scope expands, update this section and the repo table in `SKILL.md`.
+Prerequisites: complete **Step D0** (synced **both** default branches) before any
+other step in this document. GitHub CLI setup is in [SKILL.md](SKILL.md).
 
-Prerequisites: complete **Step D0** (including an updated local `master`) before
-any other step in this document. GitHub CLI setup is in [SKILL.md](SKILL.md).
+## Kiali server and OSSMC dependency parity
 
-## Master branch (required)
+**Kiali server** and **OSSMC** share many npm dependencies (Cypress, ESLint,
+build tooling, and overlapping runtime packages). Keep **resolved versions aligned**
+on `master` / `main` so downstream OSSM scans and console images stay consistent.
 
-All Dependabot work is evaluated against **`kiali/kiali` `master`**, not the
-user’s current local branch and not release branches.
+| Repo | Default branch | JS root (`<js-root>`) | Go |
+|------|----------------|----------------------|-----|
+| `kiali/kiali` | `master` | `frontend/` | Yes (`go.mod`) |
+| `kiali/openshift-servicemesh-plugin` | `main` | `plugin/` | No (JS only) |
+
+**Queue and tables:** use **two alert columns** — **Kiali server** and **OSSMC**
+— for every Close candidate, Fix queue row, session log entry, and per-item
+presentation. Use `—` when a repo has no open alert for that GHSA/package.
+
+**Parity check (required when qualifying npm):** for each package, read both
+lockfiles on synced branches. If OSSMC has the same package (direct or in
+`yarn.lock`) and is vulnerable or **behind** the version you intend to ship on
+Kiali server, treat it as **in scope for Fix** even when OSSMC has **no** open
+Dependabot alert.
+
+**Fix (PR) default when both repos apply:** create **one PR per repo** (not one
+PR spanning both). Use the **same** remediation strategy (`yarn dedupe`, parent
+bump, minimal `resolutions` per [remediation.md](remediation.md)). Cross-link the
+sibling PR in each description (same GHSA/CVE, same queue item).
+
+**Go-only queue items:** Kiali server only — OSSMC column stays `—`.
+
+Ask the operator for the local **OSSMC clone path** when missing (same as
+[triage.md](triage.md) Step 8); default sibling of the server clone under
+`kiali_sources/openshift-servicemesh-plugin`.
+
+## Default branches (required)
+
+All Dependabot work is evaluated against synced **`master`** / **`main`**, not
+the user’s current local branch and not release branches.
 
 | Activity | Rule |
 |----------|------|
-| Start every session | **Sync local `master` first** (Step D0) — nothing else until this succeeds |
-| Read versions (`go.mod`, `yarn.lock`) | From the synced **`master`** working tree |
-| Apply dependency bumps | Feature branch created **after** a fresh master sync (D0.1) |
-| Open PR | **`--base master`**, head branch forked from **current** upstream master |
+| Start every session | **Sync both repos** (Step D0.1) before listing alerts or editing files |
+| Read versions | Kiali: `go.mod`, `frontend/yarn.lock`. OSSMC: `plugin/yarn.lock` |
+| Apply dependency bumps | Feature branch **per repo**, created after fresh sync (D0.1) |
+| Open PR | Kiali: `--base master`. OSSMC: `--base main` |
 
-Working directory must be the **`kiali/kiali`** clone. Use remote **`upstream`**
-when configured; otherwise **`origin`** (typically `kiali/kiali`).
+Use remote **`upstream`** when configured; otherwise **`origin`**.
 
-Record **`master` HEAD** (short SHA + subject) in the session summary. Re-run
-the full D0 master sync immediately before creating each fix branch.
+Record **`master`** and **`main`** HEAD (short SHA + subject) in the session
+summary. Re-run full D0.1 sync immediately before creating each fix branch pair.
 
 ## Workflow overview
 
 Same shape as [triage.md](triage.md): find work, qualify, fix or close, defer
-when needed — but **GitHub Dependabot alerts** replace **OSSM Jira issues**, and
-everything targets **`kiali/kiali` `master`** only (v1).
+when needed — but **GitHub Dependabot alerts** replace **OSSM Jira issues**, on
+**Kiali server** and **OSSMC** default branches.
 
 | Triage (Jira) | Dependabot (GitHub) |
 |---------------|----------------------|
@@ -55,10 +84,14 @@ Details below (D0–D3) spell out commands and approvals.
 
 ## Output Formatting
 
-- Link Dependabot alerts:
+- Kiali server alert:
   `https://github.com/kiali/kiali/security/dependabot/<alert_number>`
-- Link PRs: `https://github.com/kiali/kiali/pull/<number>`
-- Prefer tables; group by ecosystem (Go module vs npm) and severity
+- OSSMC alert:
+  `https://github.com/kiali/openshift-servicemesh-plugin/security/dependabot/<alert_number>`
+- PRs: `https://github.com/kiali/kiali/pull/<number>` and
+  `https://github.com/kiali/openshift-servicemesh-plugin/pull/<number>`
+- Prefer tables with **Kiali server** and **OSSMC** columns; group by ecosystem
+  (Go module vs npm) and severity
 
 ## Session model (operator-driven)
 
@@ -90,12 +123,21 @@ item.
 
 Prefer **Fix** when a patch exists. **Close** only when closing is justified (see D2c reasons).
 
-### One PR per queue item (default)
+### One PR per repo per queue item (default)
 
-Each **Fix** gets its **own** branch and **own** pull request against **`master`**
-so reviewers can evaluate changes independently. Do **not** use **draft** PRs
-unless the operator asks — open normal, reviewable PRs (request reviewer per
-[SKILL.md](SKILL.md)).
+Each **Fix** uses **one branch and one pull request per repository** touched:
+
+| Repo | Base branch |
+|------|-------------|
+| `kiali/kiali` | `master` |
+| `kiali/openshift-servicemesh-plugin` | `main` |
+
+When the queue item applies to **both** (open alerts in both repos and/or parity
+requires OSSMC), create **two PRs** for the same queue item — same branch name on
+each fork when practical (e.g. `dependabot-minimatch-GHSA-7r86`).
+
+Do **not** use **draft** PRs unless the operator asks — open normal, reviewable
+PRs (request reviewer per [SKILL.md](SKILL.md)).
 
 **Branch naming:** `dependabot-<package>-<short-id>` (e.g. `dependabot-dompurify`,
 `dependabot-undici`). The **`dependabot-` prefix** is the primary machine id.
@@ -153,8 +195,10 @@ Do **not** add GitHub labels for this workflow unless the operator asks.
    Jira/CVE triage).
 6. **Do not** dismiss or PATCH alerts when the PR opens — wait for merge + rescan
    (see [GitHub alert handling](#github-alert-handling-when-fixing-default)).
-7. Continue to the next queue item on a **new** branch (merge or rebase from
-   updated `master` after prior PRs merge when possible).
+7. If the queue item also required OSSMC, repeat steps 1–6 in the OSSMC clone
+   (`plugin/` as `<js-root>`), then continue to the next queue item.
+8. Continue on **new** branches (merge or rebase from updated `master` / `main`
+   after prior PRs merge when possible).
 
 **Optional batching:** only when the operator explicitly requests one PR for
 multiple queue items (same branch, multiple commits). Default is **separate PRs**.
@@ -171,9 +215,10 @@ GITHUB_USER="$(gh api user --jq .login)"
 gh pr edit <PR_NUMBER> --repo kiali/kiali --add-assignee "${GITHUB_USER}"
 ```
 
-2. **Kiali GitHub Project** — add the PR and set **In review**. Unlike CVE
-   triage ([SKILL.md](SKILL.md) GitHub Project Setup), **do not ask** for
-   approval; this is mandatory for every Dependabot Fix PR.
+2. **Kiali GitHub Project** — add **each** Fix PR (Kiali server and OSSMC) and
+   set **In review**. Unlike CVE triage ([SKILL.md](SKILL.md) GitHub Project
+   Setup), **do not ask** for approval; this is mandatory for every Dependabot
+   Fix PR in each repo.
 
    Verify project token scopes once per session (extend D0.2 if not already done):
 
@@ -244,14 +289,14 @@ session log; **PATCH** is only for **Close** (inapplicable / stale) in **D2c** �
 closing a Jira issue as Not a Bug in [triage.md](triage.md), not for routine fix
 PRs.
 
-## Step D0: Updated `master`, then tool access
+## Step D0: Sync default branches, then tool access
 
 **Do this step first.** Do not list alerts, read manifests, or change files until
-local **`master`** is checked out and fast-forwarded to the remote.
+both default branches are checked out and fast-forwarded.
 
-### D0.1 Sync `master` (mandatory)
+### D0.1 Sync `master` and OSSMC `main` (mandatory)
 
-From the **`kiali/kiali`** repository root:
+**Kiali server** — from the **`kiali/kiali`** repository root:
 
 ```bash
 # REMOTE=upstream if that remote exists, else origin
@@ -263,10 +308,21 @@ git rev-parse --short HEAD
 git log -1 --oneline
 ```
 
+**OSSMC** — from the **`kiali/openshift-servicemesh-plugin`** clone:
+
+```bash
+git fetch "${REMOTE}" main
+git checkout main
+git pull "${REMOTE}" main
+git status
+git rev-parse --short HEAD
+git log -1 --oneline
+```
+
 If checkout or pull fails (conflicts, dirty tree blocking pull), **stop** and
 resolve with the user before continuing.
 
-Report the commit SHA and one-line subject as **session baseline**.
+Report both commit SHAs and one-line subjects as **session baselines**.
 
 ### D0.2 GitHub access (after D0.1)
 
@@ -280,15 +336,15 @@ gh auth status
 
 Require `repo` scope minimum for listing alerts.
 
-2. **List alerts (smoke test)**
+2. **List alerts (smoke test)** — both repos:
 
 ```bash
-gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1' \
-  --jq 'length'
+gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1' --jq 'length'
+gh api 'repos/kiali/openshift-servicemesh-plugin/dependabot/alerts?state=open&per_page=1' --jq 'length'
 ```
 
-If this fails with 403/404, report whether Dependabot alerts are enabled for
-the repo and whether the token can read security data. Stop if listing fails.
+If either fails with 403/404, report whether Dependabot alerts are enabled and
+whether the token can read security data. Stop if listing fails.
 
 ### D0.3 Dismiss scope (optional)
 
@@ -296,6 +352,8 @@ Only when the user may dismiss alerts this session. Before any real `PATCH`:
 
 ```bash
 gh api -X PATCH repos/kiali/kiali/dependabot/alerts/0 \
+  -f state=dismissed 2>&1 | head -1
+gh api -X PATCH repos/kiali/openshift-servicemesh-plugin/dependabot/alerts/0 \
   -f state=dismissed 2>&1 | head -1
 ```
 
@@ -314,9 +372,13 @@ Do **not** dismiss alerts until scope works and the user approves each dismiss.
 collection. Query open workflow PRs:
 
 ```bash
-gh pr list --repo kiali/kiali --base master --state open \
-  --json number,title,headRefName,url,reviewDecision,isDraft,statusCheckRollup \
-  --jq '[.[] | select(.headRefName | startswith("dependabot-"))]'
+for REPO in kiali/kiali kiali/openshift-servicemesh-plugin; do
+  BASE=$([ "$REPO" = kiali/kiali ] && echo master || echo main)
+  echo "=== $REPO ==="
+  gh pr list --repo "$REPO" --base "$BASE" --state open \
+    --json number,title,headRefName,url,reviewDecision,isDraft,statusCheckRollup \
+    --jq '[.[] | select(.headRefName | startswith("dependabot-"))]'
+done
 ```
 
 Fallback if branch names differ:
@@ -324,41 +386,66 @@ Fallback if branch names differ:
 ```bash
 gh pr list --repo kiali/kiali --search 'in:title "[dependabot]" state:open' \
   --json number,title,headRefName,url,reviewDecision,isDraft,statusCheckRollup
+gh pr list --repo kiali/openshift-servicemesh-plugin --search 'in:title "[dependabot]" state:open' \
+  --json number,title,headRefName,url,reviewDecision,isDraft,statusCheckRollup
 ```
 
-**Tell the operator explicitly** what may need attention:
+**Tell the operator explicitly** what may need attention (table columns: **Repo**,
+PR link, title, review state, CI summary):
 
-- If **none**: say no in-flight **`[dependabot]`** PRs; proceed to D1.
-- If **any**: present a table (PR link, title, review state, CI summary) and note
-  that these may need **review or merge** before or alongside new queue work.
-  Ask whether to focus on review/merge first or continue the alert queue.
+- If **none** in both repos: proceed to D1.
+- If **any**: note review/merge may be needed before new queue work. Ask whether
+  to focus on in-flight PRs first or continue the alert queue.
 
 Do not start new **Fix** branches for a package that already has an open in-flight
-PR for that package unless the operator asks to replace or amend it.
+PR for that package **in that repo** unless the operator asks to replace or amend it.
 
 ## Step D1: Collect Open Alerts
 
-Paginate open alerts (default sort: `created`, descending):
+Paginate open alerts per repo (default sort: `created`, descending). Tag each row
+with `repo` for merging:
 
 ```bash
-gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=100' \
-  --paginate \
-  --jq '.[] | {
-    number,
-    created_at,
-    severity: .security_vulnerability.severity,
-    ghsa: .security_advisory.ghsa_id,
-    cve: (.security_advisory.cve_id // "none"),
-    package: .dependency.package.name,
-    ecosystem: .dependency.package.ecosystem,
-    manifest: .dependency.manifest_path,
-    vulnerable_range: .security_vulnerability.vulnerable_version_range,
-    first_patched: (.security_vulnerability.first_patched_version // "unknown")
-  }'
+collect_alerts() {
+  local repo="$1"
+  gh api "repos/${repo}/dependabot/alerts?state=open&per_page=100" \
+    --paginate \
+    --jq --arg repo "${repo}" '.[] | {
+      repo: $repo,
+      number,
+      created_at,
+      severity: .security_vulnerability.severity,
+      ghsa: .security_advisory.ghsa_id,
+      cve: (.security_advisory.cve_id // "none"),
+      package: .dependency.package.name,
+      ecosystem: .dependency.package.ecosystem,
+      manifest: .dependency.manifest_path,
+      vulnerable_range: .security_vulnerability.vulnerable_version_range,
+      first_patched: (.security_vulnerability.first_patched_version // "unknown")
+    }'
+}
+
+collect_alerts kiali/kiali
+collect_alerts kiali/openshift-servicemesh-plugin
 ```
 
-Build the prioritized queue (Step D2.0) and present positions `1…N` with a
-short summary table (severity, package, alert count). Skip or defer queue items
+### D1.1 Merge by package (parity queue)
+
+Build **one queue unit per `package + ecosystem + GHSA`** (same rules as
+[Work queue unit](#work-queue-unit)). For each unit:
+
+| Field | Rule |
+|-------|------|
+| **Kiali server alerts** | All alert numbers from `kiali/kiali` for this GHSA/package |
+| **OSSMC alerts** | All alert numbers from `openshift-servicemesh-plugin`, or `—` |
+| **OSSMC parity Fix** | If no OSSMC alert but `plugin/yarn.lock` has a vulnerable line for this package, set **Fix (parity)** and still plan an OSSMC PR when the operator chooses **Fix** |
+
+Present a **preview table** before D1.5:
+
+| GHSA | Package | Ecosystem | Alert # (Kiali) | Alert # (OSSMC) | Max severity |
+|------|---------|-----------|-----------------|-----------------|--------------|
+
+Build the prioritized queue (Step D2.0) from this merge. Skip or defer items
 already covered by [in-flight PRs](#d04-in-flight-prs-inform-operator-before-new-work).
 
 At session start, confirm with the operator:
@@ -371,11 +458,15 @@ session** after the summary at any time without resolving remaining items.
 
 ## Step D1.5: Qualify close / ignore candidates
 
-Before building the **Fix** queue (D2.0), classify every open alert (or each
-**package + ecosystem** group) into one of: **Fix**, **Close (dismiss)**,
-**Defer (Pass)**, or **Fix queue only**. Present a **Close candidates** table
-for operator approval — same approval model as Jira [triage.md](triage.md) Step 3
-(do **not** PATCH until the operator approves each row).
+Before building the **Fix** queue (D2.0), classify **each open alert number**
+(D1 and D1.1). You may **reason** about package + ecosystem groups, but output
+rows and PATCH targets are **per alert #** per repo.
+
+Classify into: **Fix**, **Close (dismiss)**, **Defer (Pass)**, or **Fix queue
+only**. Present a **Close candidates** table for operator approval — same
+approval model as Jira [triage.md](triage.md) Step 3 (do **not** PATCH until
+the operator approves each row). A single **batch approve** of the full D1.5.6
+table A authorizes the corresponding **D2c** PATCHes; see also D2.1 **Close**.
 
 GitHub allows only these `dismissed_reason` values:
 `fix_started`, `inaccurate`, `no_bandwidth`, `not_used`, `tolerable_risk`.
@@ -434,13 +525,16 @@ unless verification below fails.
 
 Operator may still choose **Fix** or **Pass** instead of **Close** for any item.
 
-**Verify (npm):**
+**Verify (npm)** — run in each repo that has the package in its lockfile:
 
 ```bash
-cd frontend
+cd <js-root>   # frontend/ or plugin/
 yarn why <package-name>   # all paths should be dev/test/tooling only
 yarn npm audit --environment production 2>&1 | rg <package> || true
 ```
+
+Qualify **Kiali server** and **OSSMC** separately when both have the package;
+one repo may be **Close** (dev-only) while the other remains **Fix** (runtime).
 
 Treat as dev-only when **every** `yarn why` path is under typical dev chains,
 for example:
@@ -530,26 +624,26 @@ Present two tables. **List one row per alert number** in table A (do not collaps
 multiple alerts into one row without listing every `#`). The summary count must
 match the number of PATCH operations in D2c.
 
-**A. Close candidates** (operator approves before any PATCH):
+**A. Close candidates** (operator approves before any PATCH — one row per alert #):
 
-| Alert # | Package | Severity | Proposed reason | Evidence (1 line) |
-|---------|---------|----------|-----------------|-------------------|
+| Alert # (Kiali) | Alert # (OSSMC) | Package | Severity | Repo to PATCH | Proposed reason | Evidence (1 line) |
+|-----------------|-----------------|---------|----------|---------------|-----------------|-------------------|
 
-**B. Fix queue** (remaining items, ordered per D2.0 — typically prod direct
-first if operator requested):
+**B. Fix queue** (remaining items, ordered per D2.0):
 
-| Rank | Package | Severity | Direct runtime? | Alert count |
-|------|---------|----------|-----------------|-------------|
+| Rank | Package | Severity | Direct runtime? | Alert # (Kiali) | Alert # (OSSMC) | OSSMC parity Fix? |
+|------|---------|----------|-----------------|-----------------|-----------------|-------------------|
 
 **C. Excluded from dismiss** (optional, when helpful):
 
-| Alert # | Package | Severity | Why not Close (Fix / Pass / high dev) |
-|---------|---------|----------|----------------------------------------|
+| Alert # (Kiali) | Alert # (OSSMC) | Package | Severity | Why not Close (Fix / Pass / high dev) |
+|-----------------|-----------------|---------|----------|----------------------------------------|
 
 Operator may: approve all closes, approve subset, reclassify a row to **Fix** or
 **Pass**, then proceed to D2.
 
-After approved **Close** rows, run [D2c batch dismiss](#d2c-close-dismiss-alert).
+After approved **Close** rows, run [D2c batch dismiss](#d2c-close-dismiss-alert)
+for each **Repo to PATCH** column (Kiali server and/or OSSMC).
 
 ### D1.5.7 Dismissal decision procedure
 
@@ -558,14 +652,14 @@ For **each open alert number** from Step D1 (not grouped summaries):
 1. Read `security_vulnerability.severity` → if **high** or **critical**, stop:
    default **Pass** or **Fix** (dev parent bump); **not** team dismiss policy.
 2. If **medium** or **low**, check **user-facing** (D1.5.5 exclusions first):
-   - **npm:** name in `frontend/package.json` **`dependencies`** → **Fix**
-   - **npm:** `grep` imports in `frontend/src/` → **Fix**
+   - **npm:** name in `<js-root>/package.json` **`dependencies`** → **Fix**
+   - **npm:** `grep` imports in `<js-root>/src/` (or equivalent app source) → **Fix**
    - **npm:** transitive under runtime **`dependencies`** (e.g.
      `@patternfly/chatbot` → `@opentelemetry/*`) → **Fix**
    - **Go:** imported from non-test server packages (e.g. `observability/`,
      `kubernetes/`, `server/`) → **Fix**
 3. If still candidate, verify **dev-only** paths:
-   - `cd frontend && yarn why <package>` — every path must be dev/test/build/CI
+   - `cd <js-root> && yarn why <package>` — every path must be dev/test/build/CI
    - Optional: `yarn npm audit --environment production` must not implicate the GHSA
    - **Go:** only `*_test.go` / `tests/` requires — else **Fix**
 4. If steps 1–3 pass → add row to **Close candidates** with `not_used` (or
@@ -573,11 +667,13 @@ For **each open alert number** from Step D1 (not grouped summaries):
 5. **Mixed severities on one package:** dismiss **only** the medium/low alert
    numbers; leave high alerts open (e.g. `minimatch` medium vs high).
 
-Collect alerts for listing:
+Collect alerts for listing (both repos):
 
 ```bash
-gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=100' \
-  --jq '.[] | {number, severity: .security_vulnerability.severity, pkg: .dependency.package.name}'
+for REPO in kiali/kiali kiali/openshift-servicemesh-plugin; do
+  gh api "repos/${REPO}/dependabot/alerts?state=open&per_page=100" \
+    --jq --arg repo "${REPO}" '.[] | {repo: $repo, number, severity: .security_vulnerability.severity, pkg: .dependency.package.name}'
+done
 ```
 
 ### D1.5.8 Kiali runtime exclusions (do not dismiss)
@@ -609,8 +705,9 @@ explicit operator dismiss.
 
 ### D2.0 Build queue order
 
-1. **Severity**: critical → high → medium → low
-2. **Within severity**: group by **package + ecosystem + manifest**
+1. **Severity**: critical → high → medium → low (max across Kiali + OSSMC alerts)
+2. **Within severity**: group by **package + ecosystem + GHSA** (D1.1 unit), not
+   by single manifest path when both repos share the advisory
 3. **Ties**: more alert numbers first, then older `created_at`
 
 Skip embedding in the queue (still list at end of session as “not reached”):
@@ -622,62 +719,65 @@ Skip embedding in the queue (still list at end of session as “not reached”):
 Repeat for queue item `k = 1…N` until the operator **stops the session** or
 `k > N`:
 
-1. **Present item `k`**: alert link(s), severity, package, ecosystem, manifest,
-   vulnerable vs **current on synced `master`**, patched version(s), whether the
-   package appears in `frontend/package.json` **`resolutions`** / **`overrides`**,
-   whether Kiali **directly imports** the package (see D2a), brief recommendation
+1. **Present item `k`**: table with **Kiali server** and **OSSMC** alert links,
+   severity, package, ecosystem, patched version(s), resolved versions on
+   **`frontend/yarn.lock`** and **`plugin/yarn.lock`** (and `go.mod` when Go),
+   whether each tree needs **parity Fix**, `resolutions` / `overrides`, direct
+   imports, brief recommendation (including “expect **2 PRs**” when both apply)
 2. **Operator chooses**: **Fix** | **Pass** | **Close** | **Stop session** (or
    “work item `m` instead” — then present item `m` and get a fresh choice).
    **Do not** implement on **maybe**, **test remediation**, or session goals alone.
 3. Execute the choice (D2a / D2b / D2c / exit to Step D3) — only after step 2.
+   **Close** in the loop counts as operator approval for **that item’s** alert
+   number(s); PATCH only those numbers in D2c (not limited to the D1.5.6 batch).
 4. Record outcome in the running **session log** (Step D3 table).
 5. Continue to item `k+1` unless the session stopped.
 
-### D2a Fix (implement on master)
+### D2a Fix (implement on default branches)
 
-Qualify on **`master`** (synced at session start; re-read files from working tree).
+Re-read manifests on synced **`master`** / **`main`** at session start.
 
-| Ecosystem | Where to look |
-|-----------|----------------|
-| `go` | `go.mod`, `go.sum`; `go mod graph` if transitive |
-| `npm` | `frontend/yarn.lock`, `frontend/package.json` |
+| Ecosystem | Kiali server | OSSMC |
+|-----------|--------------|-------|
+| `go` | `go.mod`, `go.sum` | `—` |
+| `npm` | `frontend/` (`<js-root>`) | `plugin/` (`<js-root>`) |
 
-If `master` already matches a patched version, recommend **Close** with
-`inaccurate` (see D1.5.1) or **Pass** if waiting for GitHub rescan — do not bump
-blindly.
+If a tree already matches a patched version, recommend **Close** with `inaccurate`
+(see D1.5.1) or **Pass** if waiting for GitHub rescan — do not bump blindly.
 
-**Branch rules** (one PR per queue item — see [One PR per queue item](#one-pr-per-queue-item-default)):
+**Branch rules** — see [One PR per repo per queue item](#one-pr-per-repo-per-queue-item-default):
 
-- Run **D0.1**, then create a **new** branch for this item only:
+- Run **D0.1**, then create a **new** branch in **each** repo that needs a Fix:
 
 ```bash
 git checkout -b dependabot-<package>-<short-id>
 ```
 
-  (Operator may suggest a different name.)
+  (Operator may suggest a different name; reuse the same name on both repos when both need PRs.)
 
-- Do **not** add the next queue item to the same branch unless the operator
-  explicitly chose batching.
+- Do **not** add the next queue item to the same branch unless the operator chose batching.
 
-**Apply the bump** using [remediation.md](remediation.md): use **`frontend/`** as
-`<js-root>` for npm; follow the **Go** sections for modules and stdlib as written
-(same repo). Use **`go get`** with the **patched version required by the alert**
-when it is not satisfied by `@latest`. Compare resolved versions to the alert’s
-patched / vulnerable range (`first_patched_version` from Step D1), not only to
-Jira text.
+**Apply the bump** using [remediation.md](remediation.md). Use the same logical
+change on both repos when parity applies (identical `resolutions` keys for the same
+package when used). For **Go**, only the Kiali server repo. Use **`go get`** with the
+patched version when `@latest` is insufficient.
 
-Verification before push (scope to change):
+**Verification** — follow [remediation.md](remediation.md) verify steps for the
+ecosystem changed (do not substitute ad-hoc commands unless the operator agrees):
 
-```bash
-make test
-cd frontend && yarn test   # when frontend lockfile changed
-```
+| Change | Kiali server | OSSMC |
+|--------|--------------|-------|
+| npm lockfile / `package.json` | `make build-ui`, `make build-ui-test` | OSSMC build target from `plugin/` README |
+| Go `go.mod` | `make build`, `make test` | `—` |
 
-Push to fork; create PR (`--base master`; **not** draft unless operator asks).
-PR conventions: [SKILL.md](SKILL.md) except **no `backport needed`**. No OSSM
-Jira keys in the description. Link every Dependabot alert URL for **this queue
-item**. Then [PR tracking (required)](#pr-tracking-required): assignee,
-project **In review**, reviewer per operator choice.
+**Create PR(s):**
+
+1. **Kiali server** — push; `gh pr create --repo kiali/kiali --base master`
+2. **OSSMC** — when alerts or parity require it; `gh pr create --repo kiali/openshift-servicemesh-plugin --base main`
+
+PR conventions: [SKILL.md](SKILL.md) except **no `backport needed`**. No OSSM Jira
+keys. Link Dependabot alert URL(s) for **that repo**. Cross-link the sibling PR when
+both exist. Then [PR tracking (required)](#pr-tracking-required) **for each PR**.
 
 **Do not** PATCH alerts when the PR opens — see [GitHub alert handling when fixing](#github-alert-handling-when-fixing-default).
 
@@ -702,8 +802,15 @@ queue item.
 
 ### D2c Close (dismiss alert)
 
-**Operator approval required** for the full Close candidates table from D1.5.6
-(not per-alert re-approval unless the operator changed the list).
+**Operator approval required** before any PATCH:
+
+- **Batch path:** the full Close candidates table from D1.5.6 (one approve →
+  PATCH all approved rows).
+- **Session loop path:** operator chooses **Close** for queue item `k` in D2.1 →
+  PATCH only that item’s approved alert number(s) without re-approving the full table.
+
+Use the correct repo in the API path (`kiali/kiali` vs
+`kiali/openshift-servicemesh-plugin`) per table A **Repo to PATCH**.
 
 **Standard comment** (team default — `not_used`, medium/low dev-only):
 
@@ -713,22 +820,23 @@ Not user-facing: transitive dev/test/build dependency only (yarn why). Team poli
 
 Adjust only when using another `dismissed_reason` or the operator supplies wording.
 
-Dismiss **each approved alert number** (one PATCH per alert):
+Dismiss **each approved alert number** (one PATCH per alert; set `REPO` per table A):
 
 ```bash
 COMMENT='Not user-facing: transitive dev/test/build dependency only (yarn why). Team policy: medium/low severity, not in production UI or server runtime.'
+REPO=kiali/kiali   # or kiali/openshift-servicemesh-plugin
 
-gh api -X PATCH "repos/kiali/kiali/dependabot/alerts/<NUMBER>" \
+gh api -X PATCH "repos/${REPO}/dependabot/alerts/<NUMBER>" \
   -f state=dismissed \
   -f dismissed_reason=not_used \
   -f dismissed_comment="$COMMENT"
 ```
 
-Batch example (operator-approved list only):
+Batch example (operator-approved list only — repeat per repo):
 
 ```bash
 for n in <ALERT_NUMBERS>; do
-  gh api -X PATCH "repos/kiali/kiali/dependabot/alerts/${n}" \
+  gh api -X PATCH "repos/${REPO}/dependabot/alerts/${n}" \
     -f state=dismissed \
     -f dismissed_reason=not_used \
     -f dismissed_comment="$COMMENT" \
@@ -767,16 +875,16 @@ Do not end the conversation without this summary.
 
 Present:
 
-1. **Session settings** — baseline `master` SHA, repo scope
-2. **In-flight PRs** — table of **`[dependabot]`** / `dependabot-*` PRs (number, title, URL, review/CI status if checked at session start)
+1. **Session settings** — baseline **`master`** and **`main`** SHAs, repos in scope
+2. **In-flight PRs** — **`[dependabot]`** PRs in **both** repos (Repo, number, title, URL, review/CI)
 3. **Queue log** — every item touched this session:
 
-| # | Package / alerts | Outcome | PR / dismiss / pass | Notes |
-|---|------------------|---------|---------------------|-------|
+| # | Package | Outcome | Alert # (Kiali) | Alert # (OSSMC) | PR (Kiali) | PR (OSSMC) | Notes |
+|---|---------|---------|-----------------|-----------------|------------|------------|-------|
 
 4. **Not reached** — next queue positions and packages if stopped early
-5. **GitHub state** — open Dependabot alert count before/after session; list
-   **dismissed alert numbers** and `dismissed_reason` when PATCH was used
+5. **GitHub state** — open Dependabot alert count **per repo** before/after; list
+   **dismissed alert numbers** (with repo) and `dismissed_reason` when PATCH was used
 6. **Skill / repo housekeeping** — local `ai-tools` branch changes not yet committed, if any
 7. **Suggested next session** — next queue items, merge/rebase notes (e.g. merge open PRs before next `yarn.lock` change)
 
@@ -784,7 +892,7 @@ Present:
 
 | Workflow | Role |
 |----------|------|
-| **Dependabot (this doc)** | Preventive — harden `kiali/kiali` **master** |
+| **Dependabot (this doc)** | Preventive — harden `kiali/kiali` **master** + OSSMC **main** |
 | **Triage** | Reactive — OSSM Jira, all images, backports |
 | **Review** | Merge CVE PR batches across branches |
 
@@ -796,8 +904,9 @@ A fix merged here on `master` may still need **triage backports** later when
 OSSM Jira issues appear for supported release branches. That is expected until
 backport scope is added to this feature.
 
-## Future Extension (not implemented in v1)
+## Future Extension (not implemented yet)
 
-- Repositories: `kiali/kiali-operator` (`master`), plugin, etc.
-- Backport matrix aligned with Supported Branches in `AGENTS.md`
+- Repository: `kiali/kiali-operator` (`master`)
+- Backport matrix aligned with supported OSSM/Kiali release branches (see
+  `kiali/kiali` `AGENTS.md` when working in that repo)
 - Cross-link: optional Jira search for same CVE after upstream fix (read-only)

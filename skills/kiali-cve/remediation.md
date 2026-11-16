@@ -18,11 +18,15 @@ doc; OSSMC is JS-only for remediation here (see [triage.md](triage.md) Step 8).
 
 Below, **`<js-root>`** means `frontend` (server) or `plugin` (OSSMC). Commands
 assume `kiali/kiali` unless noted — for OSSMC use `plugin/` and branch/PR rules
-from triage Step 8.
+from triage Step 8 or [dependabot.md](dependabot.md) for upstream hardening.
+
+**Kiali server + OSSMC parity (Dependabot):** when npm applies to both repos,
+use the **same** bump/resolution strategy in `frontend/` and `plugin/`; open
+**one PR per repo** (see dependabot.md).
 
 **Fix version source:** In Jira triage use the ranges from Step 6a (and lockfile
 checks). For Dependabot use the alert’s patched version / range and re-read
-`<js-root>/yarn.lock` and `go.mod` on **synced** `master` before editing.
+`<js-root>/yarn.lock` and `go.mod` on synced **`master`** / **`main`** before editing.
 
 ---
 

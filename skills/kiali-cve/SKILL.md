@@ -1,11 +1,11 @@
 ---
 name: kiali-cve
-description: Triage and review OSSM Jira CVE issues for the Kiali component, and harden upstream via GitHub Dependabot on master. Three features - triage (OSSM Jira, fix PRs for master and supported branches), review (merge CVE PRs across branches, update Jira), dependabot (evaluate, dismiss inapplicable, and fix open Dependabot alerts on kiali/kiali master). Use when the user mentions CVE triage, CVE review, OSSM CVE, Dependabot alerts, upstream CVE hardening, or kiali-cve.
+description: Triage and review OSSM Jira CVE issues for the Kiali component, and harden upstream via GitHub Dependabot on default branches. Three features - triage (OSSM Jira, fix PRs for master and supported branches), review (merge CVE PRs across branches, update Jira), dependabot (evaluate, dismiss, and fix open Dependabot alerts on kiali/kiali master and openshift-servicemesh-plugin main with dependency parity). Use when the user mentions CVE triage, CVE review, OSSM CVE, Dependabot alerts, upstream CVE hardening, or kiali-cve.
 ---
 
 # Kiali CVE Management
 
-Three features: **triage**, **review**, and **dependabot** (upstream `master`).
+Three features: **triage**, **review**, and **dependabot** (upstream `master` + OSSMC `main`).
 
 | Trigger | Feature | Action |
 |---------|---------|--------|
@@ -29,22 +29,27 @@ sessions and separate summaries unless the user explicitly asks to relate the tw
 - **CVE triage/review** — Jira (OSSM), Konflux/midstream fixes, product images,
   supported-branch PRs. Do **not** report GitHub Dependabot alert counts, queues,
   or dependabot PR status unless the user asks.
-- **Dependabot** — `kiali/kiali` (and related) `.github/dependabot.yml`, manual
+- **Dependabot** — `kiali/kiali`, `kiali/openshift-servicemesh-plugin`, manual
   `[dependabot]` PRs, GitHub security advisories. Do **not** run OSSM Jira triage
   or propose Jira closures unless the user asks. Default dismiss policy: **medium/low**
   severity **dev-only** (not user-facing) alerts → recommend **Close** (`not_used`)
   after verification; see [dependabot.md](dependabot.md) D1.5.
 
-### Dependabot scope (v1)
+### Dependabot scope
 
-- Repository: **`kiali/kiali`** only
-- Branch: **`master`** only (no release-branch backports in this feature yet)
-- Always qualify alerts and read dependency versions against **updated `master`**
-- Fix PRs: sync `master`, branch off current `master`, open with **`--base master`**
+- Repositories: **`kiali/kiali`** (`master`, Go + `frontend/`) and
+  **`kiali/openshift-servicemesh-plugin`** (`main`, `plugin/` npm)
+- No release-branch backports in this feature yet
+- Keep **npm dependency versions aligned** between server and OSSMC when both
+  are affected; **one PR per repo** per queue item when Fix applies to both
+- Qualify against synced **`master`** and **`main`**; output tables use **Kiali
+  server** and **OSSMC** alert columns
+- Fix PRs: sync default branches, branch per repo, `master` / `main` bases
 - Session: after D1, show the **prioritized queue table**; walk it one item at a
   time — recommend, then **wait** for **Fix (PR)**, **Pass**, **Close**
   (dismiss), or **Stop session** before any branch/commits/PRs
-- **One normal (non-draft) PR per queue item** by default; **do not** PATCH alerts
+- **One normal (non-draft) PR per repo per queue item** when Fix applies (two PRs
+  when both Kiali server and OSSMC need the same bump); **do not** PATCH alerts
   on PR open — alerts clear after merge + rescan; PATCH only for **Close**
   (inapplicable/stale) per [dependabot.md](dependabot.md) D1.5–D2c
 - **After each Fix PR:** assign to the current GitHub user and add to the Kiali
@@ -72,12 +77,14 @@ D1.5–D2c). Count dismissals by **alert number**, not grouped package rows.
 
 Before any other dependabot step (Jira and GitLab not required):
 
-1. **Updated `master`** in the local `kiali/kiali` clone — follow [dependabot.md](dependabot.md)
-   **Step D0.1** first; stop if sync fails
-2. **In-flight PRs** — **Step D0.4**: report open **`[dependabot]`** PRs to the operator
-   (review/merge may be needed) before collecting new alerts
+1. **Updated `master` and OSSMC `main`** — follow [dependabot.md](dependabot.md)
+   **Step D0.1** in both clones; stop if sync fails
+2. **In-flight PRs** — **Step D0.4**: report open **`[dependabot]`** PRs in **both**
+   repos before collecting new alerts
 3. **GitHub CLI**: `gh auth status` (`repo` scope minimum)
-4. **Dependabot alerts**: `gh api 'repos/kiali/kiali/dependabot/alerts?state=open&per_page=1'`
+4. **Dependabot alerts**: smoke-test both
+   `repos/kiali/kiali/dependabot/alerts` and
+   `repos/kiali/openshift-servicemesh-plugin/dependabot/alerts`
 5. **GitHub Project** (for Fix PRs): `gh project list --owner kiali` — if this
    fails, refresh scopes before creating PRs:
    `gh auth refresh -h github.com -s read:org,read:project,project`
@@ -354,8 +361,10 @@ Pattern: `CVE-YYYY-NNNNN <registry>/<image>: <library>: <description> [ossm-X.Y]
 - Master/main PRs get `backport needed` label
 - Backport PR descriptions **must** reference master/main PR number
   (e.g. "Backport of #<NUMBER> to <branch>.") for GitHub cross-references
-- All PRs added to the Kiali GitHub Project with "In review" status
-  (requires user approval — see GitHub Project Setup)
+- **CVE triage/review** PRs: add to the Kiali GitHub Project with **In review**
+  only after user approval (see GitHub Project Setup)
+- **`[dependabot]` Fix PRs:** assignee + project **In review** immediately after
+  create in **each** repo (see [dependabot.md](dependabot.md); no prompt)
 - Merge method: `squash` (kiali repos only allow squash merge)
 
 ### Requesting a reviewer
