@@ -75,6 +75,15 @@ the same approach on all branches (`master`/`main` and backports):
    consolidating to the highest compatible version already in the
    lockfile. Never add resolutions for caret ranges.
 
+1b. **Always** run `yarn install` (or `yarn install --no-immutable` in CI contexts)
+   in `<js-root>/`, then `rg '"<library>@npm:' <js-root>/yarn.lock` again.
+
+   Many alerts are **stale lockfile pins**: parent ranges already allow the patched
+   release (e.g. `^3.0.4` → **3.1.5** after dedupe + install) with **no**
+   `package.json` change and **no** `resolutions`. Do **not** add `resolutions` or
+   `yarn set resolution` until this full cycle is done and the lockfile still fails
+   the audit.
+
 2. For remaining vulnerable entries, evaluate both options:
    - **Bump the parent package** to a version whose transitive tree
      no longer pulls in the vulnerable version.
@@ -87,6 +96,10 @@ the same approach on all branches (`master`/`main` and backports):
    parent package. Include: which package, from which version to which
    version, whether it is a major version bump, and the potential
    consequences. **Wait for explicit user approval** before proceeding.
+
+   **Dependabot / agent rule:** Editing `package.json` **`resolutions`** (or using
+   `yarn set resolution`) without that approval is a workflow error — even when the
+   override would “obviously” work.
 
    **Backport consistency:** If the vulnerable transitive dependency
    only exists on backport branches (not on `master`), prefer the

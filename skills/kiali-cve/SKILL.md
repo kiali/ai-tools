@@ -56,6 +56,9 @@ sessions and separate summaries unless the user explicitly asks to relate the tw
   GitHub Project (**In review**) — mandatory; see dependabot.md **PR tracking**
 - **PR body:** include **How this PR was built** (commands + why lockfile / `x/*`
   may move) — see dependabot.md **PR description**
+- **npm transitive fixes:** `yarn dedupe` → `yarn install` → lockfile audit
+  before parent bump or **`resolutions`**; never add `resolutions` without operator
+  approval ([remediation.md](remediation.md))
 - Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
   downstream OSSM CVE filing
 

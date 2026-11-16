@@ -37,8 +37,9 @@ Kiali server, treat it as **in scope for Fix** even when OSSMC has **no** open
 Dependabot alert.
 
 **Fix (PR) default when both repos apply:** create **one PR per repo** (not one
-PR spanning both). Use the **same** remediation strategy (`yarn dedupe`, parent
-bump, minimal `resolutions` per [remediation.md](remediation.md)). Cross-link the
+PR spanning both). Use the **same** remediation strategy (`yarn dedupe` →
+`yarn install` → re-audit; parent bump if needed; **`resolutions` only with operator
+approval** per [remediation.md](remediation.md)). Cross-link the
 sibling PR in each description (same GHSA/CVE, same queue item).
 
 **Go-only queue items:** Kiali server only — OSSMC column stays `—`.
@@ -153,7 +154,7 @@ commands actually run — do not paraphrase.
 |-----------|-------------------|
 | **Go** | `go get <module>@<patched-version>` and `go mod tidy`. State that only the CVE module was targeted explicitly; explain that **`go mod tidy` may bump `golang.org/x/*`** (and other shared modules) because the patched module’s `go.mod` requires newer versions — not manual drive-by upgrades. |
 | **npm (direct)** | `package.json` version change + `cd frontend && yarn install`. Note if **`resolutions`** were **not** added. Call out expected transitive lockfile moves (e.g. `follow-redirects` with `axios`). |
-| **npm (lockfile-only / transitive)** | `yarn install` or `yarn up` path used; **no new `resolutions`** unless required (say why). |
+| **npm (lockfile-only / transitive)** | `yarn dedupe <pkg>`, then `yarn install`, then lockfile audit. State **“No new `package.json` resolutions”** when true. If resolutions were approved, name each key and why dedupe + parent bump failed. |
 
 Copy-paste templates (include in the PR body under **Summary**):
 
@@ -758,9 +759,23 @@ git checkout -b dependabot-<package>-<short-id>
 - Do **not** add the next queue item to the same branch unless the operator chose batching.
 
 **Apply the bump** using [remediation.md](remediation.md). Use the same logical
-change on both repos when parity applies (identical `resolutions` keys for the same
-package when used). For **Go**, only the Kiali server repo. Use **`go get`** with the
-patched version when `@latest` is insufficient.
+change on both repos when parity applies (same commands and outcomes; use identical
+`resolutions` keys **only** if the operator already approved resolutions for that
+package). For **Go**, only the Kiali server repo. Use **`go get`** with the patched
+version when `@latest` is insufficient.
+
+#### npm transitive — mandatory order (no shortcuts)
+
+Before touching `package.json` **`resolutions`** or proposing parent bumps:
+
+1. `cd <js-root> && yarn dedupe <package>`
+2. `cd <js-root> && yarn install`
+3. Lockfile audit (`rg '"<package>@npm:' <js-root>/yarn.lock`) vs patched version
+4. If still vulnerable → `yarn why <package>`, check parent bumps ([remediation.md](remediation.md))
+5. **Stop and ask the operator** before adding any `resolutions` entry
+
+A PR that only changes `<js-root>/yarn.lock` after steps 1–3 is preferred when the
+audit passes.
 
 **Verification** — follow [remediation.md](remediation.md) verify steps for the
 ecosystem changed (do not substitute ad-hoc commands unless the operator agrees):
