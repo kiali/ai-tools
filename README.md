@@ -55,6 +55,7 @@ Agnostic skills live in [`skills/`](./skills/), using the standard `skill-name/S
 | `kiali-check-syntax` | Validate syntax of uncommitted files in the kiali.io repository |
 | `kiali-cve` | Triage and review OSSM Jira CVE issues for the Kiali component |
 | `kiali-delete` | Delete Kiali, Bookinfo, and Istio from Minikube |
+| `kiali-release-notes` | Collect Done issues + orphan PRs, refine, and open a PR on kiali/kiali.io |
 | `kiali-start` | Start Kiali in Minikube with Istio and Bookinfo (sidecar or ambient mode) |
 | `kiali-translate` | Audit Kiali UI localization catalogs, suggest translations, and fill confirmed gaps |
 | `progress-report` | Generate a progress report for the current task |
