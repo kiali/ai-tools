@@ -532,13 +532,13 @@ OSSMC differences (see SKILL.md Repos table):
 Ask user for local OSSMC repo path.
 
 Use [remediation.md](remediation.md) with **`plugin/`** as `<js-root>` (same NPM/Yarn
-mechanics as Step 7). OSSMC-specific branch and PR rules:
+mechanics as Step 7, including install/verify in remediation). OSSMC-specific branch
+and PR rules:
 
 1. Branch from `main`
-2. Update `plugin/package.json` / `plugin/yarn.lock` per remediation.md
-3. `yarn install --no-immutable` in `plugin/`
-4. Verify build
-5. Create PR against `main` and assign to the user; add `backport needed`
+2. Apply the npm fix per remediation.md (`package.json` / lockfile; install is in verify)
+3. Verify build per remediation.md / OSSMC README
+4. Create PR against `main` and assign to the user; add `backport needed`
    label; add to the GitHub project only if the user has approved project
    tracking (see GitHub Project Setup in SKILL.md)
 
