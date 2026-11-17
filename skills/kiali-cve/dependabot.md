@@ -76,7 +76,7 @@ when needed — but **GitHub Dependabot alerts** replace **OSSM Jira issues**, o
 | Find **New** CVE issues (Step 1) | List **open** alerts (D1) |
 | Close inapplicable (Steps 3, 6d) | Qualify **Close** vs **Fix** (D1.5) |
 | Qualify affected versions / path (Step 6) | Compare alert to **`master`** manifests (`D2` / D2a) |
-| **Fix** — open PR(s) (Step 7) | **Fix** — branch + PR + link alerts (D2a); use [remediation.md](remediation.md) |
+| **Fix** — open PR(s) (Step 7) | **Fix** — branch + PR + public GHSA/CVE refs (D2a); use [remediation.md](remediation.md) |
 | **Close** inapplicable (Not a Bug, VEX) | **Close** — PATCH dismiss with reason + comment (D2c) |
 | **Pass** / defer | **Pass** — leave alert open |
 | Code Review / merge (review skill) | Merge happens **outside** this run; next session re-syncs `master` and rechecks alerts |
@@ -85,10 +85,15 @@ Details below (D0–D3) spell out commands and approvals.
 
 ## Output Formatting
 
-- Kiali server alert:
-  `https://github.com/kiali/kiali/security/dependabot/<alert_number>`
-- OSSMC alert:
-  `https://github.com/kiali/openshift-servicemesh-plugin/security/dependabot/<alert_number>`
+- **Operator session only** (queues, Close candidates, session log) — Dependabot
+  alert links for people with security access:
+  - Kiali server: `https://github.com/kiali/kiali/security/dependabot/<alert_number>`
+  - OSSMC: `https://github.com/kiali/openshift-servicemesh-plugin/security/dependabot/<alert_number>`
+- **Public Fix PR bodies** — do **not** link `/security/dependabot/<number>` URLs.
+  Many reviewers lack permission to view Dependabot alerts even on public repos.
+  Use instead: **package name**, **GHSA ID** (e.g. `GHSA-jqcg-44mw-7w3h`), **CVE**
+  when present, and the public advisory link
+  `https://github.com/advisories/GHSA-<id>` when helpful.
 - PRs: `https://github.com/kiali/kiali/pull/<number>` and
   `https://github.com/kiali/openshift-servicemesh-plugin/pull/<number>`
 - Prefer tables with **Kiali server** and **OSSMC** columns; group by ecosystem
@@ -213,8 +218,8 @@ Do **not** add GitHub labels for this workflow unless the operator asks.
 2. Create a **new** branch from current `master`; implement one queue item only.
 3. Push to the operator’s fork; `gh pr create --base master` (no `--draft` by default).
    Title **must** begin with **`[dependabot]`**.
-4. Ask who should **review**; link all Dependabot alert URLs for that item in the
-   PR description.
+4. Ask who should **review**; in the PR description cite **GHSA/CVE and package**
+   (not `/security/dependabot/` URLs — see [Output Formatting](#output-formatting)).
 5. **Assign** the PR to the **current GitHub user** (operator running the skill) and
    **add it to the Kiali GitHub Project** with status **In review** — see
    [PR tracking (required)](#pr-tracking-required). Do this for every Fix PR
@@ -299,7 +304,8 @@ not reached.
 
 For **Fix (PR)** items:
 
-1. **Open the fix PR** and link alert URLs in the description.
+1. **Open the fix PR** with public advisory context (GHSA/CVE, package) in the
+   description — not private Dependabot alert URLs.
 2. **Do not** PATCH alerts when the PR opens. Dependabot should close them as
    **fixed** after the PR **merges** and the default branch is rescanned.
 
@@ -820,8 +826,9 @@ ecosystem changed (do not substitute ad-hoc commands unless the operator agrees)
 2. **OSSMC** — when alerts or parity require it; `gh pr create --repo kiali/openshift-servicemesh-plugin --base main`
 
 PR conventions: [SKILL.md](SKILL.md) except **no `backport needed`**. No OSSM Jira
-keys. Link Dependabot alert URL(s) for **that repo**. Cross-link the sibling PR when
-both exist. Then [PR tracking (required)](#pr-tracking-required) **for each PR**.
+keys. Cite **GHSA/CVE** in the body (no `/security/dependabot/` links). Cross-link
+the sibling PR when both exist. Then [PR tracking (required)](#pr-tracking-required)
+**for each PR**.
 
 **Do not** PATCH alerts when the PR opens — see [GitHub alert handling when fixing](#github-alert-handling-when-fixing-default).
 
