@@ -107,6 +107,32 @@ Recommendations (including “prefer grpc while a `yarn.lock` PR is in flight”
 fine; they are **not** permission to start the fix. The operator may also choose
 a **different queue number** than `k` (e.g. skip item 1 until another PR merges).
 
+### Hard gate: `resolutions` (separate from **Fix**)
+
+Operator **Fix** on a queue item is **not** permission to add or change
+`package.json` **`resolutions`** (or `yarn set resolution`). That includes urgent
+wording (“fix the critical ones”, “just fix it”, batch fixes).
+
+| Operator says | Agent may do without further approval | Must stop and ask first |
+|---------------|----------------------------------------|-------------------------|
+| **Fix** | D0.1, branch, `yarn dedupe`, `yarn install`, lockfile audit, **direct** dep bumps, **parent** bumps you already listed in the item brief | Any new/changed `resolutions` key; `yarn set resolution` |
+| **Fix (resolutions: …)** or explicit “approve resolution for X” | Apply **only** the named keys/versions the operator approved | Anything beyond that approval |
+
+**When the lockfile audit still fails after dedupe + install + documented parent checks:**
+
+1. Do **not** commit or open a PR that touches `resolutions`.
+2. Present this table and **wait**:
+
+| Package | Still vulnerable? | Option A — parent bump | Option B — resolution | Recommendation |
+|---------|-------------------|------------------------|----------------------|----------------|
+| … | yes/no | … | … | … |
+
+3. Operator picks A, B (with exact keys), **Pass**, or **Stop session**.
+4. Continue implementation only for the approved option.
+
+If you already added `resolutions` without step 2–3, treat it as a mistake: tell the
+operator, revert the resolution lines, and re-run the gate (amend or new commit as they prefer).
+
 ### Work queue unit
 
 Build queue entries from open alerts (D1). Prefer **one queue item per
@@ -772,10 +798,13 @@ Before touching `package.json` **`resolutions`** or proposing parent bumps:
 2. `cd <js-root> && yarn install`
 3. Lockfile audit (`rg '"<package>@npm:' <js-root>/yarn.lock`) vs patched version
 4. If still vulnerable → `yarn why <package>`, check parent bumps ([remediation.md](remediation.md))
-5. **Stop and ask the operator** before adding any `resolutions` entry
+5. **Stop and ask the operator** before adding any `resolutions` entry — see
+   [Hard gate: `resolutions`](#hard-gate-resolutions-separate-from-fix). **Do not**
+   skip step 5 because the alert is critical/high or because the operator chose **Fix**.
 
 A PR that only changes `<js-root>/yarn.lock` after steps 1–3 is preferred when the
-audit passes.
+audit passes. If step 5 is required, **pause the PR** (local commit without
+`resolutions`, or no push) until resolution approval is explicit.
 
 **Verification** — follow [remediation.md](remediation.md) verify steps for the
 ecosystem changed (do not substitute ad-hoc commands unless the operator agrees):

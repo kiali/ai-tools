@@ -6,6 +6,31 @@ triage: [triage.md](triage.md) Step 6; Dependabot: alert + synced `master` in
 alerts) stays in those workflows — this doc is only how to change `package.json`
 / lockfile / `go.mod`.
 
+## Agent hard stop: `package.json` `resolutions`
+
+**Do not edit** the `resolutions` object in `<js-root>/package.json` (and do not run
+`yarn set resolution`) until the operator has **explicitly approved that exact change**
+in chat after you present the [Handling vulnerable transitive dependencies](#handling-vulnerable-transitive-dependencies)
+options (step 3 there).
+
+**Operator approval for a Fix (Dependabot or CVE) is not approval for resolutions.**
+These do **not** count as resolution approval:
+
+- “Fix”, “fix the critical ones”, “go ahead”, severity/urgency, or batch-fix requests
+- Dedupe + install still leaving a vulnerable lockfile line
+- Belief that a resolution is the only practical fix
+
+**When dedupe + install + parent-bump exploration still fails the lockfile audit:**
+
+1. **Stop** — no commit, no push, no PR that adds `resolutions`
+2. Present a **resolution decision** table (parent bump vs resolution per package)
+3. Wait for the operator to pick **parent bump**, **resolution** (name keys), or **Pass**
+4. Only then apply the approved path
+
+A PR may ship **lockfile-only** or **direct/parent `package.json` bumps** while
+resolution approval is pending. Wrongly added resolutions are a workflow error —
+revert them and re-present options (do not defend “user asked to fix”).
+
 ## Paths (substitute for OSSMC)
 
 | Context | Repo | Default branch | JS package dir | `yarn` working dir |
@@ -99,7 +124,9 @@ the same approach on all branches (`master`/`main` and backports):
 
    **Dependabot / agent rule:** Editing `package.json` **`resolutions`** (or using
    `yarn set resolution`) without that approval is a workflow error — even when the
-   override would “obviously” work.
+   override would “obviously” work, the alert is **critical/high**, or the operator
+   already said **Fix** / “fix the critical ones” for the queue item. Those phrases
+   approve the fix attempt, not resolutions — see [Agent hard stop](#agent-hard-stop-packagejson-resolutions).
 
    **Backport consistency:** If the vulnerable transitive dependency
    only exists on backport branches (not on `master`), prefer the

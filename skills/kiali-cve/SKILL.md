@@ -58,9 +58,16 @@ sessions and separate summaries unless the user explicitly asks to relate the tw
   may move) — see dependabot.md **PR description**
 - **npm transitive fixes:** `yarn dedupe` → `yarn install` → lockfile audit
   before parent bump or **`resolutions`**; never add `resolutions` without operator
-  approval ([remediation.md](remediation.md))
+  approval ([remediation.md](remediation.md) **Agent hard stop**)
 - Goal: fix or dismiss open GitHub Dependabot alerts to harden upstream before
   downstream OSSM CVE filing
+
+**Dependabot + remediation — `resolutions` are a separate approval:** Operator
+**Fix** on a queue item authorizes branch work, dedupe, install, direct deps, and
+**parent bumps you already described**. It does **not** authorize new or changed
+`resolutions` keys. After the lockfile audit still fails, **stop** and present
+parent vs resolution options; wait for an explicit choice before editing
+`resolutions` ([dependabot.md](dependabot.md) **Hard gate: `resolutions`**).
 
 IMPORTANT: Never modify Jira issues without explicit user approval. Present all
 proposed changes and wait for confirmation before executing any updates.
