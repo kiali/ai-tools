@@ -18,7 +18,9 @@ If intent is unclear, ask the user which feature they want.
 **Shared dependency fixes:** NPM/Yarn and `go.mod` implementation steps for
 `kiali/kiali` (and OSSMC `plugin/`) live in [remediation.md](remediation.md).
 [triage.md](triage.md) and [dependabot.md](dependabot.md) add intake, branches,
-and ticket/alert handling on top.
+and ticket/alert handling on top. For frontend alerts on libraries also bundled
+inside `monaco-editor`, read **Bundled third-party libraries in `monaco-editor`**
+in [remediation.md](remediation.md) before closing a ticket as fixed-by-lockfile-only.
 
 ## Scope: CVE vs Dependabot
 
