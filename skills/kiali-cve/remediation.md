@@ -6,6 +6,31 @@ triage: [triage.md](triage.md) Step 6; Dependabot: alert + synced `master` in
 alerts) stays in those workflows — this doc is only how to change `package.json`
 / lockfile / `go.mod`.
 
+## Agent hard stop: `package.json` `resolutions`
+
+**Do not edit** the `resolutions` object in `<js-root>/package.json` (and do not run
+`yarn set resolution`) until the operator has **explicitly approved that exact change**
+in chat after you present the [Handling vulnerable transitive dependencies](#handling-vulnerable-transitive-dependencies)
+options (step 3 there).
+
+**Operator approval for a Fix (Dependabot or CVE) is not approval for resolutions.**
+These do **not** count as resolution approval:
+
+- “Fix”, “fix the critical ones”, “go ahead”, severity/urgency, or batch-fix requests
+- Dedupe + install still leaving a vulnerable lockfile line
+- Belief that a resolution is the only practical fix
+
+**When dedupe + install + parent-bump exploration still fails the lockfile audit:**
+
+1. **Stop** — no commit, no push, no PR that adds `resolutions`
+2. Present a **resolution decision** table (parent bump vs resolution per package)
+3. Wait for the operator to pick **parent bump**, **resolution** (name keys), or **Pass**
+4. Only then apply the approved path
+
+A PR may ship **lockfile-only** or **direct/parent `package.json` bumps** while
+resolution approval is pending. Wrongly added resolutions are a workflow error —
+revert them and re-present options (do not defend “user asked to fix”).
+
 ## Paths (substitute for OSSMC)
 
 | Context | Repo | Default branch | JS package dir | `yarn` working dir |
@@ -18,11 +43,15 @@ doc; OSSMC is JS-only for remediation here (see [triage.md](triage.md) Step 8).
 
 Below, **`<js-root>`** means `frontend` (server) or `plugin` (OSSMC). Commands
 assume `kiali/kiali` unless noted — for OSSMC use `plugin/` and branch/PR rules
-from triage Step 8.
+from triage Step 8 or [dependabot.md](dependabot.md) for upstream hardening.
+
+**Kiali server + OSSMC parity (Dependabot):** when npm applies to both repos,
+use the **same** bump/resolution strategy in `frontend/` and `plugin/`; open
+**one PR per repo** (see dependabot.md).
 
 **Fix version source:** In Jira triage use the ranges from Step 6a (and lockfile
 checks). For Dependabot use the alert’s patched version / range and re-read
-`<js-root>/yarn.lock` and `go.mod` on **synced** `master` before editing.
+`<js-root>/yarn.lock` and `go.mod` on synced **`master`** / **`main`** before editing.
 
 ---
 
@@ -71,6 +100,15 @@ the same approach on all branches (`master`/`main` and backports):
    consolidating to the highest compatible version already in the
    lockfile. Never add resolutions for caret ranges.
 
+1b. **Always** run `yarn install` (or `yarn install --no-immutable` in CI contexts)
+   in `<js-root>/`, then `rg '"<library>@npm:' <js-root>/yarn.lock` again.
+
+   Many alerts are **stale lockfile pins**: parent ranges already allow the patched
+   release (e.g. `^3.0.4` → **3.1.5** after dedupe + install) with **no**
+   `package.json` change and **no** `resolutions`. Do **not** add `resolutions` or
+   `yarn set resolution` until this full cycle is done and the lockfile still fails
+   the audit.
+
 2. For remaining vulnerable entries, evaluate both options:
    - **Bump the parent package** to a version whose transitive tree
      no longer pulls in the vulnerable version.
@@ -83,6 +121,12 @@ the same approach on all branches (`master`/`main` and backports):
    parent package. Include: which package, from which version to which
    version, whether it is a major version bump, and the potential
    consequences. **Wait for explicit user approval** before proceeding.
+
+   **Dependabot / agent rule:** Editing `package.json` **`resolutions`** (or using
+   `yarn set resolution`) without that approval is a workflow error — even when the
+   override would “obviously” work, the alert is **critical/high**, or the operator
+   already said **Fix** / “fix the critical ones” for the queue item. Those phrases
+   approve the fix attempt, not resolutions — see [Agent hard stop](#agent-hard-stop-packagejson-resolutions).
 
    **Backport consistency:** If the vulnerable transitive dependency
    only exists on backport branches (not on `master`), prefer the
