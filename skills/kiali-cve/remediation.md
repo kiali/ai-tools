@@ -180,6 +180,54 @@ rg "from ['\"]${PACKAGE}['\"]|require\\(['\"]${PACKAGE}['\"]\\)" \
 - **Add a new resolution** only when the above still leaves a vulnerable transitive
   line — explain in the PR why it is required.
 
+### Bundled third-party libraries in `monaco-editor` (Kiali frontend)
+
+Some CVEs or Dependabot alerts for **`marked`**, **`dompurify`**, or
+**`@vscode/diff`** (0.58+) may refer to code **vendored inside the published
+`monaco-editor` package**, not only to `node_modules` versions from
+`frontend/package.json` / `yarn.lock`.
+
+Microsoft copies these into Monaco's shipped artifacts (for example
+`esm/vs/base/common/marked/`, `esm/vs/base/browser/dompurify/`). The version in
+`monaco-editor`'s npm `dependencies` documents what was bundled for that release.
+See [monaco-editor#4906](https://github.com/microsoft/monaco-editor/issues/4906)
+and [monaco-editor#5060](https://github.com/microsoft/monaco-editor/issues/5060).
+
+**Implications for triage and remediation:**
+
+1. **Lockfile / direct dependency / `resolutions` alone** may fix Kiali's **own**
+   imports (e.g. `ClipboardUtils` → `dompurify`, `marked`) but **do not** replace
+   the copies embedded in Monaco's JS. Scanners can still flag vulnerable library
+   strings inside Monaco webpack/rsbuild chunks after the lockfile is clean.
+
+2. **Verify exposure:** Check whether Kiali imports the package directly
+   (`rg` on `frontend/src`) vs the finding pointing at **`monaco-editor`** or
+   editor bundle assets. Record both in the ticket/PR summary.
+
+3. **When the bundled copy is the gap:** Primary fix is **`monaco-editor` upgrade**
+   (and regression on YAML/config editors, chatbot YAML modal if applicable).
+   Read the locked Monaco version from `frontend/yarn.lock`, then:
+   ```bash
+   npm view monaco-editor@<locked-version> dependencies
+   ```
+
+4. **Do not** add `resolutions` or duplicate direct deps **only** to satisfy
+   Monaco-bundle scanner noise without bumping `monaco-editor` when the runtime
+   path is Monaco markdown/sanitize UI. For direct imports, declare or bump the
+   direct dependency (e.g. `marked` aligned with Monaco's declared `14.0.0`).
+
+5. **Exploitability:** Some DOMPurify advisories depend on options Monaco does not
+   use; note maintainer guidance when closing or downgrading Jira/alert risk, but
+   still prefer Monaco upgrades when audit policy requires clearing bundle findings.
+
+**Declared bundled deps by era (check npm for the locked version):**
+
+| `monaco-editor` (examples) | Documented bundled deps |
+|------------------------------|-------------------------|
+| 0.55.x (older Kiali lock) | `marked@14.0.0`, `dompurify@3.2.x` |
+| 0.56–0.57 | same pattern; DOMPurify pin advances |
+| 0.58+ | `marked@14.0.0`, `dompurify@3.4.17`, `@vscode/diff` |
+
 ---
 
 ## Go third-party module upgrade
